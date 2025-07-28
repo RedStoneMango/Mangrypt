@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.text.Font?>
+
+<StackPane fx:id="root" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="634.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.redstonemango.mangrypt.graphic.controller.AuthController">
+   <children>
+      <Pane fx:id="backgroundContainer" prefHeight="200.0" prefWidth="200.0" />
+      <FlowPane alignment="CENTER" prefHeight="200.0" prefWidth="200.0">
+         <children>
+            <StackPane prefHeight="361.0" prefWidth="634.0">
+               <children>
+                  <ImageView fitHeight="361.0" fitWidth="639.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../image/pane_background_small_auth.png" />
+                     </image>
+                  </ImageView>
+                  <AnchorPane prefHeight="200.0" prefWidth="607.0">
+                     <children>
+                        <PasswordField fx:id="passwordField" layoutX="364.0" layoutY="231.0" prefHeight="28.0" prefWidth="160.0" style="-fx-background-color: linear-gradient(lightgreen, green); -fx-border-color: lightgreen; -fx-border-radius: 5;" />
+                        <Button layoutX="400.0" layoutY="264.0" mnemonicParsing="false" onAction="#onDecrypt" prefHeight="26.0" prefWidth="89.0" style="-fx-background-color: linear-gradient(lightgreen, green);" text="Decrypt..." />
+                        <Label fx:id="passphraseIndicator" layoutX="166.0" layoutY="80.0" text="Authentication passphrase required" textFill="#19ff00" underline="true">
+                           <font>
+                              <Font size="18.0" />
+                           </font>
+                        </Label>
+                        <Label fx:id="triesLeftLabel" layoutX="108.0" layoutY="286.0" text="3 tries left" textFill="RED">
+                           <font>
+                              <Font name="System Bold" size="18.0" />
+                           </font>
+                        </Label>
+                     </children>
+                  </AnchorPane>
+               </children>
+            </StackPane>
+         </children>
+      </FlowPane>
+   </children>
+</StackPane>
