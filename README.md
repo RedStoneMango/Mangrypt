@@ -22,6 +22,16 @@ To build Mangrypt yourself and generate a native executable, see:
 
 ---
 
+## 🖼️ Images and Recordings
+
+| Setting Up The "Launch passphrase"    |
+|---------------------------------------|
+| ![Passphrase setup](MangryptSetup.gif) |
+
+> ⚠️ Note: UI elements shown may change in future versions and may not exactly match these screenshots.
+
+---
+
 ## 🔒 Encryption Architecture
 
 Mangrypt uses a **two-layer encryption model** to ensure data integrity and privacy.

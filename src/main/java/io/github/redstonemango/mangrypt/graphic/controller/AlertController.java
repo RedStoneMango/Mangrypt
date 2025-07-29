@@ -8,6 +8,7 @@ import javafx.geometry.Point2D;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
 
@@ -64,6 +65,12 @@ public class AlertController {
         }
 
         if (cancelable) {
+            background.setOnKeyPressed(e -> {
+                if (e.getCode() == KeyCode.ESCAPE) {
+                    headerLabel.getParent().getParent().getParent().setVisible(false);
+                }
+            });
+
             Platform.runLater(() -> {
                 headerLabel.getParent().getParent().getParent().setOnMouseClicked(e -> {
                     Point2D scenePos = headerLabel.getParent().localToScene(0, 0);

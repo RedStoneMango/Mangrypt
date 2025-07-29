@@ -22,11 +22,11 @@ public class CypherEncryption {
     private static final int ITERATIONS = 65536;
     private static final int SALT_LENGTH = 16;
 
-    public static String encryptToString(String input, String password) throws Exception {
+    public static String encryptToString(String input, char[] password) throws Exception {
         return Base64.getEncoder().encodeToString(encrypt(input, password));
     }
 
-    public static byte[] encrypt(String input, String password) throws Exception {
+    public static byte[] encrypt(String input, char[] password) throws Exception {
         byte[] salt = generateRandomBytes(SALT_LENGTH);
         byte[] iv = generateRandomBytes(IV_SIZE);
 
@@ -47,11 +47,11 @@ public class CypherEncryption {
         return combined;
     }
 
-    public static @Nullable String decryptFromString(String base64CypherText, String password) throws Exception {
+    public static @Nullable String decryptFromString(String base64CypherText, char[] password) throws Exception {
         return decrypt(Base64.getDecoder().decode(base64CypherText), password);
     }
 
-    public static @Nullable String decrypt(byte[] cypherBytes, String password) throws Exception {
+    public static @Nullable String decrypt(byte[] cypherBytes, char[] password) throws Exception {
         try {
             byte[] salt = new byte[SALT_LENGTH];
             byte[] iv = new byte[IV_SIZE];
@@ -74,9 +74,9 @@ public class CypherEncryption {
         }
     }
 
-    private static SecretKey deriveKey(String password, byte[] salt) throws Exception {
+    private static SecretKey deriveKey(char[] password, byte[] salt) throws Exception {
         SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
-        KeySpec spec = new PBEKeySpec(password.toCharArray(), salt, ITERATIONS, KEY_SIZE);
+        KeySpec spec = new PBEKeySpec(password, salt, ITERATIONS, KEY_SIZE);
         byte[] keyBytes = factory.generateSecret(spec).getEncoded();
         return new SecretKeySpec(keyBytes, "AES");
     }

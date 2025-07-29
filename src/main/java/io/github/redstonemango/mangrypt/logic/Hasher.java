@@ -14,7 +14,7 @@ public class Hasher {
     private static final int KEY_LENGTH = 256; // bits
     private static final int ITERATIONS = 600_000;
 
-    public static String hashString(String password) throws Exception {
+    public static String hash(char[] password) throws Exception {
         byte[] salt = generateSalt();
         byte[] hash = pbkdf2Hash(password, salt, ITERATIONS);
 
@@ -26,8 +26,8 @@ public class Hasher {
         return encodedSalt + ":" + ITERATIONS + ":" + encodedHash;
     }
 
-    private static byte[] pbkdf2Hash(String input, byte[] salt, int iterations) throws Exception {
-        KeySpec spec = new PBEKeySpec(input.toCharArray(), salt, iterations, KEY_LENGTH);
+    private static byte[] pbkdf2Hash(char[] input, byte[] salt, int iterations) throws Exception {
+        KeySpec spec = new PBEKeySpec(input, salt, iterations, KEY_LENGTH);
         SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
         return factory.generateSecret(spec).getEncoded();
     }
@@ -38,7 +38,7 @@ public class Hasher {
         return salt;
     }
 
-    public static boolean verifyHash(String input, String storedHash) throws Exception {
+    public static boolean verifyHash(char[] input, String storedHash) throws Exception {
         String[] parts = storedHash.split(":");
         if (parts.length != 3) return false;
 

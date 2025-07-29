@@ -16,18 +16,23 @@ public class FolderOverviewController {
     @FXML ImageView addImage;
     @FXML ImageView configureImage;
 
+    @FXML
+    private void initialize() {
+
+    }
+
 
     @FXML
     private void onAddAnimationStart() {
         FadeTransition transition = new FadeTransition(Duration.millis(250), addImage);
         transition.setFromValue(1);
-        transition.setToValue(0.57);
+        transition.setToValue(0.45);
         transition.play();
     }
     @FXML
     private void onAddAnimationEnd() {
         FadeTransition transition = new FadeTransition(Duration.millis(250), addImage);
-        transition.setFromValue(0.57);
+        transition.setFromValue(0.45);
         transition.setToValue(1);
         transition.play();
     }

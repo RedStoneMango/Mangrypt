@@ -70,14 +70,14 @@ public class AuthController {
                 try {
                     Mangrypt.getBase().setSceneRoot(loader.load());
                 } catch (IOException e) {
-                    throw new RuntimeException(e); // We can throw here without an error screen; If this is ever caught, we're cooked wither way
+                    throw new RuntimeException(e); // We can throw here without an error screen; If this is ever caught, the app was compiled incorrectly, and we're cooked wither way
                 }
             }
         }
     }
 
     private boolean decryptPassphrase() {
-        boolean decryptionSuccess = ConfigIO.decryptLayerOne(passwordField.getText());
+        boolean decryptionSuccess = ConfigIO.decryptLayerOne(passwordField.getText().toCharArray());
         if (!decryptionSuccess) {
             decreaseTries();
             return false;
@@ -87,7 +87,7 @@ public class AuthController {
     }
 
     private boolean decryptPassword() {
-        boolean decryptionSuccess = ConfigIO.getLayer1().decryptLayer2(passwordField.getText());
+        boolean decryptionSuccess = ConfigIO.getLayer1().decryptLayer2(passwordField.getText().toCharArray());
         if (decryptionSuccess) {
              boolean valid = verifyPassword(); // Backwards-check the password to prevent a false-positive decryption (tough it is very unlikely, it's better to be safe than sorry).
              if (!valid) {
@@ -103,7 +103,7 @@ public class AuthController {
 
     private boolean verifyPassword() {
         try {
-            boolean valid = ConfigIO.getLayer1().getLayer2().verifyPassword(passwordField.getText());
+            boolean valid = ConfigIO.getLayer1().getLayer2().verifyPassword(passwordField.getText().toCharArray());
             if (!valid) {
                 decreaseTries();
                 return false;

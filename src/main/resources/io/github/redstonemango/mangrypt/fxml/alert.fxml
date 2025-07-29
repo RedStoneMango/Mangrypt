@@ -17,13 +17,13 @@
       </ImageView>
       <AnchorPane prefHeight="200.0" prefWidth="200.0">
          <children>
-            <Label fx:id="headerLabel" alignment="TOP_LEFT" layoutX="88.0" layoutY="57.0" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="77.0" prefWidth="322.0" text="HEADER" textFill="#20ff00" wrapText="true">
+            <Label fx:id="headerLabel" alignment="TOP_LEFT" layoutX="88.0" layoutY="57.0" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="29.0" prefWidth="322.0" text="HEADER" textFill="#20ff00">
                <font>
                   <Font size="18.0" />
                </font>
             </Label>
             <ButtonBar fx:id="buttonBar" layoutX="88.0" layoutY="224.0" prefHeight="29.0" prefWidth="322.0" />
-            <Label fx:id="contentLabel" alignment="TOP_LEFT" layoutX="88.0" layoutY="143.0" maxWidth="-Infinity" prefHeight="61.0" prefWidth="322.0" text="Label" textFill="#20ff00">
+            <Label fx:id="contentLabel" alignment="TOP_LEFT" layoutX="88.0" layoutY="102.0" maxWidth="-Infinity" prefHeight="102.0" prefWidth="322.0" text="Label" textFill="#20ff00" wrapText="true">
                <font>
                   <Font size="16.0" />
                </font>

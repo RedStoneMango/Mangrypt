@@ -12,12 +12,12 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.text.Font?>
 
-<StackPane fx:id="root" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="634.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.github.redstonemango.mangrypt.graphic.controller.AuthController">
+<StackPane fx:id="root" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="634.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.github.redstonemango.mangrypt.graphic.controller.SecuritySetupController">
    <children>
       <Pane fx:id="backgroundContainer" prefHeight="200.0" prefWidth="200.0" />
       <FlowPane alignment="CENTER" prefHeight="200.0" prefWidth="200.0">
          <children>
-            <StackPane prefHeight="361.0" prefWidth="634.0">
+            <StackPane fx:id="panelContainer" prefHeight="361.0" prefWidth="634.0">
                <children>
                   <ImageView fitHeight="361.0" fitWidth="639.0" pickOnBounds="true" preserveRatio="true">
                      <image>
@@ -26,7 +26,7 @@
                   </ImageView>
                   <AnchorPane prefHeight="200.0" prefWidth="607.0">
                      <children>
-                        <Label fx:id="headerLabel" layoutX="137.0" layoutY="96.0" text="Security Setup (1/ 2)" textFill="#20ff00" underline="true">
+                        <Label fx:id="headerLabel" layoutX="137.0" layoutY="96.0" text="Security Setup (1 / 2)" textFill="#20ff00" underline="true">
                            <font>
                               <Font size="20.0" />
                            </font>
@@ -44,7 +44,7 @@
                            <tooltip>
                               <Tooltip fx:id="passwordConfirmationFieldTooltip" text="Confirm the passphrase to use" />
                            </tooltip></PasswordField>
-                        <Button fx:id="setupButton" layoutX="136.0" layoutY="261.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="162.0" style="-fx-background-color: linear-gradient(lightgreen, green);" text="Setup passphrase..." />
+                        <Button fx:id="setupButton" layoutX="136.0" layoutY="261.0" mnemonicParsing="false" onAction="#onSetup" prefHeight="26.0" prefWidth="162.0" style="-fx-background-color: linear-gradient(lightgreen, green);" text="Setup passphrase..." />
                      </children>
                   </AnchorPane>
                </children>

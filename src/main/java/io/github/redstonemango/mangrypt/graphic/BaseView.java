@@ -6,6 +6,7 @@ import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.control.*;
 import javafx.scene.layout.FlowPane;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import io.github.redstonemango.mangrypt.graphic.controller.AuthController;
@@ -38,6 +39,7 @@ public class BaseView extends StackPane {
 
         dialogLayer = new FlowPane();
         dialogLayer.setAlignment(Pos.CENTER);
+        dialogLayer.setVisible(false);
         getChildren().add(dialogLayer);
 
         widthProperty().addListener((_, _, width) -> getChildren().forEach(child -> {
@@ -51,6 +53,10 @@ public class BaseView extends StackPane {
     public void setSceneRoot(Parent sceneRoot) {
         getChildren().removeFirst();
         getChildren().addFirst(sceneRoot);
+    }
+
+    public Parent getSceneRoot() {
+        return (Parent) getChildren().getFirst();
     }
 
     public void showPasswordOverlay(boolean show) {

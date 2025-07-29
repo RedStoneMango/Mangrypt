@@ -2,6 +2,7 @@ package io.github.redstonemango.mangrypt.logic;
 
 import com.google.gson.GsonBuilder;
 import io.github.redstonemango.mangrypt.Mangrypt;
+import javafx.fxml.FXMLLoader;
 
 import java.io.File;
 import java.io.IOException;
@@ -64,18 +65,10 @@ public class ConfigIO {
         }
     }
 
-    public static boolean decryptLayerOne(String password) {
+    public static boolean decryptLayerOne(char[] passphrase) {
         if (!STORAGE_FILE.exists()) {
-            try {
-                STORAGE_FILE.getParentFile().mkdirs();
-                STORAGE_FILE.createNewFile();
-                // Run init logic
-                return true;
-            }
-            catch (IOException e) {
-                Mangrypt.getBase().showErrorAlert(String.valueOf(e));
-                throw new RuntimeException("Error creating storage file", e);
-            }
+            Mangrypt.getBase().showErrorAlert("Storage file does not exist");
+            throw new RuntimeException("Storage file does not exist");
         }
 
         byte[] encrypted;
@@ -88,16 +81,42 @@ public class ConfigIO {
         }
 
         try {
-            String json = CypherEncryption.decrypt(encrypted, password);
+            String json = CypherEncryption.decrypt(encrypted, passphrase);
             if (json == null) {
                 return false;
             }
             layer1 = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create().fromJson(json, Configuration.L1Enc.class);
+            layer1.updatePassphrase(passphrase);
+            // DO NOT ENSURE THE LOADED FIELD'S VALIDITY HERE FOR LAYER 2 STILL HAS TO LOAD. INSTEAD, ENSURE LAYER 2'S FIELDS AFTER THE LAYER IS LOADED
             return true;
         }
         catch (Exception e) {
             Mangrypt.getBase().showErrorAlert(String.valueOf(e));
             throw new RuntimeException("Error decrypting and processing layer 1 in the storage file", e);
+        }
+    }
+
+    public static void authenticateUserAndLoadConfig() {
+        if (STORAGE_FILE.exists()) {
+            try {
+                FXMLLoader loader = new FXMLLoader(ConfigIO.class.getResource("/io/github/redstonemango/mangrypt/fxml/passphrase-input.fxml"));
+                Mangrypt.getBase().setSceneRoot(loader.load());
+                return;
+            }
+            catch (IOException e) {
+                throw new RuntimeException(e); // Let's make the compiler happy :-)
+            }
+        }
+
+        layer1 = new Configuration.L1Enc();
+        layer1.ensureFields();
+
+        try {
+            FXMLLoader loader = new FXMLLoader(ConfigIO.class.getResource("/io/github/redstonemango/mangrypt/fxml/security-setup.fxml"));
+            Mangrypt.getBase().setSceneRoot(loader.load());
+        }
+        catch (IOException e) {
+            throw new RuntimeException(e); // I love happy compilers
         }
     }
 

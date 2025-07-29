@@ -14,6 +14,15 @@ public abstract class SecureData {
         this.description = description;
     }
 
+    public void ensureFields() {
+        if (name == null || name.isBlank()) {
+            name = "UNNAMED CONTENT";
+        }
+        if (description == null) {
+            description = "";
+        }
+    }
+
     public static class SecureTextData extends SecureData {
 
         @Expose
@@ -22,6 +31,15 @@ public abstract class SecureData {
         public SecureTextData(String name, String description, String text) {
             super(name, description);
             this.text = text;
+        }
+
+        @Override
+        public void ensureFields() {
+            super.ensureFields();
+
+            if (text == null) {
+                text = "";
+            }
         }
     }
 
