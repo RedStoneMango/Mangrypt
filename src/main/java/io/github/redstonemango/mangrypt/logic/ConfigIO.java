@@ -1,7 +1,7 @@
-package org.redstonemango.mangrypt.logic;
+package io.github.redstonemango.mangrypt.logic;
 
 import com.google.gson.GsonBuilder;
-import org.redstonemango.mangrypt.Mangrypt;
+import io.github.redstonemango.mangrypt.Mangrypt;
 
 import java.io.File;
 import java.io.IOException;
@@ -39,7 +39,7 @@ public class ConfigIO {
                 STORAGE_FILE.createNewFile();
             }
             catch (IOException e) {
-                Mangrypt.getBase().showErrorAlert("Create storage file", String.valueOf(e));
+                Mangrypt.getBase().showErrorAlert(String.valueOf(e));
                 throw new RuntimeException("Error creating storage file", e);
             }
         }
@@ -50,7 +50,7 @@ public class ConfigIO {
             String json = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create().toJson(layer1);
             encrypted = CypherEncryption.encrypt(json, layer1.passphrase());
         } catch (Exception e) {
-            Mangrypt.getBase().showErrorAlert("Encrypt data", String.valueOf(e));
+            Mangrypt.getBase().showErrorAlert(String.valueOf(e));
             throw new RuntimeException(e);
         }
 
@@ -59,7 +59,7 @@ public class ConfigIO {
             Files.write(STORAGE_FILE.toPath(), encrypted);
         }
         catch (IOException e) {
-            Mangrypt.getBase().showErrorAlert("Write to storage file", String.valueOf(e));
+            Mangrypt.getBase().showErrorAlert(String.valueOf(e));
             throw new RuntimeException("Error writing to storage file", e);
         }
     }
@@ -73,7 +73,7 @@ public class ConfigIO {
                 return true;
             }
             catch (IOException e) {
-                Mangrypt.getBase().showErrorAlert("Create storage file", String.valueOf(e));
+                Mangrypt.getBase().showErrorAlert(String.valueOf(e));
                 throw new RuntimeException("Error creating storage file", e);
             }
         }
@@ -83,7 +83,7 @@ public class ConfigIO {
             encrypted = Files.readAllBytes(STORAGE_FILE.toPath());
         }
         catch (IOException e) {
-            Mangrypt.getBase().showErrorAlert("Read storage file", String.valueOf(e));
+            Mangrypt.getBase().showErrorAlert(String.valueOf(e));
             throw new RuntimeException("Error reading storage file", e);
         }
 
@@ -96,7 +96,7 @@ public class ConfigIO {
             return true;
         }
         catch (Exception e) {
-            Mangrypt.getBase().showErrorAlert("Decrypt and process storage file (Layer 1)", String.valueOf(e));
+            Mangrypt.getBase().showErrorAlert(String.valueOf(e));
             throw new RuntimeException("Error decrypting and processing layer 1 in the storage file", e);
         }
     }

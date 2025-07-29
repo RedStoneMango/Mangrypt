@@ -1,11 +1,9 @@
-package org.redstonemango.mangrypt.logic;
+package io.github.redstonemango.mangrypt.logic;
 
 import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.Expose;
-import org.redstonemango.mangrypt.Mangrypt;
+import io.github.redstonemango.mangrypt.Mangrypt;
 
-import java.io.IOException;
-import java.nio.file.Files;
 import java.util.List;
 
 public class Configuration {
@@ -46,7 +44,7 @@ public class Configuration {
                 layer2 = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create().fromJson(json, Configuration.L2Enc.class);
                 return true;
             } catch (Exception e) {
-                Mangrypt.getBase().showErrorAlert("Decrypt and process storage file (Layer 2)", String.valueOf(e));
+                Mangrypt.getBase().showErrorAlert(String.valueOf(e));
                 throw new RuntimeException("Error decrypting and processing layer 2 in the storage file", e);
             }
         }

@@ -1,4 +1,4 @@
-package org.redstonemango.mangrypt;
+package io.github.redstonemango.mangrypt.graphic;
 
 import javafx.animation.Transition;
 import javafx.scene.Node;

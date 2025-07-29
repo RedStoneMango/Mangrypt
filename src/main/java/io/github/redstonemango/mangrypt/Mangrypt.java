@@ -1,12 +1,11 @@
-package org.redstonemango.mangrypt;
+package io.github.redstonemango.mangrypt;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.stage.Stage;
-import org.redstonemango.mangrypt.graphic.BaseView;
-import org.redstonemango.mangrypt.logic.Configuration;
-import org.redstonemango.mangrypt.logic.CypherEncryption;
+import io.github.redstonemango.mangrypt.graphic.BaseView;
 
 import java.io.IOException;
 
@@ -16,12 +15,17 @@ public class Mangrypt extends Application {
 
     @Override
     public void start(Stage stage) throws IOException {
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/org/redstonemango/mangrypt/fxml/passphrase-input.fxml"));
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/io/github/redstonemango/mangrypt/fxml/passphrase-input.fxml"));
         base = new BaseView(loader.load());
         Scene scene = new Scene(base);
+        base.showAlert(Alert.AlertType.ERROR, "Test", "Hello", true, System.out::println);
         stage.setScene(scene);
         stage.setTitle("Mangrypt");
         stage.show();
+        double xDecoration = stage.getWidth() - scene.getWidth();
+        double yDecoration = stage.getHeight() - scene.getHeight();
+        stage.setMinWidth(620 + xDecoration);
+        stage.setMinHeight(380 + yDecoration);
     }
 
     public static BaseView getBase() {

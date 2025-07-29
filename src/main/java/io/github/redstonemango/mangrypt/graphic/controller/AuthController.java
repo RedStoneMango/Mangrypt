@@ -1,20 +1,18 @@
-package org.redstonemango.mangrypt.graphic.controller;
+package io.github.redstonemango.mangrypt.graphic.controller;
 
-import javafx.animation.Interpolator;
-import javafx.animation.TranslateTransition;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.util.Duration;
-import org.redstonemango.mangrypt.Mangrypt;
-import org.redstonemango.mangrypt.ShakeTransition;
-import org.redstonemango.mangrypt.logic.ConfigIO;
+import io.github.redstonemango.mangrypt.Mangrypt;
+import io.github.redstonemango.mangrypt.graphic.MatrixBackground;
+import io.github.redstonemango.mangrypt.graphic.ShakeTransition;
+import io.github.redstonemango.mangrypt.logic.ConfigIO;
 
 import java.io.IOException;
 
@@ -22,11 +20,6 @@ import java.io.IOException;
  * This class controls the authentication passphrase as well as the password check screen, for they have almost the same underlying logic.
  */
 public class AuthController {
-
-    private static final Image BACKGROUND_SPRITE = new Image(AuthController.class.getResourceAsStream("/org/redstonemango/mangrypt/image/matrix-rain-sprite.png"));
-    private static final int BACKGROUND_SPRITE_SIZE = 400;
-    private static final Duration BACKGROUND_SCROLL_DURATION = Duration.seconds(20);
-    private boolean shouldPlayBackgroundScroll = false;
 
     @FXML StackPane root;
     @FXML Pane backgroundContainer;
@@ -37,22 +30,25 @@ public class AuthController {
      */
     @FXML Label passphraseIndicator;
 
-    private int oldXCount = -1;
-    private int oldYCount = -1;
-
     private int tries = 3;
+    private MatrixBackground matrixBackground;
 
     @FXML
     private void initialize() {
-        root.widthProperty().addListener((_, _, _) -> updateBackground());
-        root.heightProperty().addListener((_, _, _) -> updateBackground());
+        matrixBackground = new MatrixBackground(backgroundContainer);
+
+        root.widthProperty().addListener((_, _, _) -> matrixBackground.update());
+        root.heightProperty().addListener((_, _, _) -> matrixBackground.update());
         root.visibleProperty().addListener((_, _, isVisible) -> {
-            if (isVisible) startBackgroundScroll();
-            else endBackgroundScroll();
+            if (isVisible) matrixBackground.playScroll();
+            else matrixBackground.stopScroll();
         });
-        startBackgroundScroll();
         passwordField.setOnKeyPressed(e -> {
             if (e.getCode() == KeyCode.ENTER) onDecrypt();
+        });
+        Platform.runLater(() -> {
+            matrixBackground.update();
+            matrixBackground.playScroll();
         });
     }
 
@@ -70,7 +66,7 @@ public class AuthController {
         else {
             if (decryptPassphrase()) {
                 Mangrypt.getBase().showPasswordOverlay(true);
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("/org/redstonemango/mangrypt/fxml/folder-overview.fxml"));
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/io/github/redstonemango/mangrypt/fxml/folder-overview.fxml"));
                 try {
                     Mangrypt.getBase().setSceneRoot(loader.load());
                 } catch (IOException e) {
@@ -115,7 +111,7 @@ public class AuthController {
             passwordField.setText("");
             return true;
         } catch (Exception e) {
-            Mangrypt.getBase().showErrorAlert("Verify Password", String.valueOf(e));
+            Mangrypt.getBase().showErrorAlert(String.valueOf(e));
             throw new RuntimeException("Error verifying the password", e);
         }
     }
@@ -136,49 +132,6 @@ public class AuthController {
             passwordField.selectAll();
         }
         triesLeftLabel.setText((tries > 1 ? tries + " tries" : (tries == 1 ? "1 try" : "No tries")) + " left");
-    }
-
-    private void updateBackground() {
-        int width = (int) root.getWidth();
-        int height = (int) root.getHeight();
-        int xCount = Math.ceilDiv(width, BACKGROUND_SPRITE_SIZE);
-        int yCount = Math.ceilDiv(height, BACKGROUND_SPRITE_SIZE) + 1; // +1 for scroll buffer
-
-        if (oldXCount != xCount || oldYCount != yCount) {
-            backgroundContainer.getChildren().clear();
-            for (int i = -1; i < xCount; i++) {
-                for (int j = -1; j < yCount; j++) {
-                    double x = BACKGROUND_SPRITE_SIZE * i;
-                    double y = BACKGROUND_SPRITE_SIZE * j;
-                    ImageView imageView = new ImageView(BACKGROUND_SPRITE);
-                    imageView.setFitWidth(BACKGROUND_SPRITE_SIZE);
-                    imageView.setFitHeight(BACKGROUND_SPRITE_SIZE);
-                    imageView.setX(x);
-                    imageView.setY(y);
-                    backgroundContainer.getChildren().add(imageView);
-                }
-            }
-        }
-        oldXCount = xCount;
-        oldYCount = yCount;
-    }
-
-    private void startBackgroundScroll() {
-        if (shouldPlayBackgroundScroll) return; // If already playing, don't start again
-        shouldPlayBackgroundScroll = true;
-
-        TranslateTransition scroll = new TranslateTransition(BACKGROUND_SCROLL_DURATION, backgroundContainer);
-        scroll.setByY(BACKGROUND_SPRITE_SIZE);
-        scroll.setInterpolator(Interpolator.LINEAR);
-        scroll.setOnFinished(_ -> {
-            backgroundContainer.setTranslateY(0);
-            if (shouldPlayBackgroundScroll) scroll.playFromStart();
-        });
-        scroll.play();
-    }
-
-    private void endBackgroundScroll() {
-        shouldPlayBackgroundScroll = false;
     }
 
     public void prepare() {

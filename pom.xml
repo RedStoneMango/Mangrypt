@@ -139,7 +139,7 @@
                         <!-- Default configuration for running with: mvn clean javafx:run -->
                         <id>default-cli</id>
                         <configuration>
-                            <mainClass>org.redstonemango.mangrypt/org.redstonemango.mangrypt.Mangrypt</mainClass>
+                            <mainClass>org.redstonemango.mangrypt/io.github.redstonemango.mangrypt.Mangrypt</mainClass>
                             <launcher>app</launcher>
                             <jlinkZipName>app</jlinkZipName>
                             <jlinkImageName>app</jlinkImageName>

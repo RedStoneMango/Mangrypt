@@ -1,4 +1,4 @@
-package org.redstonemango.mangrypt.graphic.controller;
+package io.github.redstonemango.mangrypt.graphic.controller;
 
 import javafx.animation.FadeTransition;
 import javafx.animation.RotateTransition;

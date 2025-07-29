@@ -1,4 +1,4 @@
-package org.redstonemango.mangrypt.logic;
+package io.github.redstonemango.mangrypt.logic;
 
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;

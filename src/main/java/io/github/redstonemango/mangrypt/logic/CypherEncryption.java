@@ -1,4 +1,4 @@
-package org.redstonemango.mangrypt.logic;
+package io.github.redstonemango.mangrypt.logic;
 
 import org.jetbrains.annotations.Nullable;
 
