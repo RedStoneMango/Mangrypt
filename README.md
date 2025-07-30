@@ -25,9 +25,13 @@ To build Mangrypt yourself and generate a native executable, see:
 
 ---
 
-## 🖼️ Setting Up the Launch Passphrase
+## 🖼️ Application UI
 
-![Passphrase setup](MangryptSetup.gif)
+Here are some references on what the application UI looks like:
+
+| Setting Up The Launch Passphrase |
+| - |
+| ![Passphrase setup](MangryptSetup.gif)|
 
 > ⚠️ UI elements shown may change in future versions and may not exactly match these screenshots.
 
