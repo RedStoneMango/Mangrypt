@@ -90,10 +90,10 @@ For contributions or feedback, see [here](#-feedback--contributions).
 
 Mangrypt is built using:
 
-- **Language:** Java 21+  
-- **Build Tool:** Maven 3.8+  
-- **UI Framework:** JavaFX 21+  
-- **Native Packaging:** [`javapackager` Maven Plugin](https://github.com/javapackager/JavaPackager)
+- **Language:** Java 23
+- **Build Tool:** Maven 3.8.5
+- **UI Framework:** JavaFX 23
+- **Native Packaging:** [`javapackager`](https://github.com/javapackager/JavaPackager) 1.7.4
 
 ---
 
