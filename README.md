@@ -43,7 +43,9 @@ Mangrypt uses a **two-layer encryption model** to ensure data integrity and priv
 
 ### 🗂️ Architecture Overview
 
-![Encryption Architecture Diagram](ARCHITECTURE_DIAGRAM.gif)
+![Encryption Architecture Diagram](ARCHITECTURE_DIAGRAM.png)
+
+---
 
 ### 1️⃣ Layer One – *Launch Passphrase*
 
@@ -57,6 +59,8 @@ The first layer secures a minimal configuration structure (vault names and other
 
 > This passphrase is required every time Mangrypt is launched. Use a strong and unique passphrase.
 
+---
+
 ### 2️⃣ Layer Two – *Session Password*
 
 Once Layer One is decrypted, sensitive data is unlocked by a second password. This layer uses:
@@ -65,6 +69,8 @@ Once Layer One is decrypted, sensitive data is unlocked by a second password. Th
 - A separate **Session Password**
 
 > If the Mangrypt window loses focus, the app automatically obscures all content and re-prompts for the **Session Password** to protect unattended data.
+
+---
 
 ### 🧠 Memory Usage
 
