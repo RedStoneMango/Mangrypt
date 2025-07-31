@@ -12,7 +12,7 @@ public class Hasher {
 
     private static final int SALT_LENGTH = 16; // 128-bit salt
     private static final int KEY_LENGTH = 256; // bits
-    private static final int ITERATIONS = 600_000;
+    private static final int ITERATIONS = 60_000;
 
     public static String hash(char[] password) throws Exception {
         byte[] salt = generateSalt();

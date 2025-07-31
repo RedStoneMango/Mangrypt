@@ -1,14 +1,19 @@
 package io.github.redstonemango.mangrypt.graphic.controller;
 
+import io.github.redstonemango.mangrypt.Mangrypt;
+import io.github.redstonemango.mangrypt.logic.ConfigIO;
 import javafx.animation.FadeTransition;
 import javafx.animation.RotateTransition;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.image.ImageView;
 import javafx.util.Duration;
 
-public class FolderOverviewController {
+import java.io.IOException;
+
+public class VaultOverviewController {
 
     @FXML ListView<Void> folderView;
     @FXML Label addContainer;
@@ -57,7 +62,13 @@ public class FolderOverviewController {
     }
     @FXML
     private void onConfigure() {
-
+        try {
+            FXMLLoader loader = new FXMLLoader(ConfigIO.class.getResource("/io/github/redstonemango/mangrypt/fxml/security-setup.fxml"));
+            Mangrypt.getBase().setSecondLayerRoot(loader.load());
+        }
+        catch (IOException e) {
+            throw new RuntimeException(e); // I love happy compilers
+        }
     }
 
 }

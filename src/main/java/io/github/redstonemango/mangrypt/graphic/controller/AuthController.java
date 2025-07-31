@@ -1,10 +1,12 @@
 package io.github.redstonemango.mangrypt.graphic.controller;
 
+import javafx.animation.FadeTransition;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
@@ -15,6 +17,7 @@ import io.github.redstonemango.mangrypt.graphic.ShakeTransition;
 import io.github.redstonemango.mangrypt.logic.ConfigIO;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 /**
  * This class controls the authentication passphrase as well as the password check screen, for they have almost the same underlying logic.
@@ -25,6 +28,7 @@ public class AuthController {
     @FXML Pane backgroundContainer;
     @FXML PasswordField passwordField;
     @FXML Label triesLeftLabel;
+    @FXML ImageView image;
     /**
      * If this is not <code>null</code>, we are to apply the passphrase logic; otherwise the password logic should be applied.
      */
@@ -55,16 +59,14 @@ public class AuthController {
     @FXML
     private void onDecrypt() {
         if (passphraseIndicator == null) {
-            boolean success = ConfigIO.getLayer1().isLayer2Decrypted() ?
-                    verifyPassword() :
-                    decryptPassword();
-
+            boolean success = verifyPassword();
             if (success) {
+                ConfigIO.markShouldSave();
                 Mangrypt.getBase().showPasswordOverlay(false);
             }
         }
         else {
-            if (decryptPassphrase()) {
+            if (decryptConfig()) {
                 Mangrypt.getBase().showPasswordOverlay(true);
                 FXMLLoader loader = new FXMLLoader(getClass().getResource("/io/github/redstonemango/mangrypt/fxml/folder-overview.fxml"));
                 try {
@@ -76,8 +78,20 @@ public class AuthController {
         }
     }
 
-    private boolean decryptPassphrase() {
-        boolean decryptionSuccess = ConfigIO.decryptLayerOne(passwordField.getText().toCharArray());
+    private boolean decryptConfig() {
+        char[] c = passwordField.getText().toCharArray();
+        boolean decryptionSuccess;
+        try {
+            decryptionSuccess = ConfigIO.decryptConfig(c);
+        }
+        catch (Exception e) {
+            passwordField.setText("");
+            Mangrypt.getBase().showErrorAlert(String.valueOf(e));
+            throw new RuntimeException("Error decrypting config", e);
+        }
+        finally {
+            Arrays.fill(c, '\0');
+        }
         if (!decryptionSuccess) {
             decreaseTries();
             return false;
@@ -86,34 +100,25 @@ public class AuthController {
         return true;
     }
 
-    private boolean decryptPassword() {
-        boolean decryptionSuccess = ConfigIO.getLayer1().decryptLayer2(passwordField.getText().toCharArray());
-        if (decryptionSuccess) {
-             boolean valid = verifyPassword(); // Backwards-check the password to prevent a false-positive decryption (tough it is very unlikely, it's better to be safe than sorry).
-             if (!valid) {
-                 decreaseTries();
-             }
-             return valid;
-        }
-        else {
-            decreaseTries();
-            return false;
-        }
-    }
-
     private boolean verifyPassword() {
+        char[] c = passwordField.getText().toCharArray();
+        boolean valid;
         try {
-            boolean valid = ConfigIO.getLayer1().getLayer2().verifyPassword(passwordField.getText().toCharArray());
-            if (!valid) {
-                decreaseTries();
-                return false;
-            }
-            passwordField.setText("");
-            return true;
+            valid = ConfigIO.getConfig().verifyPassword(passwordField.getText().toCharArray());
         } catch (Exception e) {
+            passwordField.setText("");
             Mangrypt.getBase().showErrorAlert(String.valueOf(e));
             throw new RuntimeException("Error verifying the password", e);
         }
+        finally {
+            Arrays.fill(c, '\0');
+        }
+        if (!valid) {
+            decreaseTries();
+            return false;
+        }
+        passwordField.setText("");
+        return true;
     }
 
     private void decreaseTries() {

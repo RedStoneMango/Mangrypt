@@ -1,6 +1,7 @@
 package io.github.redstonemango.mangrypt;
 
 import io.github.redstonemango.mangrypt.logic.ConfigIO;
+import io.github.redstonemango.mangrypt.logic.Configuration;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.layout.Background;
@@ -15,9 +16,7 @@ public class Mangrypt extends Application {
 
     @Override
     public void start(Stage stage) {
-        Pane pane = new Pane();
-        pane.setBackground(Background.fill(Color.BLACK));
-        base = new BaseView(pane);
+        base = new BaseView();
         Scene scene = new Scene(base);
         stage.setScene(scene);
         stage.setTitle("Mangrypt");
@@ -26,6 +25,11 @@ public class Mangrypt extends Application {
         double yDecoration = stage.getHeight() - scene.getHeight();
         stage.setMinWidth(620 + xDecoration);
         stage.setMinHeight(380 + yDecoration);
+
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            if (ConfigIO.shouldSave()) ConfigIO.save();
+            ConfigIO.cleanup(); // Try to unset all mutable configuration objects to minimize the risk of memory leaks
+        }));
 
         ConfigIO.authenticateUserAndLoadConfig();
     }

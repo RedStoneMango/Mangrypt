@@ -10,6 +10,7 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import io.github.redstonemango.mangrypt.graphic.controller.AuthController;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.util.function.Consumer;
@@ -23,15 +24,12 @@ public class BaseView extends StackPane {
     private final FlowPane dialogLayer;
     private final AuthController passwordOverlayController;
 
-    public BaseView(Parent sceneRoot) {
-        getChildren().add(sceneRoot);
-
+    public BaseView() {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/io/github/redstonemango/mangrypt/fxml/overlay.fxml"));
             passwordOverlayLayer = loader.load();
             passwordOverlayLayer.setVisible(false);
             passwordOverlayController = loader.getController();
-            getChildren().add(passwordOverlayLayer);
         }
         catch (IOException e) {
             throw new RuntimeException(e);
@@ -40,29 +38,40 @@ public class BaseView extends StackPane {
         dialogLayer = new FlowPane();
         dialogLayer.setAlignment(Pos.CENTER);
         dialogLayer.setVisible(false);
-        getChildren().add(dialogLayer);
 
         widthProperty().addListener((_, _, width) -> getChildren().forEach(child -> {
-                if (child instanceof Region r) r.setPrefWidth(width.doubleValue());
-            }));
+            if (child instanceof Region r) r.setPrefWidth(width.doubleValue());
+        }));
         heightProperty().addListener((_, _, height) -> getChildren().forEach(child -> {
             if (child instanceof Region r) r.setPrefHeight(height.doubleValue());
         }));
+
+        Pane secondLayerRoot = new Pane();
+        secondLayerRoot.setVisible(false);
+
+        getChildren().add(new Pane()); // Scene itself, unset by default
+        getChildren().add(secondLayerRoot);
+        getChildren().add(passwordOverlayLayer);
+        getChildren().add(dialogLayer);
     }
 
     public void setSceneRoot(Parent sceneRoot) {
         getChildren().removeFirst();
         getChildren().addFirst(sceneRoot);
     }
-
-    public Parent getSceneRoot() {
-        return (Parent) getChildren().getFirst();
+    public void setSecondLayerRoot(@Nullable Parent layerRoot) {
+        if (layerRoot == null) {
+            getChildren().get(1).setVisible(false);
+            return;
+        }
+        getChildren().remove(1);
+        getChildren().add(1, layerRoot);
     }
 
     public void showPasswordOverlay(boolean show) {
         if (show) {
             passwordOverlayController.prepare();
-            dialogLayer.setVisible(false);
+            dialogLayer.setVisible(false); // Hide possible dialogs
         }
         passwordOverlayLayer.setVisible(show);
     }

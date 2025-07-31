@@ -4,9 +4,13 @@ import com.google.gson.GsonBuilder;
 import io.github.redstonemango.mangrypt.Mangrypt;
 import javafx.fxml.FXMLLoader;
 
+import javax.crypto.SecretKey;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.Arrays;
+import java.util.Base64;
 import java.util.Locale;
 
 public class ConfigIO {
@@ -31,7 +35,20 @@ public class ConfigIO {
         }
     }
 
-    private static Configuration.L1Enc layer1;
+    private static Configuration config;
+    private static boolean shouldSave = false;
+
+    public static void cleanup() {
+        if (config != null) config.cleanup();
+        config = null;
+    }
+
+    public static boolean shouldSave() {
+        return shouldSave;
+    }
+    public static void markShouldSave() {
+        shouldSave = true;
+    }
 
     public static void save() {
         if (!STORAGE_FILE.exists()) {
@@ -47,14 +64,12 @@ public class ConfigIO {
 
         byte[] encrypted;
         try {
-            layer1.encryptLayer2();
-            String json = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create().toJson(layer1);
-            encrypted = CypherEncryption.encrypt(json, layer1.passphrase());
+            String json = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create().toJson(config);
+            encrypted = CypherEncryption.encrypt(json, config.passphrase(), config.passphraseSalt());
         } catch (Exception e) {
             Mangrypt.getBase().showErrorAlert(String.valueOf(e));
             throw new RuntimeException(e);
         }
-
 
         try {
             Files.write(STORAGE_FILE.toPath(), encrypted);
@@ -65,35 +80,23 @@ public class ConfigIO {
         }
     }
 
-    public static boolean decryptLayerOne(char[] passphrase) {
+    public static boolean decryptConfig(char[] passphrase) throws Exception {
         if (!STORAGE_FILE.exists()) {
             Mangrypt.getBase().showErrorAlert("Storage file does not exist");
             throw new RuntimeException("Storage file does not exist");
         }
 
-        byte[] encrypted;
-        try {
-            encrypted = Files.readAllBytes(STORAGE_FILE.toPath());
-        }
-        catch (IOException e) {
-            Mangrypt.getBase().showErrorAlert(String.valueOf(e));
-            throw new RuntimeException("Error reading storage file", e);
-        }
+        byte[] encrypted = Files.readAllBytes(STORAGE_FILE.toPath());
 
-        try {
-            String json = CypherEncryption.decrypt(encrypted, passphrase);
-            if (json == null) {
-                return false;
-            }
-            layer1 = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create().fromJson(json, Configuration.L1Enc.class);
-            layer1.updatePassphrase(passphrase);
-            // DO NOT ENSURE THE LOADED FIELD'S VALIDITY HERE FOR LAYER 2 STILL HAS TO LOAD. INSTEAD, ENSURE LAYER 2'S FIELDS AFTER THE LAYER IS LOADED
-            return true;
+        SecretKey key = CypherEncryption.extractAndDeriveKey(encrypted, passphrase);
+        byte[] payload = CypherEncryption.extractPayload(encrypted);
+        String json = CypherEncryption.decrypt(payload, key);
+        if (json == null) {
+            return false;
         }
-        catch (Exception e) {
-            Mangrypt.getBase().showErrorAlert(String.valueOf(e));
-            throw new RuntimeException("Error decrypting and processing layer 1 in the storage file", e);
-        }
+        config = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create().fromJson(json, Configuration.class);
+        config.updatePassphrase(passphrase);
+        return true;
     }
 
     public static void authenticateUserAndLoadConfig() {
@@ -108,8 +111,8 @@ public class ConfigIO {
             }
         }
 
-        layer1 = new Configuration.L1Enc();
-        layer1.ensureFields();
+        config = new Configuration();
+        config.ensureFields();
 
         try {
             FXMLLoader loader = new FXMLLoader(ConfigIO.class.getResource("/io/github/redstonemango/mangrypt/fxml/security-setup.fxml"));
@@ -120,13 +123,13 @@ public class ConfigIO {
         }
     }
 
-    public static Configuration.L1Enc getLayer1() {
-        if (layer1 == null) throw new UnsupportedOperationException("Layer 1 is not decrypted yet");
-        return layer1;
+    public static Configuration getConfig() {
+        if (config == null) throw new UnsupportedOperationException("Configs is not decrypted yet");
+        return config;
     }
 
-    public static boolean isLayer1Decrypted() {
-        return layer1 != null;
+    public static boolean isConfigDecrypted() {
+        return config != null;
     }
 
     public static File getStorageFile() {

@@ -26,7 +26,7 @@
                   </ImageView>
                   <AnchorPane prefHeight="200.0" prefWidth="607.0">
                      <children>
-                        <Label fx:id="headerLabel" layoutX="137.0" layoutY="96.0" text="Security Setup (1 / 2)" textFill="#20ff00" underline="true">
+                        <Label fx:id="headerLabel" layoutX="142.0" layoutY="96.0" text="Passphrase Setup" textFill="#20ff00" underline="true">
                            <font>
                               <Font size="20.0" />
                            </font>
