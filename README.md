@@ -59,16 +59,18 @@ The first layer secures a minimal configuration structure (vault names and other
 
 ### 2️⃣ Layer Two – *Session Password*
 
-Once Layer One is decrypted, sensitive data is unlocked by a second password. This layer uses:
+Once Layer One is decrypted, sensitive data can be unlocked by a second password. This layer uses:
 
 - The same **AES-128-GCM** encryption configuration  
 - A separate **Session Password**
+
+On startup, **Mangrypt** also prompts for this password but does not immediately use it. Instead the key is securely stored and will be used automatically to decrypt sensitive data on demand.
 
 > If the Mangrypt window loses focus, the app automatically obscures all content and re-prompts for the **Session Password** to protect unattended data.
 
 ### 🧠 Memory Usage
 
-The **Java Virtual Machine (JVM)** employs a **Garbage Collector (GC)** that automatically identifies and clears unused objects from memory.
+The **Java Virtual Machine** employs a **Garbage Collector (GC)** that automatically identifies and clears unused objects from memory, automatically erasing possibly sensitive data after their use.
 
 Mangrypt follows secure memory handling practices to reduce the risk of memory leaks and unintended data persistence. Sensitive data and passwords are immediately overwritten after use, encryption is performed only on demand, and no sensitive values are stored in immutable objects.
 
@@ -90,10 +92,10 @@ For information on feedback or contributions, see [here](#-feedback--contributio
 
 Mangrypt is built using:
 
-- **Language:** Java 21+  
-- **Build Tool:** Maven 3.8+  
-- **UI Framework:** JavaFX 21+  
-- **Native Packaging:** [`javapackager` Maven Plugin](https://github.com/javapackager/JavaPackager)
+- **Language:** `Java` 23
+- **Build Tool:** `Apache Maven` 3.8.5
+- **UI Framework:** `JavaFX` 23
+- **Native Packaging:** [`javapackager`](https://github.com/javapackager/JavaPackager) 1.7.6
 
 ---
 
