@@ -82,7 +82,7 @@ While Mangrypt is designed with strong encryption practices and careful attentio
 
 **Help harden Mangrypt. If you're a security expert, your review or audit would be extremely valuable.**
 
-For contributions or feedback, see [here](#-feedback--contributions).
+For information on feedback or contributions, see [here](#-feedback--contributions).
 
 ---
 
