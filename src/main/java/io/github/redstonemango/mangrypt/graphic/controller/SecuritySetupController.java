@@ -3,22 +3,23 @@ package io.github.redstonemango.mangrypt.graphic.controller;
 import io.github.redstonemango.mangrypt.Mangrypt;
 import io.github.redstonemango.mangrypt.graphic.MatrixBackground;
 import io.github.redstonemango.mangrypt.logic.ConfigIO;
+import io.github.redstonemango.mangrypt.logic.Configuration;
+import io.github.redstonemango.mangrypt.logic.CypherEncryption;
+import io.github.redstonemango.mangrypt.logic.SecureData;
 import javafx.animation.FadeTransition;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Point2D;
 import javafx.scene.Parent;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.PasswordField;
-import javafx.scene.control.Tooltip;
+import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.util.Duration;
 
+import javax.crypto.SecretKey;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.concurrent.CompletableFuture;
@@ -30,6 +31,8 @@ public class SecuritySetupController {
     private MatrixBackground matrixBackground;
     private boolean setupPassphrase = true;
     private boolean isSetup;
+    private SecretKey passphrase;
+    private byte[] passphraseSalt;
 
     private final CompletableFuture<Parent> vaultOverviewFuture = new CompletableFuture<>(); // For JavaFX node lazy-loaded after passphrase setup
 
@@ -112,43 +115,94 @@ public class SecuritySetupController {
             Mangrypt.getBase().showWarningAlert("The entered " + (setupPassphrase ? "passphrases" : "passwords") + " do not match");
             return;
         }
+        Arrays.fill(controlChars, '\0');
+        passwordConfirmationField.setText("");
 
         if (setupPassphrase) {
-            try {
-                ConfigIO.getConfig().updatePassphrase(chars);
+            if (isSetup) {
+                try {
+                    ConfigIO.getConfig().updatePassphrase(chars);
+                }
+                catch (Exception e) {
+                    Mangrypt.getBase().showErrorAlert(String.valueOf(e));
+                    throw new RuntimeException("Error updating passphrase", e);
+                }
+                finally {
+                    passwordField.setText("");
+                    Arrays.fill(chars, '\0');
+                }
             }
-            catch (Exception e) {
-                Mangrypt.getBase().showErrorAlert(String.valueOf(e));
-                throw new RuntimeException("Error updating passphrase", e);
-            }
-            finally {
-                passwordField.setText("");
-                passwordConfirmationField.setText("");
-                Arrays.fill(chars, '\0');
+            else {
+                try {
+                    passphraseSalt = CypherEncryption.generateRandomSalt();
+                    passphrase = CypherEncryption.deriveKey(chars, passphraseSalt);
+                }
+                catch (Exception e) {
+                    Mangrypt.getBase().showErrorAlert(String.valueOf(e));
+                    throw new RuntimeException("Error updating passphrase", e);
+                }
+                finally {
+                    passwordField.setText("");
+                    Arrays.fill(chars, '\0');
+                }
             }
             preparePasswordSetup();
         }
         else {
-            try {
-                ConfigIO.getConfig().updatePassword(chars);
-            }
-            catch (Exception e) {
-                Mangrypt.getBase().showErrorAlert(String.valueOf(e));
-                throw new RuntimeException("Error updating password", e);
-            }
-            finally {
-                passwordField.setText("");
-                passwordConfirmationField.setText("");
-                Arrays.fill(chars, '\0');
-            }
-
             if (isSetup) {
+                try {
+                    ConfigIO.getConfig().updatePassword(chars);
+                }
+                catch (Exception e) {
+                    Mangrypt.getBase().showErrorAlert(String.valueOf(e));
+                    throw new RuntimeException("Error updating password", e);
+                }
+                finally {
+                    passwordField.setText("");
+                    Arrays.fill(chars, '\0');
+                }
                 ConfigIO.markShouldSave();
                 vaultOverviewFuture.thenAccept(Mangrypt.getBase()::setSceneRoot);
             }
             else {
-                Mangrypt.getBase().setSecondLayerRoot(null);
-                Mangrypt.getBase().showInfoAlert("Successfully updated passphrase and password");
+
+                Mangrypt.getBase().showAlert(Alert.AlertType.INFORMATION, "Working...", "Updating references to use the new password and passphrase", false, _ -> {});
+                try (ExecutorService service = Executors.newSingleThreadExecutor()) {
+                    service.execute(() -> {
+                        try {
+                            byte[] passwordSalt = CypherEncryption.generateRandomSalt();
+                            SecretKey key = CypherEncryption.deriveKey(chars, passwordSalt);
+                            for (Configuration.Folder folder : ConfigIO.getConfig().getFolders()) {
+                                for (SecureData.Encrypted data : folder.getEncryptedData()) {
+                                    data.updatePassword(key, passwordSalt);
+                                }
+                            }
+
+                            // Use 2 different stages to prevent en exception thrown in between, resulting in half the data being encrypted with the new password, half the data with the old one
+                            Platform.runLater(() -> Mangrypt.getBase().showAlert(Alert.AlertType.INFORMATION, "Working...", "Finalizing update", false, _ -> {}));
+
+                            for (Configuration.Folder folder : ConfigIO.getConfig().getFolders()) {
+                                for (SecureData.Encrypted data : folder.getEncryptedData()) {
+                                    data.finalizePasswordUpdate();
+                                }
+                            }
+                            ConfigIO.getConfig().updatePassword(key, passwordSalt, chars);
+                            ConfigIO.getConfig().updatePassphrase(passphrase, passphraseSalt);
+                        }
+                        catch (Exception e) {
+                            Platform.runLater(() -> {
+                                Mangrypt.getBase().showErrorAlert(String.valueOf(e));
+                                throw new RuntimeException("Error updating password", e);
+                            });
+                        }
+                        finally {
+                            passwordField.setText("");
+                            Arrays.fill(chars, '\0');
+                        }
+                        Mangrypt.getBase().setSecondLayerRoot(null);
+                        Platform.runLater(() -> Mangrypt.getBase().showInfoAlert("Successfully updated passphrase and password"));
+                    });
+                }
             }
         }
     }
@@ -160,7 +214,7 @@ public class SecuritySetupController {
         outTransition.setOnFinished(_ -> {
             setupPassphrase = false;
             headerLabel.setText("Password Setup");
-            contentLabel.setText("Please setup a \"Session password\" for which you will be prompted every time this application is re-visited:");
+            contentLabel.setText("Please setup an \"Access password\" for which you will be prompted every time this application is re-visited:");
             passwordField.setPromptText("Password");
             passwordFieldTooltip.setText("Enter the password to use");
             passwordConfirmationField.setPromptText("Confirm Password");
@@ -175,7 +229,7 @@ public class SecuritySetupController {
         outTransition.play();
 
         try (ExecutorService service = Executors.newSingleThreadExecutor()) { // Lazy-load vault layout
-            service.submit(() -> {
+            service.execute(() -> {
                 try {
                     FXMLLoader loader = new FXMLLoader(getClass().getResource(
                             "/io/github/redstonemango/mangrypt/fxml/folder-overview.fxml"));

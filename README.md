@@ -1,6 +1,6 @@
 # 🔐 Mangrypt
 
-> ⚠️ **This application is currently under active development. Features may change, and bugs may occur. Use with caution.**
+> ⚠️ **This application is currently under active development. Features may change, and bugs may occur. Data encrypted using this version of the app may not be portable to the next version. Use with caution.**
 
 **Mangrypt** is a user-friendly encryption application designed to protect sensitive user data. It supports encryption for text, images, audio, and video, and includes a secure, fully enclosed web browser for private browsing.
 
@@ -27,11 +27,11 @@ To build Mangrypt yourself and generate a native executable, see:
 
 ## 🖼️ Application UI
 
-Here are some references on what the application UI looks like:
+The following references illustrate the application UI's appearance:
 
-| Setting Up The Launch Passphrase |
-| - |
-| ![Passphrase setup](MangryptSetup.gif)|
+| Setting Up The Launch Passphrase       |
+|----------------------------------------|
+| ![Passphrase setup](MangryptSetup.gif) |
 
 > ⚠️ UI elements shown may change in future versions and may not exactly match these screenshots.
 
@@ -57,16 +57,16 @@ The first layer secures a minimal configuration structure (vault names and other
 
 > This passphrase is required every time Mangrypt is launched. Use a strong and unique passphrase.
 
-### 2️⃣ Layer Two – *Session Password*
+### 2️⃣ Layer Two – *Access Password*
 
 Once Layer One is decrypted, sensitive data can be unlocked by a second password. This layer uses:
 
 - The same **AES-128-GCM** encryption configuration  
-- A separate **Session Password**
+- A separate **Access Password**
 
 On startup, **Mangrypt** also prompts for this password but does not immediately use it. Instead the key is securely stored and will be used automatically to decrypt sensitive data on demand.
 
-> If the Mangrypt window loses focus, the app automatically obscures all content and re-prompts for the **Session Password** to protect unattended data.
+> If the Mangrypt window loses focus, the app automatically obscures all content and re-prompts for the **Access Password** to protect unattended data.
 
 ### 🧠 Memory Usage
 
@@ -114,13 +114,13 @@ Mangrypt is built using:
 
 To run or build Mangrypt, ensure your environment meets the following minimum requirements:
 
-| Requirement       | Needed For     | Minimum Version             |
-|-------------------|----------------|------------------------------|
-| Java JDK          | Build only     | Java 23+                     |
-| Apache Maven      | Build only     | 3.8.5+                       |
-| JavaFX SDK        | Build only     | 23+ (matching your JDK)     |
-| Operating System  | All            | Windows, macOS, or Linux     |
-| Memory            | All            | 4 GB minimum (8 GB recommended) |
+| Requirement      | Needed For | Minimum Version                 |
+|------------------|------------|---------------------------------|
+| Java JDK         | Build only | Java 23+                        |
+| Apache Maven     | Build only | 3.8.5+                          |
+| JavaFX SDK       | Build only | 23+ (matching your JDK)         |
+| Operating System | All        | Windows, macOS, or Linux        |
+| Memory           | All        | 4 GB minimum (8 GB recommended) |
 
 > 🧠 Info: Requirements marked as "Build only" are not needed if using a pre-built executable.
 

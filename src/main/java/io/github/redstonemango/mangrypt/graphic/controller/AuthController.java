@@ -124,6 +124,7 @@ public class AuthController {
     private void decreaseTries() {
         passwordField.selectAll();
         tries --;
+        triesLeftLabel.setText((tries > 1 ? tries + " tries" : (tries == 1 ? "1 try" : "No tries")) + " left");
         ShakeTransition transition = new ShakeTransition(Duration.seconds(1), triesLeftLabel);
         transition.setShakeX(-2);
         transition.setCycles(5);
@@ -136,7 +137,6 @@ public class AuthController {
         else {
             passwordField.selectAll();
         }
-        triesLeftLabel.setText((tries > 1 ? tries + " tries" : (tries == 1 ? "1 try" : "No tries")) + " left");
     }
 
     public void prepare() {

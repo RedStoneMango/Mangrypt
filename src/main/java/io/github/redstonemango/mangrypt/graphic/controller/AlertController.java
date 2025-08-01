@@ -41,27 +41,15 @@ public class AlertController {
         headerLabel.setText(header);
         contentLabel.setText(content);
 
-        if (buttons.length == 0) {
-            Button button = new Button(ButtonType.OK.getText());
+        for (ButtonType buttonType : buttons) {
+            Button button = new Button(buttonType.getText());
             button.setStyle(createButtonStyle(type));
-            ButtonBar.setButtonData(button, ButtonType.OK.getButtonData());
+            ButtonBar.setButtonData(button, buttonType.getButtonData());
             buttonBar.getButtons().add(button);
             button.setOnAction(_ -> {
                 onAction.accept(ButtonType.OK);
                 headerLabel.getParent().getParent().getParent().setVisible(false);
             });
-        }
-        else {
-            for (ButtonType buttonType : buttons) {
-                Button button = new Button(buttonType.getText());
-                button.setStyle(createButtonStyle(type));
-                ButtonBar.setButtonData(button, buttonType.getButtonData());
-                buttonBar.getButtons().add(button);
-                button.setOnAction(_ -> {
-                    onAction.accept(ButtonType.OK);
-                    headerLabel.getParent().getParent().getParent().setVisible(false);
-                });
-            }
         }
 
         if (cancelable) {

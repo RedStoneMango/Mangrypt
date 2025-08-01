@@ -13,7 +13,7 @@ import javafx.util.Duration;
 
 import java.io.IOException;
 
-public class VaultOverviewController {
+public class FolderOverviewController {
 
     @FXML ListView<Void> folderView;
     @FXML Label addContainer;

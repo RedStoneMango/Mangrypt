@@ -95,6 +95,7 @@ public class ConfigIO {
             return false;
         }
         config = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create().fromJson(json, Configuration.class);
+        config.ensureFields();
         config.updatePassphrase(passphrase);
         return true;
     }

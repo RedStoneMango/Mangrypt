@@ -7,7 +7,6 @@ import io.github.redstonemango.mangrypt.graphic.controller.SecuritySetupControll
 
 import javax.crypto.SecretKey;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class Configuration {
@@ -22,9 +21,9 @@ public class Configuration {
     @Expose
     private String hash;
     @Expose
-    private List<Vault> vaults;
+    private List<Folder> folders;
 
-    protected SecretKey passphrase() {
+    public SecretKey passphrase() {
         boolean trustedCaller = WALKER.walk(frames ->
                 frames.skip(1).anyMatch(frame -> {
                     Class<?> caller = frame.getDeclaringClass();
@@ -38,7 +37,7 @@ public class Configuration {
 
         return passphrase;
     }
-    protected byte[] passphraseSalt() {
+    public byte[] passphraseSalt() {
         return passphraseSalt;
     }
     public void updatePassphrase(char[] passphrase) throws Exception {
@@ -58,6 +57,24 @@ public class Configuration {
 
         passphraseSalt = CypherEncryption.generateRandomSalt();
         this.passphrase = CypherEncryption.deriveKey(passphrase, passphraseSalt);
+    }
+    public void updatePassphrase(SecretKey key, byte[] salt) throws Exception {
+        boolean trustedCaller = WALKER.walk(frames ->
+                frames.skip(1).anyMatch(frame -> {
+                    Class<?> caller = frame.getDeclaringClass();
+                    return (caller.equals(ConfigIO.class)
+                            && caller.getClassLoader().equals(ConfigIO.class.getClassLoader()))
+                            ||
+                            (caller.equals(SecuritySetupController.class)
+                                    && caller.getClassLoader().equals(SecuritySetupController.class.getClassLoader()));
+                })
+        );
+        if (!trustedCaller) {
+            throw new SecurityException("Unauthorized (reflected?) access to updatePassphrase(String)");
+        }
+
+        passphraseSalt = salt;
+        this.passphrase = key;
     }
 
     protected SecretKey password() {
@@ -97,6 +114,25 @@ public class Configuration {
         passwordSalt = CypherEncryption.generateRandomSalt();
         this.password = CypherEncryption.deriveKey(password, passwordSalt);
     }
+    public void updatePassword(SecretKey key, byte[] salt, char[] pwd) throws Exception {
+        boolean trustedCaller = WALKER.walk(frames ->
+                frames.skip(1).anyMatch(frame -> {
+                    Class<?> caller = frame.getDeclaringClass();
+                    return (caller.equals(ConfigIO.class)
+                            && caller.getClassLoader().equals(ConfigIO.class.getClassLoader()))
+                            ||
+                            (caller.equals(SecuritySetupController.class)
+                                    && caller.getClassLoader().equals(SecuritySetupController.class.getClassLoader()));
+                })
+        );
+        if (!trustedCaller) {
+            throw new SecurityException("Unauthorized (reflected?) access to updatePassphrase(String)");
+        }
+
+        hash = Hasher.hash(pwd);
+        passwordSalt = salt;
+        this.password = key;
+    }
 
     public void cleanup() {
         boolean trustedCaller = WALKER.walk(frames ->
@@ -112,8 +148,8 @@ public class Configuration {
 
         passphrase = null;
         password = null;
-        if (vaults != null) vaults.forEach(Vault::cleanup);
-        vaults = null;
+        if (folders != null) folders.forEach(Folder::cleanup);
+        folders = null;
 
     }
 
@@ -132,23 +168,23 @@ public class Configuration {
         return Hasher.verifyHash(password, hash);
     }
 
-    public List<Vault> getVaults() {
-        return vaults;
+    public List<Folder> getFolders() {
+        return folders;
     }
 
     public void ensureFields() {
         if (hash == null) {
             hash = "";
         }
-        if (vaults == null) {
-            vaults = new ArrayList<>();
+        if (folders == null) {
+            folders = new ArrayList<>();
         }
         else {
-            vaults.forEach(Vault::ensureFields);
+            folders.forEach(Folder::ensureFields);
         }
     }
 
-    public static class Vault {
+    public static class Folder {
 
         @Expose
         private String name;
