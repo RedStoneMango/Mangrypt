@@ -114,11 +114,11 @@ Mangrypt is built using:
 
 To run or build Mangrypt, ensure your environment meets the following minimum requirements:
 
-| Requirement      | Needed For | Minimum Version                 |
+| Requirement      | Needed For | Specification                   |
 |------------------|------------|---------------------------------|
-| Java JDK         | Build only | Java 23+                        |
-| Apache Maven     | Build only | 3.8.5+                          |
-| JavaFX SDK       | Build only | 23+ (matching your JDK)         |
+| Java JDK         | Build only | Version 23+                     |
+| Apache Maven     | Build only | Version 3.8.5+                  |
+| JavaFX SDK       | Build only | Version 23+ (matching your JDK) |
 | Operating System | All        | Windows, macOS, or Linux        |
 | Memory           | All        | 4 GB minimum (8 GB recommended) |
 
