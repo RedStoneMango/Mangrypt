@@ -45,6 +45,9 @@ public class VaultSelectionController {
             label.setTextFill(Color.LIGHTGREEN);
             label.setPadding(new Insets(0, 0, 0, 10));
             return label;
+        }, file -> {
+            vaultList.getSelectionModel().select(file);
+            onOpen();
         });
 
         updateVaultList();

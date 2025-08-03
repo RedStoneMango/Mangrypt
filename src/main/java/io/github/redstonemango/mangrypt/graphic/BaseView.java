@@ -5,6 +5,7 @@ import io.github.redstonemango.mangrypt.graphic.controller.AlertController;
 import io.github.redstonemango.mangrypt.graphic.controller.InputDialogController;
 import io.github.redstonemango.mangrypt.graphic.controller.SecuritySetupController;
 import io.github.redstonemango.mangrypt.logic.Configuration;
+import javafx.animation.FadeTransition;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
@@ -12,6 +13,7 @@ import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import io.github.redstonemango.mangrypt.graphic.controller.AuthController;
 import javafx.scene.shape.Rectangle;
+import javafx.util.Duration;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
@@ -24,11 +26,13 @@ import java.util.function.Function;
 public class BaseView extends StackPane {
 
     private boolean isObscuringDialog = false;
+    private boolean isObscuring2ndLayer = false;
 
     private final StackPane passwordOverlayLayer;
     private final FlowPane dialogLayer;
     private final AuthController passwordOverlayController;
     private final Pane baseImageBackground;
+    private final Pane transitionLayer;
 
     private final DefaultPaneBackground defaultPaneBackground;
     private final MatrixBackground matrixBackground;
@@ -79,6 +83,10 @@ public class BaseView extends StackPane {
             if (!dialogLayer.getChildren().isEmpty()) ((Region) dialogLayer.getChildren().getFirst()).setPrefHeight(height.doubleValue());
         });
 
+        transitionLayer = new Pane();
+        transitionLayer.setStyle("-fx-background-color: black;");
+        transitionLayer.setVisible(false);
+
         sceneRoot = new Pane();
         StackPane.setAlignment(sceneRoot, Pos.TOP_LEFT);
 
@@ -91,6 +99,7 @@ public class BaseView extends StackPane {
         getChildren().add(secondLayerRoot);
         getChildren().add(passwordOverlayLayer);
         getChildren().add(dialogLayer);
+        getChildren().add(transitionLayer);
     }
 
     private void updateDimensions() {
@@ -141,20 +150,23 @@ public class BaseView extends StackPane {
         updateDimensions();
     }
     public boolean isObscuring() {
-        return !sceneRoot.isVisible();
+        return !sceneRoot.isVisible(); // SceneRoot will always be visible, except if it is obscured
     }
 
     public void showPasswordDialog(boolean obscure) {
         isObscuringDialog = dialogLayer.isVisible();
+        isObscuring2ndLayer = secondLayerRoot.isVisible();
         if (obscure) {
             dialogLayer.setVisible(false);
             sceneRoot.setVisible(false);
             secondLayerRoot.setVisible(false);
         }
         else {
-            if (isObscuringDialog) dialogLayer.setVisible(true); // If the layer was not visible when obscuring, don't show it
-            sceneRoot.setVisible(true);
-            secondLayerRoot.setVisible(true);
+            passwordOverlayLayer.setOpacity(0);
+            FadeTransition transition = new FadeTransition(Duration.millis(250), passwordOverlayLayer);
+            transition.setFromValue(0);
+            transition.setToValue(1);
+            transition.play();
         }
         passwordOverlayController.prepare();
         passwordOverlayLayer.setVisible(true);
@@ -171,7 +183,28 @@ public class BaseView extends StackPane {
         if (!trustedCaller) {
             throw new SecurityException("Unauthorized (reflected?) access to hidePasswordDialog()");
         }
+
+        if (isObscuringDialog) dialogLayer.setVisible(true); // If the layer was not visible when obscuring, don't show it
+        if (isObscuring2ndLayer) secondLayerRoot.setVisible(true);
+        sceneRoot.setVisible(true);
         passwordOverlayLayer.setVisible(false);
+    }
+
+    public void playTransition(Runnable transitionAction) {
+        FadeTransition outTransition = new FadeTransition(Duration.millis(150), transitionLayer);
+        outTransition.setFromValue(0);
+        outTransition.setToValue(1);
+        outTransition.play();
+        transitionLayer.setVisible(true);
+        outTransition.setOnFinished(_ -> {
+            transitionAction.run();
+
+            FadeTransition inTransition = new FadeTransition(Duration.millis(150), transitionLayer);
+            inTransition.setFromValue(1);
+            inTransition.setToValue(0);
+            inTransition.play();
+            inTransition.setOnFinished(_ -> transitionLayer.setVisible(false));
+        });
     }
 
     public void showConfirmationDialog(String title, String message, Runnable onSelected) {
@@ -220,5 +253,4 @@ public class BaseView extends StackPane {
         dialogLayer.setVisible(true);
         updateDimensions();
     }
-
 }

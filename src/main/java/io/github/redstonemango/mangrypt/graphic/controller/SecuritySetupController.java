@@ -28,6 +28,7 @@ import java.util.concurrent.Executors;
 public class SecuritySetupController {
 
     private boolean setupPassphrase = true;
+    private boolean hasDecrypted = false;
     private boolean isSetup;
     private SecretKey passphrase;
     private byte[] passphraseSalt;
@@ -96,6 +97,7 @@ public class SecuritySetupController {
     }
 
     private void cancelSetup() {
+        if (hasDecrypted) return; // If this is called during the baseView transition, cancel the cleanup to avoid empty configs while the encrypted view is shown.
         ConfigIO.cleanup();
         Mangrypt.getBase().setSecondLayerRoot(null);
     }
@@ -148,12 +150,16 @@ public class SecuritySetupController {
                     passwordField.setText("");
                     Arrays.fill(chars, '\0');
                 }
-                ConfigIO.markShouldSave();
-                Mangrypt.getBase().setSecondLayerRoot(null);
-                vaultOverviewFuture.thenAccept(Mangrypt.getBase()::setSceneRoot);
+                hasDecrypted = true;
+                Mangrypt.getBase().playTransition(() -> {
+                    ConfigIO.markShouldSave();
+                    Mangrypt.getBase().setSecondLayerRoot(null);
+                    vaultOverviewFuture.thenAccept(Mangrypt.getBase()::setSceneRoot);
+                });
             }
             else {
 
+                hasDecrypted = true;
                 Mangrypt.getBase().showAlert(Alert.AlertType.INFORMATION, "Working...", "Updating references to use the new password and passphrase", false, _ -> {});
                 try (ExecutorService service = Executors.newSingleThreadExecutor()) {
                     service.execute(() -> {

@@ -159,7 +159,7 @@ public class ConfigIO {
     }
 
     public static Configuration getConfig() {
-        if (config == null) throw new UnsupportedOperationException("Configs is not decrypted yet");
+        if (config == null) throw new UnsupportedOperationException("Configs are not decrypted yet");
         return config;
     }
 

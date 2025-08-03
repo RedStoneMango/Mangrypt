@@ -1,5 +1,6 @@
 package io.github.redstonemango.mangrypt.graphic.controller;
 
+import javafx.animation.FadeTransition;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -37,6 +38,11 @@ public class AuthController {
     @FXML Label passphraseIndicator;
 
     private int tries = 3;
+    /**
+     * This is a flag for temporarily disallowing canceling.<br>
+     * There also are other aspects to whether canceling is possible, specified in {@link #cancelAuth()}
+     */
+    private boolean allowCancelInternal = true;
 
     @FXML
     private void initialize() {
@@ -68,6 +74,7 @@ public class AuthController {
 
     private void cancelAuth() {
         if (Mangrypt.getBase().isObscuring()) return; // This is only allowed to work when decrypting a vault, not when obscuring data
+        if (!allowCancelInternal) return; // If this is called during the baseView transition, cancel the cleanup to avoid empty configs while the encrypted view is shown.
         Mangrypt.getBase().hidePasswordDialog();
         Mangrypt.getBase().setSecondLayerRoot(null);
         ConfigIO.cleanup();
@@ -78,20 +85,31 @@ public class AuthController {
         if (passphraseIndicator == null) {
             boolean success = verifyPassword();
             if (success) {
-                ConfigIO.markShouldSave();
-                Mangrypt.getBase().hidePasswordDialog();
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("/io/github/redstonemango/mangrypt/fxml/folder-overview.fxml"));
-                try {
-                    Mangrypt.getBase().setSceneRoot(loader.load());
-                } catch (IOException e) {
-                    throw new RuntimeException(e); // We can throw here without an error screen; If this is ever caught, the app was compiled incorrectly, and we're cooked wither way
-                }
+                allowCancelInternal = false;
+                Mangrypt.getBase().playTransition(() -> {
+                    ConfigIO.markShouldSave();
+                    Mangrypt.getBase().hidePasswordDialog();
+                    FXMLLoader loader = new FXMLLoader(getClass().getResource("/io/github/redstonemango/mangrypt/fxml/folder-overview.fxml"));
+                    try {
+                        Mangrypt.getBase().setSceneRoot(loader.load());
+                    } catch (IOException e) {
+                        throw new RuntimeException(e); // We can throw here without an error screen; If this is ever caught, the app was compiled incorrectly, and we're cooked wither way
+                    }
+                });
             }
         }
         else {
             if (decryptConfig()) {
-                Mangrypt.getBase().showPasswordDialog(false);
-                Mangrypt.getBase().setSecondLayerRoot(null);
+                allowCancelInternal = false;
+                FadeTransition transition = new FadeTransition(Duration.millis(250), root);
+                transition.setFromValue(1);
+                transition.setToValue(0);
+                transition.play();
+                transition.setOnFinished(_ -> {
+                    Mangrypt.getBase().setSecondLayerRoot(null);
+                    Mangrypt.getBase().showPasswordDialog(false);
+                    allowCancelInternal = true;
+                });
             }
         }
     }
@@ -158,5 +176,6 @@ public class AuthController {
 
     public void prepare() {
         tries = 3;
+        allowCancelInternal = false;
     }
 }
