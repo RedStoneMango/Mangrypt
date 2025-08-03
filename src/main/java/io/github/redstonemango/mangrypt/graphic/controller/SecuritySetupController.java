@@ -1,7 +1,6 @@
 package io.github.redstonemango.mangrypt.graphic.controller;
 
 import io.github.redstonemango.mangrypt.Mangrypt;
-import io.github.redstonemango.mangrypt.graphic.MatrixBackground;
 import io.github.redstonemango.mangrypt.logic.ConfigIO;
 import io.github.redstonemango.mangrypt.logic.Configuration;
 import io.github.redstonemango.mangrypt.logic.CypherEncryption;
@@ -11,9 +10,9 @@ import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Point2D;
-import javafx.scene.Parent;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
@@ -28,13 +27,12 @@ import java.util.concurrent.Executors;
 
 public class SecuritySetupController {
 
-    private MatrixBackground matrixBackground;
     private boolean setupPassphrase = true;
     private boolean isSetup;
     private SecretKey passphrase;
     private byte[] passphraseSalt;
 
-    private final CompletableFuture<Parent> vaultOverviewFuture = new CompletableFuture<>(); // For JavaFX node lazy-loaded after passphrase setup
+    private final CompletableFuture<Pane> vaultOverviewFuture = new CompletableFuture<>(); // For JavaFX node lazy-loaded after passphrase setup
 
     @FXML private StackPane root;
     @FXML private Pane backgroundContainer;
@@ -50,53 +48,56 @@ public class SecuritySetupController {
     @FXML
     private void initialize() {
         isSetup = !ConfigIO.shouldSave();
-        if (isSetup) {
-            matrixBackground = new MatrixBackground(backgroundContainer);
-        }
-        else {
-            backgroundContainer.setOnKeyPressed(e -> {
-                if (e.getCode() == KeyCode.ESCAPE) {
-                    root.setVisible(false);
-                }
-            });
-            backgroundContainer.setOnMousePressed(e -> {
-                Point2D scenePos = backgroundContainer.localToScene(0, 0);
-                double width = ((AnchorPane) headerLabel.getParent()).getWidth();
-                double height = ((AnchorPane) headerLabel.getParent()).getHeight();
-                if (!(e.getSceneX() >= scenePos.getX()
-                        && e.getSceneX() < scenePos.getX() + width
-                        && e.getSceneY() >= scenePos.getY()
-                        && e.getSceneY() < scenePos.getY() + height))
-                {
-                    root.setVisible(false);
-                }
-            });
-        }
-
-        root.widthProperty().addListener((_, _, _) -> {
-            if (isSetup) matrixBackground.update();
-        });
-        root.heightProperty().addListener((_, _, _) -> {
-            if (isSetup) matrixBackground.update();
-        });
-        root.visibleProperty().addListener((_, _, isVisible) -> {
-            if (isSetup) {
-                if (isVisible) matrixBackground.playScroll();
-                else matrixBackground.stopScroll();
+        backgroundContainer.setOnKeyPressed(e -> {
+            if (e.getCode() == KeyCode.ESCAPE) {
+                root.setVisible(false);
             }
         });
+        backgroundContainer.setOnMousePressed(e -> {
+            Point2D scenePos = backgroundContainer.localToScene(0, 0);
+            double width = ((AnchorPane) headerLabel.getParent()).getWidth();
+            double height = ((AnchorPane) headerLabel.getParent()).getHeight();
+            if (!(e.getSceneX() >= scenePos.getX()
+                    && e.getSceneX() < scenePos.getX() + width
+                    && e.getSceneY() >= scenePos.getY()
+                    && e.getSceneY() < scenePos.getY() + height))
+            {
+                root.setVisible(false);
+            }
+        });
+
         passwordField.setOnKeyPressed(e -> {
             if (e.getCode() == KeyCode.ENTER) onSetup();
         });
         passwordConfirmationField.setOnKeyPressed(e -> {
             if (e.getCode() == KeyCode.ENTER) onSetup();
         });
-        if (isSetup) {
-            Platform.runLater(() -> {
-                matrixBackground.update();
-                matrixBackground.playScroll();
-            });
-        }
+        root.addEventFilter(KeyEvent.KEY_PRESSED, e -> {
+            if (e.getCode() == KeyCode.ESCAPE) {
+                cancelSetup();
+            }
+        });
+        root.setOnMouseClicked(e -> {
+            Point2D scenePos = panelContainer.localToScene(0, 0);
+            double width = panelContainer.getWidth();
+            double height = panelContainer.getHeight();
+            if (!(e.getSceneX() >= scenePos.getX()
+                    && e.getSceneX() < scenePos.getX() + width
+                    && e.getSceneY() >= scenePos.getY()
+                    && e.getSceneY() < scenePos.getY() + height))
+            {
+                cancelSetup();
+            }
+        });
+
+        Platform.runLater(() -> {
+            passwordField.requestFocus();
+        });
+    }
+
+    private void cancelSetup() {
+        ConfigIO.cleanup();
+        Mangrypt.getBase().setSecondLayerRoot(null);
     }
 
     @FXML
@@ -119,32 +120,17 @@ public class SecuritySetupController {
         passwordConfirmationField.setText("");
 
         if (setupPassphrase) {
-            if (isSetup) {
-                try {
-                    ConfigIO.getConfig().updatePassphrase(chars);
-                }
-                catch (Exception e) {
-                    Mangrypt.getBase().showErrorAlert(String.valueOf(e));
-                    throw new RuntimeException("Error updating passphrase", e);
-                }
-                finally {
-                    passwordField.setText("");
-                    Arrays.fill(chars, '\0');
-                }
+            try {
+                passphraseSalt = CypherEncryption.generateRandomSalt();
+                passphrase = CypherEncryption.deriveKey(chars, passphraseSalt);
             }
-            else {
-                try {
-                    passphraseSalt = CypherEncryption.generateRandomSalt();
-                    passphrase = CypherEncryption.deriveKey(chars, passphraseSalt);
-                }
-                catch (Exception e) {
-                    Mangrypt.getBase().showErrorAlert(String.valueOf(e));
-                    throw new RuntimeException("Error updating passphrase", e);
-                }
-                finally {
-                    passwordField.setText("");
-                    Arrays.fill(chars, '\0');
-                }
+            catch (Exception e) {
+                Mangrypt.getBase().showErrorAlert(String.valueOf(e));
+                throw new RuntimeException("Error updating passphrase", e);
+            }
+            finally {
+                passwordField.setText("");
+                Arrays.fill(chars, '\0');
             }
             preparePasswordSetup();
         }
@@ -152,6 +138,7 @@ public class SecuritySetupController {
             if (isSetup) {
                 try {
                     ConfigIO.getConfig().updatePassword(chars);
+                    ConfigIO.getConfig().updatePassphrase(passphrase, passphraseSalt);
                 }
                 catch (Exception e) {
                     Mangrypt.getBase().showErrorAlert(String.valueOf(e));
@@ -162,6 +149,7 @@ public class SecuritySetupController {
                     Arrays.fill(chars, '\0');
                 }
                 ConfigIO.markShouldSave();
+                Mangrypt.getBase().setSecondLayerRoot(null);
                 vaultOverviewFuture.thenAccept(Mangrypt.getBase()::setSceneRoot);
             }
             else {
@@ -220,6 +208,7 @@ public class SecuritySetupController {
             passwordConfirmationField.setPromptText("Confirm Password");
             passwordConfirmationFieldTooltip.setText("Confirm the password to use");
             setupButton.setText("Setup password...");
+            passwordField.requestFocus();
 
             FadeTransition inTransition = new FadeTransition(Duration.millis(250), panelContainer);
             inTransition.setFromValue(0.1);
@@ -233,8 +222,7 @@ public class SecuritySetupController {
                 try {
                     FXMLLoader loader = new FXMLLoader(getClass().getResource(
                             "/io/github/redstonemango/mangrypt/fxml/folder-overview.fxml"));
-                    Parent layout = loader.load();
-                    vaultOverviewFuture.complete(layout);
+                    vaultOverviewFuture.complete(loader.load());
                 } catch (IOException e) {
                     vaultOverviewFuture.completeExceptionally(e);
                 } finally {

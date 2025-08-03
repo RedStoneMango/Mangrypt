@@ -2,12 +2,14 @@ package io.github.redstonemango.mangrypt.logic;
 
 import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.Expose;
+import io.github.redstonemango.mangrypt.Mangrypt;
+import io.github.redstonemango.mangrypt.graphic.controller.AuthController;
 import io.github.redstonemango.mangrypt.graphic.controller.SecuritySetupController;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 
-public abstract class SecureData {
+public class SecureData {
 
     public SecureData() {
 
@@ -97,8 +99,14 @@ public abstract class SecureData {
             boolean trustedCaller = Configuration.WALKER.walk(frames ->
                     frames.skip(1).anyMatch(frame -> {
                         Class<?> caller = frame.getDeclaringClass();
-                        return caller.equals(Configuration.class)
-                                && caller.getClassLoader().equals(Configuration.class.getClassLoader());
+                        return (caller.equals(Mangrypt.class)
+                                && caller.getClassLoader().equals(Mangrypt.class.getClassLoader()))
+                                ||
+                                (caller.equals(SecuritySetupController.class)
+                                        && caller.getClassLoader().equals(SecuritySetupController.class.getClassLoader()))
+                                ||
+                                (caller.equals(AuthController.class)
+                                        && caller.getClassLoader().equals(AuthController.class.getClassLoader()));
                     })
             );
             if (!trustedCaller) {

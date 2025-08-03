@@ -11,7 +11,7 @@ import java.util.List;
 
 public class Configuration {
 
-    static final StackWalker WALKER =
+    public static final StackWalker WALKER =
             StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE);
 
     private SecretKey passphrase;
@@ -138,8 +138,14 @@ public class Configuration {
         boolean trustedCaller = WALKER.walk(frames ->
                 frames.skip(1).anyMatch(frame -> {
                     Class<?> caller = frame.getDeclaringClass();
-                    return caller.equals(Mangrypt.class)
-                            && caller.getClassLoader().equals(Mangrypt.class.getClassLoader());
+                    return (caller.equals(Mangrypt.class)
+                            && caller.getClassLoader().equals(Mangrypt.class.getClassLoader()))
+                            ||
+                            (caller.equals(SecuritySetupController.class)
+                                    && caller.getClassLoader().equals(SecuritySetupController.class.getClassLoader()))
+                            ||
+                            (caller.equals(AuthController.class)
+                                    && caller.getClassLoader().equals(AuthController.class.getClassLoader()));
                 })
         );
         if (!trustedCaller) {
@@ -233,8 +239,14 @@ public class Configuration {
             boolean trustedCaller = WALKER.walk(frames ->
                     frames.skip(1).anyMatch(frame -> {
                         Class<?> caller = frame.getDeclaringClass();
-                        return caller.equals(Configuration.class)
-                                && caller.getClassLoader().equals(Configuration.class.getClassLoader());
+                        return (caller.equals(Mangrypt.class)
+                                && caller.getClassLoader().equals(Mangrypt.class.getClassLoader()))
+                                ||
+                                (caller.equals(SecuritySetupController.class)
+                                        && caller.getClassLoader().equals(SecuritySetupController.class.getClassLoader()))
+                                ||
+                                (caller.equals(AuthController.class)
+                                        && caller.getClassLoader().equals(AuthController.class.getClassLoader()));
                     })
             );
             if (!trustedCaller) {

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="299.0" prefWidth="491.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.github.redstonemango.mangrypt.graphic.controller.VaultSelectionController">
+   <center>
+      <ListView fx:id="vaultList" fixedCellSize="30.0" prefHeight="230.0" prefWidth="491.0" BorderPane.alignment="CENTER">
+         <BorderPane.margin>
+            <Insets bottom="10.0" top="10.0" />
+         </BorderPane.margin>
+      </ListView>
+   </center>
+   <top>
+    <TextField fx:id="filterField" prefHeight="26.0" prefWidth="491.0" BorderPane.alignment="CENTER" />
+   </top>
+   <bottom>
+      <HBox alignment="CENTER_LEFT" prefHeight="41.0" prefWidth="491.0" spacing="10.0" BorderPane.alignment="CENTER">
+         <children>
+          <Button fx:id="openVaultButton" disable="true" mnemonicParsing="false" onAction="#onOpen" text="Open Vault" />
+            <Button fx:id="deleteVaultButton" disable="true" mnemonicParsing="false" onAction="#onDelete" text="Delete Vault" />
+            <Region prefHeight="26.0" prefWidth="8.0" HBox.hgrow="ALWAYS" />
+            <Button alignment="CENTER_RIGHT" mnemonicParsing="false" onAction="#onAdd" text="Add Vault" />
+            <Button alignment="CENTER_RIGHT" mnemonicParsing="false" onAction="#onOpenDirectory" text="Open directory" />
+         </children>
+      </HBox>
+   </bottom>
+</BorderPane>

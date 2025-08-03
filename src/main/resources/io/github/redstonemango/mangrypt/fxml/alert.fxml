@@ -5,30 +5,35 @@
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.FlowPane?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.text.Font?>
 
-<StackPane maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="271.0" prefWidth="490.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.github.redstonemango.mangrypt.graphic.controller.AlertController">
+<StackPane fx:id="root" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="271.0" prefWidth="490.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.github.redstonemango.mangrypt.graphic.controller.AlertController">
    <children>
       <ImageView fx:id="background" fitHeight="301.0" fitWidth="490.0" pickOnBounds="true" preserveRatio="true">
          <image>
             <Image url="@../image/alert_success.png" />
          </image>
       </ImageView>
-      <AnchorPane prefHeight="200.0" prefWidth="200.0">
+      <FlowPane alignment="CENTER">
          <children>
-            <Label fx:id="headerLabel" alignment="TOP_LEFT" layoutX="88.0" layoutY="57.0" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="29.0" prefWidth="322.0" text="HEADER" textFill="#20ff00">
-               <font>
-                  <Font size="18.0" />
-               </font>
-            </Label>
-            <ButtonBar fx:id="buttonBar" layoutX="88.0" layoutY="224.0" prefHeight="29.0" prefWidth="322.0" />
-            <Label fx:id="contentLabel" alignment="TOP_LEFT" layoutX="88.0" layoutY="102.0" maxWidth="-Infinity" prefHeight="102.0" prefWidth="322.0" text="Label" textFill="#20ff00" wrapText="true">
-               <font>
-                  <Font size="16.0" />
-               </font>
-            </Label>
+            <AnchorPane prefHeight="200.0" prefWidth="200.0">
+               <children>
+                  <Label fx:id="headerLabel" alignment="TOP_LEFT" layoutX="1.0" layoutY="14.0" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="29.0" prefWidth="322.0" styleClass="colored-label" text="HEADER">
+                     <font>
+                        <Font size="18.0" />
+                     </font>
+                  </Label>
+                  <ButtonBar fx:id="buttonBar" layoutX="1.0" layoutY="181.0" prefHeight="29.0" prefWidth="322.0" />
+                  <Label fx:id="contentLabel" alignment="TOP_LEFT" layoutX="1.0" layoutY="59.0" maxWidth="-Infinity" prefHeight="102.0" prefWidth="322.0" styleClass="colored-label" text="Label" wrapText="true">
+                     <font>
+                        <Font size="16.0" />
+                     </font>
+                  </Label>
+               </children>
+            </AnchorPane>
          </children>
-      </AnchorPane>
+      </FlowPane>
    </children>
 </StackPane>

@@ -2,45 +2,49 @@ package io.github.redstonemango.mangrypt.logic;
 
 import com.google.gson.GsonBuilder;
 import io.github.redstonemango.mangrypt.Mangrypt;
+import io.github.redstonemango.mangrypt.graphic.controller.AuthController;
+import io.github.redstonemango.mangrypt.graphic.controller.SecuritySetupController;
 import javafx.fxml.FXMLLoader;
 
 import javax.crypto.SecretKey;
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
+import java.nio.ByteBuffer;
 import java.nio.file.Files;
-import java.util.Arrays;
-import java.util.Base64;
 import java.util.Locale;
 
 public class ConfigIO {
 
-    private static final File STORAGE_FILE;
+    private static final File VAULT_DIRECTORY = OperatingSystem.loadCurrentOS().createAppConfigDir("mangrypt");
+    private static final int VERSION = 1;
 
-    static {
-        String os = System.getProperty("os.name").toLowerCase(Locale.ROOT);
-        String userHome = System.getProperty("user.home");
-
-        if (os.contains("win")) {
-            STORAGE_FILE = new File(userHome, "AppData/Local/mangrypt/storage.mgrt");
-        } else if (os.contains("mac")) {
-            STORAGE_FILE = new File(userHome, "Library/Application Support/mangrypt/storage.mgrt");
-        } else {
-            // Assume Linux or other Unix-like system
-            String configHome = System.getenv("XDG_CONFIG_HOME");
-            if (configHome == null || configHome.isEmpty()) {
-                configHome = userHome + "/.config";
-            }
-            STORAGE_FILE = new File(new File(configHome, "mangrypt"), "storage.mgrt");
-        }
-    }
+    private static File vaultFile;
 
     private static Configuration config;
     private static boolean shouldSave = false;
 
     public static void cleanup() {
+        boolean trustedCaller = Configuration.WALKER.walk(frames ->
+                frames.skip(1).anyMatch(frame -> {
+                    Class<?> caller = frame.getDeclaringClass();
+                    return (caller.equals(Mangrypt.class)
+                            && caller.getClassLoader().equals(Mangrypt.class.getClassLoader()))
+                            ||
+                            (caller.equals(SecuritySetupController.class)
+                                    && caller.getClassLoader().equals(SecuritySetupController.class.getClassLoader()))
+                            ||
+                            (caller.equals(AuthController.class)
+                                    && caller.getClassLoader().equals(AuthController.class.getClassLoader()));
+                })
+        );
+        if (!trustedCaller) {
+            throw new SecurityException("Unauthorized (reflected?) access to cleanup()");
+        }
+
         if (config != null) config.cleanup();
         config = null;
+        vaultFile = null;
+        shouldSave = false;
     }
 
     public static boolean shouldSave() {
@@ -51,14 +55,14 @@ public class ConfigIO {
     }
 
     public static void save() {
-        if (!STORAGE_FILE.exists()) {
+        if (!vaultFile.exists()) {
             try {
-                STORAGE_FILE.getParentFile().mkdirs();
-                STORAGE_FILE.createNewFile();
+                vaultFile.getParentFile().mkdirs();
+                vaultFile.createNewFile();
             }
             catch (IOException e) {
                 Mangrypt.getBase().showErrorAlert(String.valueOf(e));
-                throw new RuntimeException("Error creating storage file", e);
+                throw new RuntimeException("Error creating vault file", e);
             }
         }
 
@@ -70,23 +74,30 @@ public class ConfigIO {
             Mangrypt.getBase().showErrorAlert(String.valueOf(e));
             throw new RuntimeException(e);
         }
+        encrypted = addVersioning(encrypted, VERSION);
 
         try {
-            Files.write(STORAGE_FILE.toPath(), encrypted);
+            Files.write(vaultFile.toPath(), encrypted);
         }
         catch (IOException e) {
             Mangrypt.getBase().showErrorAlert(String.valueOf(e));
-            throw new RuntimeException("Error writing to storage file", e);
+            throw new RuntimeException("Error writing to vault file", e);
         }
     }
 
     public static boolean decryptConfig(char[] passphrase) throws Exception {
-        if (!STORAGE_FILE.exists()) {
-            Mangrypt.getBase().showErrorAlert("Storage file does not exist");
-            throw new RuntimeException("Storage file does not exist");
+        if (!vaultFile.exists()) {
+            Mangrypt.getBase().showErrorAlert("Vault file does not exist");
+            throw new RuntimeException("Vault file does not exist");
         }
 
-        byte[] encrypted = Files.readAllBytes(STORAGE_FILE.toPath());
+        byte[] encrypted = Files.readAllBytes(vaultFile.toPath());
+
+        int[] versionWrapper = new int[1];
+        encrypted = extractVersioning(encrypted, versionWrapper);
+        if (versionWrapper[0] != VERSION) {
+            encrypted = VaultUpdater.updateVault(encrypted, versionWrapper[0]); // Update if the vault has an outdated version
+        }
 
         SecretKey key = CypherEncryption.extractAndDeriveKey(encrypted, passphrase);
         byte[] payload = CypherEncryption.extractPayload(encrypted);
@@ -101,10 +112,10 @@ public class ConfigIO {
     }
 
     public static void authenticateUserAndLoadConfig() {
-        if (STORAGE_FILE.exists()) {
+        if (vaultFile.exists()) {
             try {
                 FXMLLoader loader = new FXMLLoader(ConfigIO.class.getResource("/io/github/redstonemango/mangrypt/fxml/passphrase-input.fxml"));
-                Mangrypt.getBase().setSceneRoot(loader.load());
+                Mangrypt.getBase().setSecondLayerRoot(loader.load());
                 return;
             }
             catch (IOException e) {
@@ -117,11 +128,34 @@ public class ConfigIO {
 
         try {
             FXMLLoader loader = new FXMLLoader(ConfigIO.class.getResource("/io/github/redstonemango/mangrypt/fxml/security-setup.fxml"));
-            Mangrypt.getBase().setSceneRoot(loader.load());
+            Mangrypt.getBase().setSecondLayerRoot(loader.load());
         }
         catch (IOException e) {
             throw new RuntimeException(e); // I love happy compilers
         }
+    }
+
+    public static byte[] addVersioning(byte[] unversionedBytes, int version) {
+        ByteBuffer buffer = ByteBuffer.allocate(4 + unversionedBytes.length);
+        buffer.putInt(version);
+        buffer.put(unversionedBytes);
+        return buffer.array();
+    }
+    public static byte[] extractVersioning(byte[] versionedBytes, int[] versionWrapper) {
+        if (versionedBytes.length < 4) {
+            throw new IllegalArgumentException("'byte[] versionedBytes' too short to contain a version");
+        }
+        else if (versionWrapper.length != 1) {
+            throw new IllegalArgumentException("'int[] versionWrapper' is meant to be a wrapper only. Found array of length " + versionWrapper.length + " instead");
+        }
+
+        ByteBuffer buffer = ByteBuffer.wrap(versionedBytes);
+        int extractedVersion = buffer.getInt();
+        versionWrapper[0] = extractedVersion;
+
+        byte[] unversionedBytes = new byte[versionedBytes.length - 4];
+        buffer.get(unversionedBytes);
+        return unversionedBytes;
     }
 
     public static Configuration getConfig() {
@@ -133,7 +167,20 @@ public class ConfigIO {
         return config != null;
     }
 
-    public static File getStorageFile() {
-        return STORAGE_FILE;
+    public static void useVault(File file) {
+        if (vaultFile != null) {
+            throw new IllegalStateException("A vault is already selected");
+        }
+
+        vaultFile = file;
+    }
+    public static boolean isVaultSelected() {
+        return vaultFile != null;
+    }
+    public static File getVaultFile() {
+        return vaultFile;
+    }
+    public static File getVaultDirectory() {
+        return VAULT_DIRECTORY;
     }
 }

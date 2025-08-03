@@ -1,0 +1,45 @@
+.list-view {
+    -fx-background-color: transparent;
+    -fx-border-radius: 20;
+    -fx-border-width: 3;
+    -fx-border-color: linear-gradient(lightgreen, green);
+}
+.list-cell {
+    -fx-background-color: transparent;
+}
+
+.uncolored-label {
+    -fx-text-fill: #20ff00
+}
+
+.list-cell:filled:selected,
+.list-cell:filled:selected:hover {
+    -fx-background-color: rgba(0, 0, 0, 0.2);
+}
+
+.text-field,
+.password-field {
+    -fx-background-color: linear-gradient(lightgreen, green);
+    -fx-border-color: green;
+    -fx-border-radius: 5;
+}
+
+.button {
+    -fx-background-color: linear-gradient(lightgreen, green);
+}
+
+.context-menu,
+.menu-item .label,
+.menu-item {
+    -fx-background-color: green;
+    -fx-text-fill: white;
+}
+
+.menu-item:hover,
+.menu-item:selected {
+    -fx-background-color: linear-gradient(lightgreen, green);
+}
+.menu-item:hover .label,
+.menu-item:selected .label {
+    -fx-background-color: transparent
+}

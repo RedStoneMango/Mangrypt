@@ -23,11 +23,11 @@
                         <Image url="@../image/pane_background_small_auth.png" />
                      </image>
                   </ImageView>
-                  <AnchorPane prefHeight="200.0" prefWidth="607.0">
+                  <AnchorPane fx:id="panelContainer" prefHeight="200.0" prefWidth="607.0">
                      <children>
-                        <PasswordField fx:id="passwordField" layoutX="364.0" layoutY="231.0" prefHeight="28.0" prefWidth="160.0" style="-fx-background-color: linear-gradient(lightgreen, green); -fx-border-color: lightgreen; -fx-border-radius: 5;" />
-                        <Button layoutX="400.0" layoutY="264.0" mnemonicParsing="false" onAction="#onDecrypt" prefHeight="26.0" prefWidth="89.0" style="-fx-background-color: linear-gradient(lightgreen, green);" text="Decrypt..." />
-                        <Label fx:id="passphraseIndicator" layoutX="166.0" layoutY="80.0" text="Authentication passphrase required" textFill="#20ff00" underline="true">
+                        <PasswordField fx:id="passwordField" layoutX="364.0" layoutY="231.0" prefHeight="28.0" prefWidth="160.0" />
+                        <Button layoutX="400.0" layoutY="264.0" mnemonicParsing="false" onAction="#onDecrypt" prefHeight="26.0" prefWidth="89.0" text="Decrypt..." />
+                        <Label fx:id="passphraseIndicator" layoutX="166.0" layoutY="80.0" styleClass="uncolored-label" text="Authentication passphrase required" underline="true">
                            <font>
                               <Font size="18.0" />
                            </font>

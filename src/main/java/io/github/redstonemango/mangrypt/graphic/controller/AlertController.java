@@ -1,15 +1,16 @@
 package io.github.redstonemango.mangrypt.graphic.controller;
 
-import io.github.redstonemango.mangrypt.Mangrypt;
-import io.github.redstonemango.mangrypt.graphic.BaseView;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.geometry.Point2D;
+import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 
 import java.util.function.Consumer;
@@ -24,6 +25,7 @@ public class AlertController {
     @FXML private Label contentLabel;
     @FXML private ImageView background;
     @FXML private ButtonBar buttonBar;
+    @FXML private StackPane root;
 
     public void init(Alert.AlertType type, String header, String content, boolean cancelable, Consumer<ButtonType> onAction, ButtonType... buttons) {
         if (type == Alert.AlertType.ERROR) {
@@ -36,10 +38,19 @@ public class AlertController {
             contentLabel.setTextFill(Color.YELLOW);
             background.setImage(BACKGROUND_YELLOW);
         }
-        // Green is set by default
+        else {
+            headerLabel.setTextFill(Color.web("#20ff00")); // Has to match the CSS stylesheet
+            contentLabel.setTextFill(Color.web("#20ff00"));
+            background.setImage(BACKGROUND_GREEN);
+        }
+
+
+        final Node oldFocusOwner = root.getScene().getFocusOwner();
 
         headerLabel.setText(header);
         contentLabel.setText(content);
+
+        Button defaultButton = null;
 
         for (ButtonType buttonType : buttons) {
             Button button = new Button(buttonType.getText());
@@ -47,20 +58,27 @@ public class AlertController {
             ButtonBar.setButtonData(button, buttonType.getButtonData());
             buttonBar.getButtons().add(button);
             button.setOnAction(_ -> {
-                onAction.accept(ButtonType.OK);
-                headerLabel.getParent().getParent().getParent().setVisible(false);
+                onAction.accept(buttonType);
+                root.getParent().setVisible(false);
+                oldFocusOwner.requestFocus();
             });
+            if (buttonType == ButtonType.OK || buttonType == ButtonType.YES) defaultButton = button;
         }
 
         if (cancelable) {
-            background.setOnKeyPressed(e -> {
+            Button finalDefaultButton = defaultButton;
+            root.addEventFilter(KeyEvent.KEY_PRESSED, e -> {
                 if (e.getCode() == KeyCode.ESCAPE) {
-                    headerLabel.getParent().getParent().getParent().setVisible(false);
+                    root.getParent().setVisible(false);
+                    oldFocusOwner.requestFocus();
+                }
+                else if (e.getCode() == KeyCode.ENTER && finalDefaultButton != null) {
+                    finalDefaultButton.fire();
                 }
             });
 
             Platform.runLater(() -> {
-                headerLabel.getParent().getParent().getParent().setOnMouseClicked(e -> {
+                root.setOnMouseClicked(e -> {
                     Point2D scenePos = headerLabel.getParent().localToScene(0, 0);
                     double width = ((AnchorPane) headerLabel.getParent()).getWidth();
                     double height = ((AnchorPane) headerLabel.getParent()).getHeight();
@@ -69,7 +87,8 @@ public class AlertController {
                         && e.getSceneY() >= scenePos.getY()
                         && e.getSceneY() < scenePos.getY() + height))
                     {
-                        headerLabel.getParent().getParent().getParent().setVisible(false);
+                        root.getParent().setVisible(false);
+                        oldFocusOwner.requestFocus();
                     }
                 });
             });
@@ -79,7 +98,7 @@ public class AlertController {
     private static String createButtonStyle(Alert.AlertType type) {
         return switch (type) {
             case ERROR -> "-fx-background-color: linear-gradient(red, darkred); -fx-border-color: red; -fx-border-radius: 5;";
-            case WARNING -> "-fx-background-color: linear-gradient(yellow, gold); -fx-border-color: yellow; -fx-border-radius: 5;";
+            case WARNING -> "-fx-background-color: linear-gradient(yellow, orange); -fx-border-color: yellow; -fx-border-radius: 5;";
             default -> "-fx-background-color: linear-gradient(lightgreen, green); -fx-border-color: lightgreen; -fx-border-radius: 5;";
         };
     }

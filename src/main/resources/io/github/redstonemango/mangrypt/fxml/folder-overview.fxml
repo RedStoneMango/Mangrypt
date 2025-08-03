@@ -1,16 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.Insets?>
-<?import javafx.scene.Cursor?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.ListView?>
-<?import javafx.scene.control.Tooltip?>
-<?import javafx.scene.image.Image?>
-<?import javafx.scene.image.ImageView?>
-<?import javafx.scene.layout.BorderPane?>
-<?import javafx.scene.text.Font?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
 
-<BorderPane prefHeight="477.0" prefWidth="688.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.github.redstonemango.mangrypt.graphic.controller.FolderOverviewController">
+<BorderPane prefHeight="477.0" prefWidth="688.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.github.redstonemango.mangrypt.graphic.controller.FolderOverviewController">
    <center>
       <ListView fx:id="folderView" fixedCellSize="80.0" prefHeight="508.0" prefWidth="688.0" />
    </center>
@@ -37,7 +34,7 @@
             </Label>
          </left>
          <center>
-            <Label text="Mangrypt" BorderPane.alignment="CENTER">
+            <Label styleClass="uncolored-label" text="Mangrypt" BorderPane.alignment="CENTER">
                <font>
                   <Font size="19.0" />
                </font>

@@ -1,21 +1,20 @@
 package io.github.redstonemango.mangrypt;
 
 import io.github.redstonemango.mangrypt.logic.ConfigIO;
-import io.github.redstonemango.mangrypt.logic.Configuration;
 import javafx.application.Application;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
-import javafx.scene.layout.Background;
-import javafx.scene.layout.Pane;
-import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import io.github.redstonemango.mangrypt.graphic.BaseView;
+
+import java.io.IOException;
 
 public class Mangrypt extends Application {
 
     private static BaseView base;
 
     @Override
-    public void start(Stage stage) {
+    public void start(Stage stage) throws IOException {
         base = new BaseView();
         Scene scene = new Scene(base);
         stage.setScene(scene);
@@ -23,15 +22,16 @@ public class Mangrypt extends Application {
         stage.show();
         double xDecoration = stage.getWidth() - scene.getWidth();
         double yDecoration = stage.getHeight() - scene.getHeight();
-        stage.setMinWidth(620 + xDecoration);
-        stage.setMinHeight(380 + yDecoration);
+        stage.setMinWidth(720 + xDecoration);
+        stage.setMinHeight(480 + yDecoration);
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             if (ConfigIO.shouldSave()) ConfigIO.save();
-            ConfigIO.cleanup(); // Try to unset all mutable configuration objects to minimize the risk of memory leaks
+            ConfigIO.cleanup(); // Try to unset all mutable objects to minimize the risk of memory leaks
         }));
 
-        ConfigIO.authenticateUserAndLoadConfig();
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/io/github/redstonemango/mangrypt/fxml/vault-selection.fxml"));
+        base.setSceneRoot(loader.load());
     }
 
     public static BaseView getBase() {

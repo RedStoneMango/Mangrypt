@@ -1,18 +1,19 @@
 package io.github.redstonemango.mangrypt.graphic.controller;
 
-import javafx.animation.FadeTransition;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Point2D;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.util.Duration;
 import io.github.redstonemango.mangrypt.Mangrypt;
-import io.github.redstonemango.mangrypt.graphic.MatrixBackground;
 import io.github.redstonemango.mangrypt.graphic.ShakeTransition;
 import io.github.redstonemango.mangrypt.logic.ConfigIO;
 
@@ -29,31 +30,47 @@ public class AuthController {
     @FXML PasswordField passwordField;
     @FXML Label triesLeftLabel;
     @FXML ImageView image;
+    @FXML AnchorPane panelContainer;
     /**
      * If this is not <code>null</code>, we are to apply the passphrase logic; otherwise the password logic should be applied.
      */
     @FXML Label passphraseIndicator;
 
     private int tries = 3;
-    private MatrixBackground matrixBackground;
 
     @FXML
     private void initialize() {
-        matrixBackground = new MatrixBackground(backgroundContainer);
-
-        root.widthProperty().addListener((_, _, _) -> matrixBackground.update());
-        root.heightProperty().addListener((_, _, _) -> matrixBackground.update());
-        root.visibleProperty().addListener((_, _, isVisible) -> {
-            if (isVisible) matrixBackground.playScroll();
-            else matrixBackground.stopScroll();
-        });
         passwordField.setOnKeyPressed(e -> {
             if (e.getCode() == KeyCode.ENTER) onDecrypt();
         });
         Platform.runLater(() -> {
-            matrixBackground.update();
-            matrixBackground.playScroll();
+            passwordField.requestFocus();
         });
+
+        root.addEventFilter(KeyEvent.KEY_PRESSED, e -> {
+            if (e.getCode() == KeyCode.ESCAPE) {
+                cancelAuth();
+            }
+        });
+        root.setOnMouseClicked(e -> {
+            Point2D scenePos = panelContainer.localToScene(0, 0);
+            double width = panelContainer.getWidth();
+            double height = panelContainer.getHeight();
+            if (!(e.getSceneX() >= scenePos.getX()
+                    && e.getSceneX() < scenePos.getX() + width
+                    && e.getSceneY() >= scenePos.getY()
+                    && e.getSceneY() < scenePos.getY() + height))
+            {
+                cancelAuth();
+            }
+        });
+    }
+
+    private void cancelAuth() {
+        if (Mangrypt.getBase().isObscuring()) return; // This is only allowed to work when decrypting a vault, not when obscuring data
+        Mangrypt.getBase().hidePasswordDialog();
+        Mangrypt.getBase().setSecondLayerRoot(null);
+        ConfigIO.cleanup();
     }
 
     @FXML
@@ -62,18 +79,19 @@ public class AuthController {
             boolean success = verifyPassword();
             if (success) {
                 ConfigIO.markShouldSave();
-                Mangrypt.getBase().showPasswordOverlay(false);
-            }
-        }
-        else {
-            if (decryptConfig()) {
-                Mangrypt.getBase().showPasswordOverlay(true);
+                Mangrypt.getBase().hidePasswordDialog();
                 FXMLLoader loader = new FXMLLoader(getClass().getResource("/io/github/redstonemango/mangrypt/fxml/folder-overview.fxml"));
                 try {
                     Mangrypt.getBase().setSceneRoot(loader.load());
                 } catch (IOException e) {
                     throw new RuntimeException(e); // We can throw here without an error screen; If this is ever caught, the app was compiled incorrectly, and we're cooked wither way
                 }
+            }
+        }
+        else {
+            if (decryptConfig()) {
+                Mangrypt.getBase().showPasswordDialog(false);
+                Mangrypt.getBase().setSecondLayerRoot(null);
             }
         }
     }
@@ -132,7 +150,6 @@ public class AuthController {
         if (tries == 0) {
             passwordField.setText("");
             transition.setOnFinished(_ -> Mangrypt.safetyShutdown());
-            return;
         }
         else {
             passwordField.selectAll();
