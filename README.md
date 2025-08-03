@@ -1,8 +1,8 @@
 # 🔐 Mangrypt
 
-> ⚠️ **This application is currently under active development. Features may change, and bugs may occur. Data encrypted using this version of the app may not be portable to the next version. Use with caution.**
+> ⚠️ **This application is currently under active development. Features may change, and bugs may occur. Data encrypted using this version of the app might not be portable to the next version. Use with caution.**
 
-**Mangrypt** is a user-friendly encryption application designed to protect sensitive user data. It supports encryption for text, images, audio, and video, and includes a secure, fully enclosed web browser for private browsing.
+**Mangrypt** is a user-friendly encryption application designed to protect sensitive user data. It supports encryption for text, images, audio, and video, includes a secure, fully enclosed web browser for private browsing and stores data in individually encrypted `.mgvault` files for simple management.
 
 ---
 
@@ -105,6 +105,7 @@ Mangrypt is built using:
 - **Multi-Media Support:** Encrypts text, images, audio, and video files.
 - **Privacy-Focused Browser:** Built-in, isolated browser for secure, private browsing sessions.
 - **Auto-Lock on Focus Loss:** Automatically obscures sensitive content when the app loses focus.
+- **File Management:** Stores vaults in individually encrypted `.mgvault` files, providing easy backup and export capabilities.
 - **Cross-Platform:** Works on Windows, macOS, and Linux.
 - **Open Source:** Transparent development with opportunities for community contributions.
 
