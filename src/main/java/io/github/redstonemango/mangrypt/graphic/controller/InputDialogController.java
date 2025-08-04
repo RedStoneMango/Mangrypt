@@ -1,5 +1,6 @@
 package io.github.redstonemango.mangrypt.graphic.controller;
 
+import io.github.redstonemango.mangrypt.graphic.ClosableOverlay;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
@@ -13,8 +14,10 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -26,17 +29,16 @@ public class InputDialogController {
     @FXML private ButtonBar buttonBar;
     @FXML private TextField inputField;
     @FXML private StackPane root;
+    @FXML private Label infoLabel;
 
-    public void init(String header, String hint, String defaultText, boolean cancelable, Function<String, Boolean> allowFunction, Consumer<String> onAction) {
+    public void init(String header, String hint, String defaultText, boolean cancelable, Function<String, Boolean> allowFunction, Function<String, String> infoFunction, Consumer<String> onAction) {
         headerLabel.setText(header);
         contentLabel.setText(hint + ":");
         inputField.setText(defaultText);
         inputField.selectAll();
 
         final Node oldFocusOwner = root.getScene().getFocusOwner();
-        Platform.runLater(() -> {
-            inputField.requestFocus();
-        });
+        Platform.runLater(() -> inputField.requestFocus());
 
         Button okButton = new Button(ButtonType.OK.getText());
         ButtonBar.setButtonData(okButton, ButtonType.OK.getButtonData());
@@ -51,6 +53,17 @@ public class InputDialogController {
         });
 
         okButton.disableProperty().bind(Bindings.createBooleanBinding(() -> !allowFunction.apply(inputField.getText()), inputField.textProperty()));
+        inputField.textProperty().addListener((_, _, text) -> {
+            String info = infoFunction.apply(text);
+            if (info == null) {
+                infoLabel.setVisible(false);
+            }
+            else {
+                infoLabel.setVisible(true);
+                infoLabel.setText("> " + info);
+            }
+        });
+
         if (cancelable) {
             Button cancel = new Button(ButtonType.CANCEL.getText());
             ButtonBar.setButtonData(cancel, ButtonType.CANCEL.getButtonData());
@@ -60,27 +73,9 @@ public class InputDialogController {
                 root.getParent().setVisible(false);
             });
 
-            root.addEventFilter(KeyEvent.KEY_PRESSED, e -> {
-                if (e.getCode() == KeyCode.ESCAPE) {
-                    oldFocusOwner.requestFocus();
-                    root.getParent().setVisible(false);
-                }
-            });
-
-            Platform.runLater(() -> {
-                root.setOnMouseClicked(e -> {
-                    Point2D scenePos = headerLabel.getParent().localToScene(0, 0);
-                    double width = ((AnchorPane) headerLabel.getParent()).getWidth();
-                    double height = ((AnchorPane) headerLabel.getParent()).getHeight();
-                    if (!(e.getSceneX() >= scenePos.getX()
-                        && e.getSceneX() < scenePos.getX() + width
-                        && e.getSceneY() >= scenePos.getY()
-                        && e.getSceneY() < scenePos.getY() + height))
-                    {
-                        oldFocusOwner.requestFocus();
-                        root.getParent().setVisible(false);
-                    }
-                });
+            ClosableOverlay.apply(root, (Region) headerLabel.getParent(), () -> {
+                root.getParent().setVisible(false);
+                oldFocusOwner.requestFocus();
             });
         }
     }

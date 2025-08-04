@@ -4,6 +4,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.Expose;
 import io.github.redstonemango.mangrypt.Mangrypt;
 import io.github.redstonemango.mangrypt.graphic.controller.AuthController;
+import io.github.redstonemango.mangrypt.graphic.controller.FolderOverviewController;
 import io.github.redstonemango.mangrypt.graphic.controller.SecuritySetupController;
 
 import javax.crypto.SecretKey;
@@ -39,15 +40,7 @@ public class SecureData {
         }
 
         public SecureData decrypt() throws Exception {
-            boolean trustedCaller = Configuration.WALKER.walk(frames ->
-                    frames.skip(1).anyMatch(frame -> {
-                        Class<?> caller = frame.getDeclaringClass();
-                        return false;
-                    })
-            );
-            if (!trustedCaller) {
-                throw new SecurityException("Unauthorized (reflected?) access to decrypt()");
-            }
+            Utilities.ensureAuthorizedAccess();
 
             SecretKey key = ConfigIO.getConfig().password();
             byte[] payload = CypherEncryption.extractPayload(content.getBytes(StandardCharsets.UTF_8));
@@ -58,16 +51,7 @@ public class SecureData {
         }
 
         public void updatePassword(SecretKey key, byte[] salt) throws Exception {
-            boolean trustedCaller = Configuration.WALKER.walk(frames ->
-                    frames.skip(1).anyMatch(frame -> {
-                        Class<?> caller = frame.getDeclaringClass();
-                        return caller.equals(SecuritySetupController.class)
-                                && caller.getClassLoader().equals(SecuritySetupController.class.getClassLoader());
-                    })
-            );
-            if (!trustedCaller) {
-                throw new SecurityException("Unauthorized (reflected?) access to updatePassword(SecretKey, byte[])");
-            }
+            Utilities.ensureAuthorizedAccess(SecuritySetupController.class);
 
             SecretKey oldKey = ConfigIO.getConfig().password();
             byte[] payload = CypherEncryption.extractPayload(content.getBytes(StandardCharsets.UTF_8));
@@ -77,17 +61,9 @@ public class SecureData {
         }
 
         public void finalizePasswordUpdate() {
-            boolean trustedCaller = Configuration.WALKER.walk(frames ->
-                    frames.skip(1).anyMatch(frame -> {
-                        Class<?> caller = frame.getDeclaringClass();
-                        return caller.equals(SecuritySetupController.class)
-                                && caller.getClassLoader().equals(SecuritySetupController.class.getClassLoader());
-                    })
-            );
-            if (!trustedCaller) {
-                throw new SecurityException("Unauthorized (reflected?) access to finalizePasswordUpdate()");
-            }
-            else if (newContent == null) {
+            Utilities.ensureAuthorizedAccess(SecuritySetupController.class);
+
+            if (newContent == null) {
                 throw new SecurityException("finalizePasswordUpdate() incorrectly called out-of-context");
             }
 
@@ -96,22 +72,7 @@ public class SecureData {
         }
 
         public void cleanup() {
-            boolean trustedCaller = Configuration.WALKER.walk(frames ->
-                    frames.skip(1).anyMatch(frame -> {
-                        Class<?> caller = frame.getDeclaringClass();
-                        return (caller.equals(Mangrypt.class)
-                                && caller.getClassLoader().equals(Mangrypt.class.getClassLoader()))
-                                ||
-                                (caller.equals(SecuritySetupController.class)
-                                        && caller.getClassLoader().equals(SecuritySetupController.class.getClassLoader()))
-                                ||
-                                (caller.equals(AuthController.class)
-                                        && caller.getClassLoader().equals(AuthController.class.getClassLoader()));
-                    })
-            );
-            if (!trustedCaller) {
-                throw new SecurityException("Unauthorized (reflected?) access to cleanup()");
-            }
+            Utilities.ensureAuthorizedAccess(Configuration.class);
 
             metadata = null;
         }

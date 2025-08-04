@@ -3,6 +3,7 @@ package io.github.redstonemango.mangrypt.logic;
 import com.google.gson.GsonBuilder;
 import io.github.redstonemango.mangrypt.Mangrypt;
 import io.github.redstonemango.mangrypt.graphic.controller.AuthController;
+import io.github.redstonemango.mangrypt.graphic.controller.FolderOverviewController;
 import io.github.redstonemango.mangrypt.graphic.controller.SecuritySetupController;
 import javafx.fxml.FXMLLoader;
 
@@ -24,22 +25,7 @@ public class ConfigIO {
     private static boolean shouldSave = false;
 
     public static void cleanup() {
-        boolean trustedCaller = Configuration.WALKER.walk(frames ->
-                frames.skip(1).anyMatch(frame -> {
-                    Class<?> caller = frame.getDeclaringClass();
-                    return (caller.equals(Mangrypt.class)
-                            && caller.getClassLoader().equals(Mangrypt.class.getClassLoader()))
-                            ||
-                            (caller.equals(SecuritySetupController.class)
-                                    && caller.getClassLoader().equals(SecuritySetupController.class.getClassLoader()))
-                            ||
-                            (caller.equals(AuthController.class)
-                                    && caller.getClassLoader().equals(AuthController.class.getClassLoader()));
-                })
-        );
-        if (!trustedCaller) {
-            throw new SecurityException("Unauthorized (reflected?) access to cleanup()");
-        }
+        Utilities.ensureAuthorizedAccess(Mangrypt.class, SecuritySetupController.class, AuthController.class, FolderOverviewController.class);
 
         if (config != null) config.cleanup();
         config = null;

@@ -1,17 +1,15 @@
 package io.github.redstonemango.mangrypt.graphic;
 
 import io.github.redstonemango.mangrypt.Mangrypt;
-import io.github.redstonemango.mangrypt.graphic.controller.AlertController;
-import io.github.redstonemango.mangrypt.graphic.controller.InputDialogController;
-import io.github.redstonemango.mangrypt.graphic.controller.SecuritySetupController;
+import io.github.redstonemango.mangrypt.graphic.controller.*;
 import io.github.redstonemango.mangrypt.logic.Configuration;
+import io.github.redstonemango.mangrypt.logic.Utilities;
 import javafx.animation.FadeTransition;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
-import io.github.redstonemango.mangrypt.graphic.controller.AuthController;
 import javafx.scene.shape.Rectangle;
 import javafx.util.Duration;
 import org.jetbrains.annotations.Nullable;
@@ -163,7 +161,7 @@ public class BaseView extends StackPane {
         }
         else {
             passwordOverlayLayer.setOpacity(0);
-            FadeTransition transition = new FadeTransition(Duration.millis(250), passwordOverlayLayer);
+            FadeTransition transition = new FadeTransition(Duration.millis(150), passwordOverlayLayer);
             transition.setFromValue(0);
             transition.setToValue(1);
             transition.play();
@@ -173,16 +171,7 @@ public class BaseView extends StackPane {
     }
 
     public void hidePasswordDialog() {
-        boolean trustedCaller = Configuration.WALKER.walk(frames ->
-                frames.skip(1).anyMatch(frame -> {
-                    Class<?> caller = frame.getDeclaringClass();
-                    return (caller.equals(AuthController.class)
-                            && caller.getClassLoader().equals(AuthController.class.getClassLoader()));
-                })
-        );
-        if (!trustedCaller) {
-            throw new SecurityException("Unauthorized (reflected?) access to hidePasswordDialog()");
-        }
+        Utilities.ensureAuthorizedAccess(AuthController.class);
 
         if (isObscuringDialog) dialogLayer.setVisible(true); // If the layer was not visible when obscuring, don't show it
         if (isObscuring2ndLayer) secondLayerRoot.setVisible(true);
@@ -207,10 +196,10 @@ public class BaseView extends StackPane {
         });
     }
 
-    public void showConfirmationDialog(String title, String message, Runnable onSelected) {
+    public void showConfirmationDialog(String title, String message, Runnable onConfirmed) {
         showAlert(Alert.AlertType.CONFIRMATION, title, message, true, btn -> {
             if (btn == ButtonType.YES) {
-                onSelected.run();
+                onConfirmed.run();
             }
         }, ButtonType.NO, ButtonType.YES);
     }
@@ -238,10 +227,13 @@ public class BaseView extends StackPane {
     }
 
     public void showInputDialog(String header, String hint, String defaultText, boolean cancelable, Consumer<String> onAction) {
-        showInputDialog(header, hint, defaultText, cancelable, _ -> true, onAction);
+        showInputDialog(header, hint, defaultText, cancelable, _ -> true, _ -> null, onAction);
+    }
+    public void showInputDialog(String header, String hint, String defaultText, boolean cancelable, Function<String, String> infoFunction, Consumer<String> onAction) {
+        showInputDialog(header, hint, defaultText, cancelable, _ -> true, infoFunction, onAction);
     }
 
-    public void showInputDialog(String header, String hint, String defaultText, boolean cancelable, Function<String, Boolean> allowFunction, Consumer<String> onAction) {
+    public void showInputDialog(String header, String hint, String defaultText, boolean cancelable, Function<String, Boolean> allowFunction, Function<String, String> infoFunction, Consumer<String> onAction) {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/io/github/redstonemango/mangrypt/fxml/input-dialog.fxml"));
         dialogLayer.getChildren().clear();
         try {
@@ -249,7 +241,7 @@ public class BaseView extends StackPane {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        ((InputDialogController) loader.getController()).init(header, hint, defaultText, cancelable, allowFunction, onAction);
+        ((InputDialogController) loader.getController()).init(header, hint, defaultText, cancelable, allowFunction, infoFunction, onAction);
         dialogLayer.setVisible(true);
         updateDimensions();
     }

@@ -1,6 +1,7 @@
 package io.github.redstonemango.mangrypt.graphic.controller;
 
 import io.github.redstonemango.mangrypt.Mangrypt;
+import io.github.redstonemango.mangrypt.graphic.ClosableOverlay;
 import io.github.redstonemango.mangrypt.logic.ConfigIO;
 import io.github.redstonemango.mangrypt.logic.Configuration;
 import io.github.redstonemango.mangrypt.logic.CypherEncryption;
@@ -15,6 +16,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.util.Duration;
 
@@ -36,7 +38,6 @@ public class SecuritySetupController {
     private final CompletableFuture<Pane> vaultOverviewFuture = new CompletableFuture<>(); // For JavaFX node lazy-loaded after passphrase setup
 
     @FXML private StackPane root;
-    @FXML private Pane backgroundContainer;
     @FXML private Label headerLabel;
     @FXML private Label contentLabel;
     @FXML private PasswordField passwordField;
@@ -49,22 +50,8 @@ public class SecuritySetupController {
     @FXML
     private void initialize() {
         isSetup = !ConfigIO.shouldSave();
-        backgroundContainer.setOnKeyPressed(e -> {
-            if (e.getCode() == KeyCode.ESCAPE) {
-                root.setVisible(false);
-            }
-        });
-        backgroundContainer.setOnMousePressed(e -> {
-            Point2D scenePos = backgroundContainer.localToScene(0, 0);
-            double width = ((AnchorPane) headerLabel.getParent()).getWidth();
-            double height = ((AnchorPane) headerLabel.getParent()).getHeight();
-            if (!(e.getSceneX() >= scenePos.getX()
-                    && e.getSceneX() < scenePos.getX() + width
-                    && e.getSceneY() >= scenePos.getY()
-                    && e.getSceneY() < scenePos.getY() + height))
-            {
-                root.setVisible(false);
-            }
+        ClosableOverlay.apply(root, (Region) headerLabel.getParent(), () -> {
+            root.setVisible(false);
         });
 
         passwordField.setOnKeyPressed(e -> {

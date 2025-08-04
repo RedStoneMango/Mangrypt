@@ -1,11 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.*?>
-<?import javafx.scene.image.*?>
-<?import javafx.scene.layout.*?>
-<?import javafx.scene.text.*?>
+<?import javafx.scene.control.ButtonBar?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.text.Font?>
 
-<StackPane fx:id="root" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="271.0" prefWidth="490.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.github.redstonemango.mangrypt.graphic.controller.InputDialogController">
+<StackPane fx:id="root" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="271.0" prefWidth="490.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.github.redstonemango.mangrypt.graphic.controller.InputDialogController">
     <children>
         <ImageView fx:id="background" fitHeight="301.0" fitWidth="490.0" pickOnBounds="true" preserveRatio="true">
             <image>
@@ -14,20 +19,21 @@
         </ImageView>
       <FlowPane alignment="CENTER">
          <children>
-              <AnchorPane prefHeight="200.0" prefWidth="200.0">
+              <AnchorPane prefHeight="269.0" prefWidth="485.0">
                   <children>
-                      <Label fx:id="headerLabel" alignment="TOP_LEFT" layoutX="-4.0" layoutY="14.0" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="114.0" prefWidth="322.0" styleClass="uncolored-label" text="Title" wrapText="true">
+                      <Label fx:id="headerLabel" alignment="TOP_LEFT" layoutX="81.0" layoutY="48.0" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="99.0" prefWidth="322.0" styleClass="uncolored-label" text="Title" wrapText="true">
                           <font>
                               <Font size="18.0" />
                           </font>
                       </Label>
-                      <ButtonBar fx:id="buttonBar" layoutX="-4.0" layoutY="172.0" prefHeight="29.0" prefWidth="322.0" />
-                      <Label fx:id="contentLabel" alignment="CENTER_RIGHT" layoutX="-8.0" layoutY="136.0" maxWidth="-Infinity" prefHeight="29.0" prefWidth="118.0" styleClass="uncolored-label" text="Short text:">
+                      <ButtonBar fx:id="buttonBar" layoutX="81.0" layoutY="218.0" prefHeight="29.0" prefWidth="322.0" />
+                      <Label fx:id="contentLabel" alignment="CENTER_RIGHT" layoutX="68.0" layoutY="170.0" maxWidth="-Infinity" prefHeight="29.0" prefWidth="118.0" styleClass="uncolored-label" text="Short text:">
                           <font>
                               <Font size="16.0" />
                           </font>
                       </Label>
-                  <TextField fx:id="inputField" layoutX="123.0" layoutY="138.0" prefHeight="26.0" prefWidth="196.0" />
+                  <TextField fx:id="inputField" layoutX="199.0" layoutY="172.0" prefHeight="26.0" prefWidth="216.0" />
+                  <Label fx:id="infoLabel" alignment="TOP_LEFT" layoutX="199.0" layoutY="200.0" prefHeight="18.0" prefWidth="216.0" text="&gt; " textFill="#ffaf00" visible="false" />
                   </children>
               </AnchorPane>
          </children>

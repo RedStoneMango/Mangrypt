@@ -17,6 +17,7 @@ import javafx.scene.paint.Color;
 
 import java.io.File;
 import java.util.Objects;
+import java.util.SplittableRandom;
 import java.util.regex.Pattern;
 
 public class VaultSelectionController {
@@ -86,11 +87,19 @@ public class VaultSelectionController {
 
     @FXML
     private void onAdd() {
-        Mangrypt.getBase().showInputDialog("Please enter the name for the new vault's file", "File name", "", true, name -> NAME_PATTERN.matcher(name).matches(), name -> {
-            String filename = name.endsWith(".mgvault") ? name : name + ".mgvault";
-            ConfigIO.useVault(new File(ConfigIO.getVaultDirectory(), filename));
+        Mangrypt.getBase().showInputDialog("Please enter the name for the new vault's file", "File name", "", true, name -> NAME_PATTERN.matcher(name).matches() && !buildAbstractVaultFile(name).exists(), name -> {
+            if (!name.isEmpty() && !NAME_PATTERN.matcher(name).matches()) return "Invalid characters in file name";
+            if (buildAbstractVaultFile(name).exists()) return "This file already exists";
+            return null;
+        }, name -> {
+            ConfigIO.useVault(buildAbstractVaultFile(name));
             ConfigIO.authenticateUserAndLoadConfig();
         });
+    }
+
+    private static File buildAbstractVaultFile(String name) {
+        String filename = name.endsWith(".mgvault") ? name : name + ".mgvault";
+        return new File(ConfigIO.getVaultDirectory(), filename);
     }
 
     @FXML

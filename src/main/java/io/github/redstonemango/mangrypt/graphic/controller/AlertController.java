@@ -1,5 +1,6 @@
 package io.github.redstonemango.mangrypt.graphic.controller;
 
+import io.github.redstonemango.mangrypt.graphic.ClosableOverlay;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.geometry.Point2D;
@@ -10,6 +11,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 
@@ -67,30 +69,15 @@ public class AlertController {
 
         if (cancelable) {
             Button finalDefaultButton = defaultButton;
+
             root.addEventFilter(KeyEvent.KEY_PRESSED, e -> {
-                if (e.getCode() == KeyCode.ESCAPE) {
-                    root.getParent().setVisible(false);
-                    oldFocusOwner.requestFocus();
-                }
-                else if (e.getCode() == KeyCode.ENTER && finalDefaultButton != null) {
+                if (e.getCode() == KeyCode.ENTER && finalDefaultButton != null) {
                     finalDefaultButton.fire();
                 }
             });
-
-            Platform.runLater(() -> {
-                root.setOnMouseClicked(e -> {
-                    Point2D scenePos = headerLabel.getParent().localToScene(0, 0);
-                    double width = ((AnchorPane) headerLabel.getParent()).getWidth();
-                    double height = ((AnchorPane) headerLabel.getParent()).getHeight();
-                    if (!(e.getSceneX() >= scenePos.getX()
-                        && e.getSceneX() < scenePos.getX() + width
-                        && e.getSceneY() >= scenePos.getY()
-                        && e.getSceneY() < scenePos.getY() + height))
-                    {
-                        root.getParent().setVisible(false);
-                        oldFocusOwner.requestFocus();
-                    }
-                });
+            ClosableOverlay.apply(root, (Region) headerLabel.getParent(), () -> {
+                root.getParent().setVisible(false);
+                oldFocusOwner.requestFocus();
             });
         }
     }

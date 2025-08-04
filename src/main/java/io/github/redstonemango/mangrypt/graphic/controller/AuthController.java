@@ -1,5 +1,6 @@
 package io.github.redstonemango.mangrypt.graphic.controller;
 
+import io.github.redstonemango.mangrypt.graphic.ClosableOverlay;
 import javafx.animation.FadeTransition;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -49,27 +50,9 @@ public class AuthController {
         passwordField.setOnKeyPressed(e -> {
             if (e.getCode() == KeyCode.ENTER) onDecrypt();
         });
-        Platform.runLater(() -> {
-            passwordField.requestFocus();
-        });
+        ClosableOverlay.apply(root, panelContainer, this::cancelAuth);
 
-        root.addEventFilter(KeyEvent.KEY_PRESSED, e -> {
-            if (e.getCode() == KeyCode.ESCAPE) {
-                cancelAuth();
-            }
-        });
-        root.setOnMouseClicked(e -> {
-            Point2D scenePos = panelContainer.localToScene(0, 0);
-            double width = panelContainer.getWidth();
-            double height = panelContainer.getHeight();
-            if (!(e.getSceneX() >= scenePos.getX()
-                    && e.getSceneX() < scenePos.getX() + width
-                    && e.getSceneY() >= scenePos.getY()
-                    && e.getSceneY() < scenePos.getY() + height))
-            {
-                cancelAuth();
-            }
-        });
+        Platform.runLater(() -> passwordField.requestFocus());
     }
 
     private void cancelAuth() {
