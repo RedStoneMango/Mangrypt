@@ -1,6 +1,7 @@
 package io.github.redstonemango.mangrypt.logic;
 
 import com.google.gson.GsonBuilder;
+import io.github.redstonemango.mangoutils.OperatingSystem;
 import io.github.redstonemango.mangrypt.Mangrypt;
 import io.github.redstonemango.mangrypt.graphic.controller.AuthController;
 import io.github.redstonemango.mangrypt.graphic.controller.FolderOverviewController;

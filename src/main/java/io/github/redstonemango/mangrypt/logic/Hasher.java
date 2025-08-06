@@ -6,6 +6,9 @@ import java.security.SecureRandom;
 import java.security.spec.KeySpec;
 import java.util.Base64;
 
+/**
+ * Technically duplicate of {@link io.github.redstonemango.mangoutils.Hasher} but I like it more to exist here due to better control and more transparency.
+ */
 public class Hasher {
 
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();

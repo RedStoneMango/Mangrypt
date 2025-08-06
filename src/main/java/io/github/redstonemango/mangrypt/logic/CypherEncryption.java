@@ -15,6 +15,9 @@ import java.security.spec.KeySpec;
 import java.util.Arrays;
 import java.util.Base64;
 
+/**
+ * Technically duplicate of {@link io.github.redstonemango.mangoutils.CypherEncryption} but I like it more to exist here due to better control and more transparency.
+ */
 public class CypherEncryption {
 
     private static final int KEY_SIZE = 128; // bits

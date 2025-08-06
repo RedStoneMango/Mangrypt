@@ -1,8 +1,8 @@
 package io.github.redstonemango.mangrypt.graphic.controller;
 
+import io.github.redstonemango.mangoutils.OperatingSystem;
 import io.github.redstonemango.mangrypt.Mangrypt;
 import io.github.redstonemango.mangrypt.logic.ConfigIO;
-import io.github.redstonemango.mangrypt.logic.OperatingSystem;
 import io.github.redstonemango.mangrypt.logic.Utilities;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
@@ -17,7 +17,6 @@ import javafx.scene.paint.Color;
 
 import java.io.File;
 import java.util.Objects;
-import java.util.SplittableRandom;
 import java.util.regex.Pattern;
 
 public class VaultSelectionController {
