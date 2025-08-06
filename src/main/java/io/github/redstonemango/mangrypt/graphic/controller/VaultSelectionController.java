@@ -71,7 +71,11 @@ public class VaultSelectionController {
 
     @FXML
     private void onOpen() {
-        ConfigIO.useVault(Objects.requireNonNull(vaultList.getSelectionModel().getSelectedItem(), "Selected file must not be null"));
+        if (!Objects.requireNonNull(vaultList.getSelectionModel().getSelectedItem(), "Selected file must not be null").exists()) {
+            Mangrypt.getBase().showErrorAlert("The selected file does not exist");
+            return;
+        }
+        ConfigIO.useVault(vaultList.getSelectionModel().getSelectedItem());
         ConfigIO.authenticateUserAndLoadConfig();
     }
 

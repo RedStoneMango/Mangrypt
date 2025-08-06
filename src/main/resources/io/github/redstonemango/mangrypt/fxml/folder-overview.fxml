@@ -37,7 +37,7 @@
             </Label>
          </left>
          <center>
-            <Label styleClass="uncolored-label" text="Mangrypt" BorderPane.alignment="CENTER">
+            <Label fx:id="nameLabel" styleClass="uncolored-label" text="Vault Name" BorderPane.alignment="CENTER">
                <font>
                   <Font size="19.0" />
                </font>
@@ -46,7 +46,7 @@
          <right>
             <Label fx:id="configureContainer" contentDisplay="GRAPHIC_ONLY" onMouseClicked="#onConfigure" onMouseEntered="#onConfigureAnimationStart" onMouseExited="#onConfigureAnimationEnd" BorderPane.alignment="CENTER">
                <graphic>
-                  <ImageView fx:id="configureImage" fitHeight="25.0" fitWidth="26.0" pickOnBounds="true" preserveRatio="true" rotate="32.0">
+                  <ImageView fx:id="configureImage" fitHeight="25.0" fitWidth="26.0" pickOnBounds="true" preserveRatio="true">
                      <image>
                         <Image url="@../image/configure.png" />
                      </image>

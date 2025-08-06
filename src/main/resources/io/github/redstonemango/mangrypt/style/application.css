@@ -8,13 +8,60 @@
     -fx-background-color: transparent;
 }
 
-.uncolored-label {
-    -fx-text-fill: #20ff00
+.list-view .scroll-bar {
+    -fx-background-color: transparent;
+    -fx-border-radius: 10;
+    -fx-border-width: 2;
+}
+.list-view .scroll-bar:vertical {
+    -fx-border-color: lightgreen transparent green linear-gradient(lightgreen, green);
+}
+.list-view .scroll-bar:horizontal {
+    -fx-border-color: green;
+}
+
+.list-view .scroll-bar .track {
+    -fx-background-color: transparent;
+}
+
+.list-view .scroll-bar .increment-button,
+.list-view .scroll-bar .decrement-button {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.list-view .scroll-bar .increment-button .increment-arrow,
+.list-view .scroll-bar .decrement-button .decrement-arrow {
+    -fx-background-color: lightgreen;
+}
+.list-view .scroll-bar .increment-button .increment-arrow:hover,
+.list-view .scroll-bar .decrement-button .decrement-arrow:hover,
+.list-view .scroll-bar .increment-button .increment-arrow:pressed,
+.list-view .scroll-bar .decrement-button .decrement-arrow:pressed {
+    -fx-background-color: green;
+}
+
+.list-view .scroll-bar .thumb {
+    -fx-background-color: green;
+    -fx-background-radius: 5;
+    -fx-background-insets: 3;
+    -fx-border-color: lightgreen;
+    -fx-border-radius: 5;
+    -fx-border-insets: 3;
+}
+
+.list-view .scroll-bar .thumb:hover,
+.list-view .scroll-bar .thumb:pressed {
+    -fx-background-color: #009600;
 }
 
 .list-cell:filled:selected,
 .list-cell:filled:selected:hover {
     -fx-background-color: rgba(0, 0, 0, 0.2);
+}
+
+.uncolored-label {
+    -fx-text-fill: #20ff00
 }
 
 .text-field,

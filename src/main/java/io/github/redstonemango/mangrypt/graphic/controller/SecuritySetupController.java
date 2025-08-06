@@ -14,7 +14,6 @@ import javafx.geometry.Point2D;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
@@ -85,7 +84,7 @@ public class SecuritySetupController {
 
     private void cancelSetup() {
         if (hasDecrypted) return; // If this is called during the baseView transition, cancel the cleanup to avoid empty configs while the encrypted view is shown.
-        ConfigIO.cleanup();
+        if (isSetup) ConfigIO.cleanup(); // If we are setting up, clean all the data. If we are just updating the password, maintain the old ones
         Mangrypt.getBase().setSecondLayerRoot(null);
     }
 

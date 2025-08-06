@@ -1,5 +1,6 @@
 package io.github.redstonemango.mangrypt.graphic.controller;
 
+import io.github.redstonemango.mangoutils.NameConverter;
 import io.github.redstonemango.mangrypt.Mangrypt;
 import io.github.redstonemango.mangrypt.logic.ConfigIO;
 import io.github.redstonemango.mangrypt.logic.Configuration;
@@ -22,6 +23,7 @@ public class FolderOverviewController {
     private boolean showHiddenFolders = false;
 
     @FXML ListView<Configuration.Folder> folderView;
+    @FXML Label nameLabel;
     @FXML Label addContainer;
     @FXML Label configureContainer;
     @FXML ImageView addImage;
@@ -31,6 +33,10 @@ public class FolderOverviewController {
     private void initialize() {
         Utilities.applyCustomNodeCellFactory(folderView, folder -> new FolderListEntry(folder, () -> onFolderOpen(folder), () -> onFolderDelete(folder), folderView));
         updateFolderView();
+
+        String name = ConfigIO.getVaultFile().getName().substring(0, ConfigIO.getVaultFile().getName().length() - ".mgvault".length());
+        name = NameConverter.convert(name, NameConverter.NamingConvention.MIXED_CASE_TYPES, NameConverter.NamingConvention.PLAIN_TEXT, true);
+        nameLabel.setText(name);
     }
 
     private void onFolderOpen(Configuration.Folder folder) {
@@ -38,7 +44,7 @@ public class FolderOverviewController {
     }
 
     private void onFolderDelete(Configuration.Folder folder) {
-        Mangrypt.getBase().showConfirmationDialog("Delete folder", "Do you really want to delete the folder '" + folder.getName() + "' among with all data it's containing?", () -> {
+        Mangrypt.getBase().showConfirmationDialog("Delete folder", "Do you really want to delete the folder '" + folder.getName() + "' along with all contained data?", () -> {
             ConfigIO.getConfig().getFolders().remove(folder);
             updateFolderView();
         });
@@ -61,16 +67,16 @@ public class FolderOverviewController {
     }
     @FXML
     private void onConfigureAnimationStart() {
-        RotateTransition transition = new RotateTransition(Duration.millis(150), configureImage);
-        transition.setFromAngle(0);
-        transition.setToAngle(45);
+        FadeTransition transition = new FadeTransition(Duration.millis(250), configureImage);
+        transition.setFromValue(1);
+        transition.setToValue(0.45);
         transition.play();
     }
     @FXML
     private void onConfigureAnimationEnd() {
-        RotateTransition transition = new RotateTransition(Duration.millis(150), configureImage);
-        transition.setFromAngle(45);
-        transition.setToAngle(0);
+        FadeTransition transition = new FadeTransition(Duration.millis(250), configureImage);
+        transition.setFromValue(0.45);
+        transition.setToValue(1);
         transition.play();
     }
 
@@ -89,9 +95,9 @@ public class FolderOverviewController {
         MenuItem passwordChangeItem = new MenuItem("Change password & passphrase");
         MenuItem backMenuItem = new MenuItem("Back to vault overview");
         menu.getItems().addAll(showHiddenFoldersItem, passwordChangeItem, new SeparatorMenuItem(), backMenuItem);
-        Point2D containerPos = configureImage.localToScreen(0, 0);
-        menu.show(configureContainer, containerPos.getX(), containerPos.getY() + configureImage.getFitHeight());
-        menu.setX(containerPos.getX() - menu.getWidth()); // Now that the layout is loaded, we can re-position the menu
+        Point2D imagePos = configureImage.localToScreen(0, 0);
+        menu.show(configureContainer, imagePos.getX(), imagePos.getY());
+        menu.setX(imagePos.getX() - menu.getWidth()); // Now that the layout is loaded, we can re-position the menu
 
         showHiddenFoldersItem.setSelected(showHiddenFolders);
         showHiddenFoldersItem.selectedProperty().addListener((_, _, b) -> {

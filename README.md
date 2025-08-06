@@ -90,12 +90,14 @@ For information on feedback or contributions, see [here](#-feedback--contributio
 
 ## 🛠️ Build and Framework
 
-Mangrypt is built using:
+Mangrypt is written using:
 
-- **Language:** `Java` 23
-- **Build Tool:** `Apache Maven` 3.8.5
-- **UI Framework:** `JavaFX` 23
+- **JDK:** [`OpenJDK`](https://openjdk.org/) 23
+- **Build Tool:** [`Apache Maven`](https://maven.apache.org/) 3.8.5
+- **UI Framework:** [`JavaFX`](https://openjfx.io) 23
 - **Native Packaging:** [`javapackager`](https://github.com/javapackager/JavaPackager) 1.7.6
+- **Json Handling:** [`Gson`](https://github.com/google/gson) 2.11.0
+- **Utility dependencies:** [`Mango-Utils`](https://github.com/RedStoneMango/Mango-Utils) 1.1.0
 
 ---
 
