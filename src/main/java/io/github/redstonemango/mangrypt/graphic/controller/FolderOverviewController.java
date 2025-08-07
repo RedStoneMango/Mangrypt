@@ -2,45 +2,59 @@ package io.github.redstonemango.mangrypt.graphic.controller;
 
 import io.github.redstonemango.mangoutils.NameConverter;
 import io.github.redstonemango.mangrypt.Mangrypt;
+import io.github.redstonemango.mangrypt.graphic.ListEntry;
 import io.github.redstonemango.mangrypt.logic.ConfigIO;
 import io.github.redstonemango.mangrypt.logic.Configuration;
+import io.github.redstonemango.mangrypt.logic.SharedLogicManager;
 import io.github.redstonemango.mangrypt.logic.Utilities;
 import javafx.animation.FadeTransition;
-import javafx.animation.RotateTransition;
+import javafx.application.Platform;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.geometry.Point2D;
 import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.Pane;
 import javafx.util.Duration;
 
 import java.io.IOException;
-import java.util.stream.Collectors;
 
 public class FolderOverviewController {
 
-    private boolean showHiddenFolders = false;
+    private final BooleanProperty showHiddenFoldersProperty = new SimpleBooleanProperty(false);
 
     @FXML ListView<Configuration.Folder> folderView;
     @FXML Label nameLabel;
-    @FXML Label addContainer;
-    @FXML Label configureContainer;
     @FXML ImageView addImage;
     @FXML ImageView configureImage;
 
     @FXML
     private void initialize() {
-        Utilities.applyCustomNodeCellFactory(folderView, folder -> new FolderListEntry(folder, () -> onFolderOpen(folder), () -> onFolderDelete(folder), folderView));
+        Utilities.applyCustomNodeCellFactory(folderView, folder -> new ListEntry(folder.getName(), folder.getDescription(), () -> onFolderOpen(folder), () -> onFolderDelete(folder), () -> onFolderRename(folder), () -> onFolderChangeDescription(folder), folderView));
         updateFolderView();
 
         String name = ConfigIO.getVaultFile().getName().substring(0, ConfigIO.getVaultFile().getName().length() - ".mgvault".length());
         name = NameConverter.convert(name, NameConverter.NamingConvention.MIXED_CASE_TYPES, NameConverter.NamingConvention.PLAIN_TEXT, true);
         nameLabel.setText(name);
+
+        showHiddenFoldersProperty.addListener((_, _, _) -> updateFolderView());
+
+        Platform.runLater(() -> {
+            SharedLogicManager.registerHoverAnimation(configureImage);
+            SharedLogicManager.registerHoverAnimation(addImage);
+        });
     }
 
     private void onFolderOpen(Configuration.Folder folder) {
-
+        try {
+            FXMLLoader loader = new FXMLLoader(SharedLogicManager.class.getResource("/io/github/redstonemango/mangrypt/fxml/data-list.fxml"));
+            Mangrypt.getBase().setSceneRoot(loader.load());
+            DataListController controller = loader.getController();
+            controller.init(folder);
+        }
+        catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void onFolderDelete(Configuration.Folder folder) {
@@ -50,34 +64,18 @@ public class FolderOverviewController {
         });
     }
 
+    private void onFolderRename(Configuration.Folder folder) {
+        Mangrypt.getBase().showInputDialog("Please set a new name for the folder", "Folder name", folder.getName(), true, name -> !name.isBlank() && !name.equals("."), name -> name.startsWith(".") ? "Folders starting with . are hidden" : null, name -> {
+            folder.setName(name);
+            folderView.refresh();
+        });
+    }
 
-    @FXML
-    private void onAddAnimationStart() {
-        FadeTransition transition = new FadeTransition(Duration.millis(250), addImage);
-        transition.setFromValue(1);
-        transition.setToValue(0.45);
-        transition.play();
-    }
-    @FXML
-    private void onAddAnimationEnd() {
-        FadeTransition transition = new FadeTransition(Duration.millis(250), addImage);
-        transition.setFromValue(0.45);
-        transition.setToValue(1);
-        transition.play();
-    }
-    @FXML
-    private void onConfigureAnimationStart() {
-        FadeTransition transition = new FadeTransition(Duration.millis(250), configureImage);
-        transition.setFromValue(1);
-        transition.setToValue(0.45);
-        transition.play();
-    }
-    @FXML
-    private void onConfigureAnimationEnd() {
-        FadeTransition transition = new FadeTransition(Duration.millis(250), configureImage);
-        transition.setFromValue(0.45);
-        transition.setToValue(1);
-        transition.play();
+    private void onFolderChangeDescription(Configuration.Folder folder) {
+        Mangrypt.getBase().showInputDialog("Please set a new description for the folder", "Description", folder.getDescription(), true, description -> {
+            folder.setDescription(description);
+            folderView.refresh();
+        });
     }
 
     @FXML
@@ -90,48 +88,11 @@ public class FolderOverviewController {
     }
     @FXML
     private void onConfigure() {
-        ContextMenu menu = new ContextMenu();
-        CheckMenuItem showHiddenFoldersItem = new CheckMenuItem("Show hidden folders");
-        MenuItem passwordChangeItem = new MenuItem("Change password & passphrase");
-        MenuItem backMenuItem = new MenuItem("Back to vault overview");
-        menu.getItems().addAll(showHiddenFoldersItem, passwordChangeItem, new SeparatorMenuItem(), backMenuItem);
-        Point2D imagePos = configureImage.localToScreen(0, 0);
-        menu.show(configureContainer, imagePos.getX(), imagePos.getY());
-        menu.setX(imagePos.getX() - menu.getWidth()); // Now that the layout is loaded, we can re-position the menu
-
-        showHiddenFoldersItem.setSelected(showHiddenFolders);
-        showHiddenFoldersItem.selectedProperty().addListener((_, _, b) -> {
-            showHiddenFolders = b;
-            updateFolderView();
-        });
-
-        passwordChangeItem.setOnAction(_ -> {
-            try {
-                FXMLLoader loader = new FXMLLoader(ConfigIO.class.getResource("/io/github/redstonemango/mangrypt/fxml/security-setup.fxml"));
-                Mangrypt.getBase().setSecondLayerRoot(loader.load());
-            }
-            catch (IOException e) {
-                throw new RuntimeException(e); // I love happy compilers
-            }
-        });
-
-        backMenuItem.setOnAction(_ -> {
-            ConfigIO.save();
-            ConfigIO.cleanup();
-
-            try {
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("/io/github/redstonemango/mangrypt/fxml/vault-selection.fxml"));
-                Mangrypt.getBase().setSceneRoot(loader.load());
-            }
-            catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        });
+        SharedLogicManager.showConfigureDialog(configureImage, showHiddenFoldersProperty, true);
     }
 
     private void updateFolderView() {
         folderView.getItems().clear();
-        folderView.getItems().addAll(ConfigIO.getConfig().getFolders().stream().filter(folder -> showHiddenFolders || !folder.getName().startsWith(".")).toList());
+        folderView.getItems().addAll(ConfigIO.getConfig().getFolders().stream().filter(folder -> showHiddenFoldersProperty.get() || !folder.getName().startsWith(".")).toList());
     }
-
 }

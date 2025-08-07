@@ -17,7 +17,7 @@
    <top>
       <BorderPane prefHeight="52.0" prefWidth="688.0" BorderPane.alignment="CENTER">
          <left>
-            <Label fx:id="addContainer" contentDisplay="GRAPHIC_ONLY" onMouseClicked="#onAdd" onMouseEntered="#onAddAnimationStart" onMouseExited="#onAddAnimationEnd" BorderPane.alignment="CENTER">
+            <Label contentDisplay="GRAPHIC_ONLY" onMouseClicked="#onAdd" BorderPane.alignment="CENTER">
                <BorderPane.margin>
                   <Insets left="15.0" />
                </BorderPane.margin>
@@ -44,7 +44,7 @@
             </Label>
          </center>
          <right>
-            <Label fx:id="configureContainer" contentDisplay="GRAPHIC_ONLY" onMouseClicked="#onConfigure" onMouseEntered="#onConfigureAnimationStart" onMouseExited="#onConfigureAnimationEnd" BorderPane.alignment="CENTER">
+            <Label contentDisplay="GRAPHIC_ONLY" onMouseClicked="#onConfigure" BorderPane.alignment="CENTER">
                <graphic>
                   <ImageView fx:id="configureImage" fitHeight="25.0" fitWidth="26.0" pickOnBounds="true" preserveRatio="true">
                      <image>
@@ -56,7 +56,7 @@
                   <Cursor fx:constant="HAND" />
                </cursor>
                <tooltip>
-                  <Tooltip text="Configure application" />
+                  <Tooltip text="More options" />
                </tooltip>
                <BorderPane.margin>
                   <Insets right="18.0" />

@@ -60,6 +60,14 @@
     -fx-background-color: rgba(0, 0, 0, 0.2);
 }
 
+.tab-pane {
+    -fx-background-color: transparent;
+}
+
+.tab-pane .tab-header-area .tab-header-background {
+    -fx-background-color: transparent;
+}
+
 .uncolored-label {
     -fx-text-fill: #20ff00
 }

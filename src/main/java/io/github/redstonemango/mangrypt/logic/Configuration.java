@@ -109,6 +109,7 @@ public class Configuration {
 
         public Folder(String name) {
             this.name = name;
+            this.description = "";
         }
 
         public List<SecureData.Encrypted> getEncryptedData() {

@@ -10,7 +10,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 
-public abstract class FolderListEntryBase extends BorderPane {
+public abstract class ListEntryBase extends BorderPane {
 
     protected final AnchorPane anchorPane;
     protected final Button selectButton;
@@ -21,7 +21,7 @@ public abstract class FolderListEntryBase extends BorderPane {
     protected final Label nameLabel;
     protected final Label descriptionLabel;
 
-    public FolderListEntryBase() {
+    public ListEntryBase() {
 
         anchorPane = new AnchorPane();
         selectButton = new Button();

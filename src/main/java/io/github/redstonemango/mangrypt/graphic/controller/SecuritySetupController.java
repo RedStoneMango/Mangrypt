@@ -212,8 +212,7 @@ public class SecuritySetupController {
         try (ExecutorService service = Executors.newSingleThreadExecutor()) { // Lazy-load vault layout
             service.execute(() -> {
                 try {
-                    FXMLLoader loader = new FXMLLoader(getClass().getResource(
-                            "/io/github/redstonemango/mangrypt/fxml/folder-overview.fxml"));
+                    FXMLLoader loader = new FXMLLoader(getClass().getResource("/io/github/redstonemango/mangrypt/fxml/folder-overview.fxml"));
                     vaultOverviewFuture.complete(loader.load());
                 } catch (IOException e) {
                     vaultOverviewFuture.completeExceptionally(e);

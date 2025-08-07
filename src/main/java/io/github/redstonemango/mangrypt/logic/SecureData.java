@@ -2,9 +2,6 @@ package io.github.redstonemango.mangrypt.logic;
 
 import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.Expose;
-import io.github.redstonemango.mangrypt.Mangrypt;
-import io.github.redstonemango.mangrypt.graphic.controller.AuthController;
-import io.github.redstonemango.mangrypt.graphic.controller.FolderOverviewController;
 import io.github.redstonemango.mangrypt.graphic.controller.SecuritySetupController;
 
 import javax.crypto.SecretKey;
@@ -20,19 +17,25 @@ public class SecureData {
 
     }
 
+
+
+
+
     public static class Encrypted {
         @Expose
-        private Metadata metadata;
+        private String name;
+        @Expose
+        private String description;
         @Expose
         private String content;
         private String newContent;
 
         public void ensureFields() {
-            if (metadata == null) {
-                metadata = new Metadata();
+            if (name == null || name.isBlank()) {
+                name = "UNNAMED DATA";
             }
-            else {
-                metadata.ensureFields();
+            if (description == null) {
+                description = "";
             }
             if (content == null) {
                 content = "";
@@ -71,26 +74,24 @@ public class SecureData {
             newContent = null;
         }
 
+        public String getName() {
+            return name;
+        }
+
+        public String getDescription() {
+            return description;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public void setDescription(String description) {
+            this.description = description;
+        }
+
         public void cleanup() {
             Utilities.ensureAuthorizedAccess(Configuration.class);
-
-            metadata = null;
-        }
-    }
-
-    public static class Metadata {
-        @Expose
-        private String name;
-        @Expose
-        private String description;
-
-        public void ensureFields() {
-            if (name == null || name.isBlank()) {
-                name = "UNNAMED DATA";
-            }
-            if (description == null) {
-                description = "";
-            }
         }
     }
 }

@@ -5,12 +5,10 @@ import javafx.animation.FadeTransition;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.geometry.Point2D;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
@@ -69,6 +67,11 @@ public class AuthController {
             boolean success = verifyPassword();
             if (success) {
                 allowCancelInternal = false;
+                if (Mangrypt.getBase().isObscuring()) {
+                    Mangrypt.getBase().hidePasswordDialog();
+                    return;
+                }
+
                 Mangrypt.getBase().playTransition(() -> {
                     ConfigIO.markShouldSave();
                     Mangrypt.getBase().hidePasswordDialog();

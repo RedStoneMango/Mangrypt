@@ -1,13 +1,13 @@
 package io.github.redstonemango.mangrypt.graphic;
 
-import io.github.redstonemango.mangrypt.Mangrypt;
 import io.github.redstonemango.mangrypt.graphic.controller.*;
-import io.github.redstonemango.mangrypt.logic.Configuration;
+import io.github.redstonemango.mangrypt.logic.ConfigIO;
 import io.github.redstonemango.mangrypt.logic.Utilities;
 import javafx.animation.FadeTransition;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.scene.shape.Rectangle;
@@ -25,6 +25,7 @@ public class BaseView extends StackPane {
 
     private boolean isObscuringDialog = false;
     private boolean isObscuring2ndLayer = false;
+    private Node obscuredFocusOwner = null;
 
     private final StackPane passwordOverlayLayer;
     private final FlowPane dialogLayer;
@@ -52,6 +53,11 @@ public class BaseView extends StackPane {
             matrixBackground.playScroll();
             defaultPaneBackground.update();
             updateDimensions();
+            getScene().getWindow().focusedProperty().addListener((_, _, isFocused) -> {
+                if (!isFocused && ConfigIO.shouldSave() /* Is a vault opened? */) {
+                    showPasswordDialog(true);
+                }
+            });
         });
 
         try {
@@ -91,6 +97,7 @@ public class BaseView extends StackPane {
         secondLayerRoot = new Pane();
         secondLayerRoot.setVisible(false);
 
+
         getChildren().add(matrixContainer);
         getChildren().add(baseImageBackground);
         getChildren().add(sceneRoot);
@@ -125,6 +132,14 @@ public class BaseView extends StackPane {
         sceneRoot.setMaxHeight(area.getHeight());
     }
 
+    public Pane getSceneRoot() {
+        return sceneRoot;
+    }
+
+    public <T extends Pane> T getSceneRootCasted(Class<T> clazz) {
+        return clazz.cast(sceneRoot);
+    }
+
     public void setSceneRoot(Pane sceneRoot) {
         setSceneRoot(sceneRoot, true);
     }
@@ -155,9 +170,11 @@ public class BaseView extends StackPane {
         isObscuringDialog = dialogLayer.isVisible();
         isObscuring2ndLayer = secondLayerRoot.isVisible();
         if (obscure) {
+            obscuredFocusOwner = getScene().getFocusOwner();
             dialogLayer.setVisible(false);
             sceneRoot.setVisible(false);
             secondLayerRoot.setVisible(false);
+            baseImageBackground.setVisible(false);
         }
         else {
             passwordOverlayLayer.setOpacity(0);
@@ -176,7 +193,10 @@ public class BaseView extends StackPane {
         if (isObscuringDialog) dialogLayer.setVisible(true); // If the layer was not visible when obscuring, don't show it
         if (isObscuring2ndLayer) secondLayerRoot.setVisible(true);
         sceneRoot.setVisible(true);
+        baseImageBackground.setVisible(true);
         passwordOverlayLayer.setVisible(false);
+        if (obscuredFocusOwner != null) obscuredFocusOwner.requestFocus();
+        obscuredFocusOwner = null;
     }
 
     public void playTransition(Runnable transitionAction) {
