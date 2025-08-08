@@ -1,13 +1,12 @@
 package io.github.redstonemango.mangrypt.logic;
 
 import com.google.gson.annotations.Expose;
-import io.github.redstonemango.mangrypt.Mangrypt;
 import io.github.redstonemango.mangrypt.graphic.controller.AuthController;
-import io.github.redstonemango.mangrypt.graphic.controller.FolderOverviewController;
 import io.github.redstonemango.mangrypt.graphic.controller.SecuritySetupController;
 
 import javax.crypto.SecretKey;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class Configuration {
@@ -23,43 +22,41 @@ public class Configuration {
 
     public SecretKey passphrase() {
         Utilities.ensureAuthorizedAccess(ConfigIO.class);
-
         return passphrase;
     }
     public byte[] passphraseSalt() {
         return passphraseSalt;
     }
     public void updatePassphrase(char[] passphrase) throws Exception {
-        Utilities.ensureAuthorizedAccess(ConfigIO.class, SecuritySetupController.class);
+        Utilities.ensureAuthorizedAccess(ConfigIO.class);
 
         passphraseSalt = CypherEncryption.generateRandomSalt();
         this.passphrase = CypherEncryption.deriveKey(passphrase, passphraseSalt);
     }
-    public void updatePassphrase(SecretKey key, byte[] salt) throws Exception {
-        Utilities.ensureAuthorizedAccess(ConfigIO.class, SecuritySetupController.class);
+    public void updatePassphrase(SecretKey key, byte[] salt) {
+        Utilities.ensureAuthorizedAccess(SecuritySetupController.class);
 
         passphraseSalt = salt;
         this.passphrase = key;
     }
 
     protected SecretKey password() {
-        Utilities.ensureAuthorizedAccess(SecureData.class);
-
+        Utilities.ensureAuthorizedAccess(SecureData.Encrypted.class);
         return password;
     }
 
     protected byte[] passwordSalt() {
-        return passphraseSalt;
+        return passwordSalt;
     }
     public void updatePassword(char[] password) throws Exception {
-        Utilities.ensureAuthorizedAccess(ConfigIO.class, SecuritySetupController.class);
+        Utilities.ensureAuthorizedAccess(SecuritySetupController.class);
 
         hash = Hasher.hash(password);
         passwordSalt = CypherEncryption.generateRandomSalt();
         this.password = CypherEncryption.deriveKey(password, passwordSalt);
     }
     public void updatePassword(SecretKey key, byte[] salt, char[] pwd) throws Exception {
-        Utilities.ensureAuthorizedAccess(ConfigIO.class, SecuritySetupController.class);
+        Utilities.ensureAuthorizedAccess(SecuritySetupController.class, AuthController.class);
 
         hash = Hasher.hash(pwd);
         passwordSalt = salt;

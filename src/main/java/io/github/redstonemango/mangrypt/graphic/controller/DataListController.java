@@ -9,10 +9,12 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Point2D;
 import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
 
 import java.io.IOException;
+import java.util.Locale;
 
 public class DataListController {
 
@@ -25,12 +27,13 @@ public class DataListController {
     @FXML private ImageView addImage;
     @FXML private ImageView configureImage;
     @FXML private ImageView backImage;
+    @FXML private TextField filterField;
 
     public void init(Configuration.Folder folder) throws IllegalStateException {
         if (this.folder != null) throw new IllegalStateException("Initialisation already happened");
         this.folder = folder;
 
-        Utilities.applyCustomNodeCellFactory(dataView, data -> new ListEntry(data.getName(), data.getDescription(), () -> onOpen(data), () -> onDelete(data), () -> onRename(data), () -> onChangeDescription(data), dataView));
+        Utilities.applyCustomNodeCellFactory(dataView, data -> new ListEntry(data.getName(), data.getDescription(), () -> onOpen(data), () -> onDelete(data), () -> onRename(data), () -> onChangeDescription(data), dataView, data.getIcon()));
         updateDataView();
 
         String name = ConfigIO.getVaultFile().getName().substring(0, ConfigIO.getVaultFile().getName().length() - ".mgvault".length());
@@ -40,6 +43,7 @@ public class DataListController {
         folderNameLabel.setText(folder.getName());
 
         showHiddenDataProperty.addListener((_, _, _) -> updateDataView());
+        filterField.textProperty().addListener((_, _, _) -> updateDataView());
 
         Platform.runLater(() -> {
             SharedLogicManager.registerHoverAnimation(backImage);
@@ -49,7 +53,11 @@ public class DataListController {
     }
 
     private void onOpen(SecureData.Encrypted data) {
-
+        try {
+            System.out.println(data.decrypt());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
     private void onDelete(SecureData.Encrypted data) {
         Mangrypt.getBase().showConfirmationDialog("Delete dataset", "Do you really want to delete the dataset '" + data.getName() + "'?", () -> {
@@ -73,7 +81,30 @@ public class DataListController {
 
     @FXML
     private void onAdd() {
+        MenuItem textItem = new MenuItem("Text data");
+        ImageView textImage = new ImageView(SecureData.Encrypted.buildIconImage(SecureData.TYPE_TEXT));
+        textImage.setPreserveRatio(true);
+        textImage.setFitHeight(20);
+        textItem.setGraphic(textImage);
+        ContextMenu menu = new ContextMenu(textItem);
+        Point2D imagePos = addImage.localToScreen(0, 0);
+        menu.show(addImage.getParent(), imagePos.getX() + addImage.getFitWidth(), imagePos.getY());
 
+        textItem.setOnAction(_ -> addTextData());
+    }
+
+    private void addTextData() {
+        Mangrypt.getBase().showInputDialog("Please set a new name for the dataset", "Name", "", true, name -> !name.isBlank() && !name.equals("."), name -> name.startsWith(".") ? "Folders starting with . are hidden" : null, name -> {
+            try {
+                SecureData.Encrypted data = SecureData.Encrypted.newEncryptedTextData(name);
+                folder.getEncryptedData().add(data);
+                updateDataView();
+            }
+            catch (Exception e) {
+                Mangrypt.getBase().showErrorAlert(String.valueOf(e));
+                throw new RuntimeException("Error creating an encrypted text-data object", e);
+            }
+        });
     }
 
     @FXML
@@ -94,6 +125,6 @@ public class DataListController {
 
     private void updateDataView() {
         dataView.getItems().clear();
-        dataView.getItems().addAll(folder.getEncryptedData().stream().filter(data -> showHiddenDataProperty.get() || !data.getName().startsWith(".")).toList());
+        dataView.getItems().addAll(folder.getEncryptedData().stream().filter(data -> (showHiddenDataProperty.get() || !data.getName().startsWith(".")) && data.getName().toLowerCase(Locale.ROOT).contains(filterField.getText().toLowerCase(Locale.ROOT))).toList());
     }
 }

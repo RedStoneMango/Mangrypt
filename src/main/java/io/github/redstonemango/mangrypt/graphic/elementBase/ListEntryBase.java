@@ -20,6 +20,7 @@ public abstract class ListEntryBase extends BorderPane {
     protected final VBox vBox;
     protected final Label nameLabel;
     protected final Label descriptionLabel;
+    protected final ImageView iconView;
 
     public ListEntryBase() {
 
@@ -31,6 +32,7 @@ public abstract class ListEntryBase extends BorderPane {
         vBox = new VBox();
         nameLabel = new Label();
         descriptionLabel = new Label();
+        iconView = new ImageView();
 
         setMaxHeight(USE_PREF_SIZE);
         setMaxWidth(USE_PREF_SIZE);
@@ -88,6 +90,13 @@ public abstract class ListEntryBase extends BorderPane {
         VBox.setMargin(descriptionLabel, new Insets(0.0, 0.0, 0.0, 10.0));
         vBox.setPadding(new Insets(10.0, 0.0, 0.0, 10.0));
         setCenter(vBox);
+
+        BorderPane.setAlignment(iconView, javafx.geometry.Pos.CENTER);
+        iconView.setFitHeight(17.0);
+        iconView.setFitWidth(21.0);
+        iconView.setPickOnBounds(true);
+        iconView.setPreserveRatio(true);
+        setLeft(iconView);
 
         anchorPane.getChildren().add(selectButton);
         anchorPane.getChildren().add(deleteButton);

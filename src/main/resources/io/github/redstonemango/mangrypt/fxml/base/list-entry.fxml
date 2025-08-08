@@ -42,6 +42,9 @@
                <font>
                   <Font size="17.0" />
                </font>
+               <VBox.margin>
+                  <Insets />
+               </VBox.margin>
             </Label>
             <Label fx:id="descriptionLabel" styleClass="uncolored-label" text="Description">
                <VBox.margin>
@@ -54,4 +57,11 @@
          </padding>
       </VBox>
    </center>
+   <left>
+      <ImageView fx:id="iconView" fitHeight="17.0" fitWidth="21.0" pickOnBounds="true" preserveRatio="true" BorderPane.alignment="CENTER">
+         <BorderPane.margin>
+            <Insets />
+         </BorderPane.margin>
+      </ImageView>
+   </left>
 </BorderPane>

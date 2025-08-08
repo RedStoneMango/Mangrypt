@@ -1,6 +1,8 @@
 package io.github.redstonemango.mangrypt.graphic.controller;
 
 import io.github.redstonemango.mangrypt.graphic.ClosableOverlay;
+import io.github.redstonemango.mangrypt.logic.Configuration;
+import io.github.redstonemango.mangrypt.logic.CypherEncryption;
 import javafx.animation.FadeTransition;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -17,6 +19,7 @@ import io.github.redstonemango.mangrypt.Mangrypt;
 import io.github.redstonemango.mangrypt.graphic.ShakeTransition;
 import io.github.redstonemango.mangrypt.logic.ConfigIO;
 
+import javax.crypto.SecretKey;
 import java.io.IOException;
 import java.util.Arrays;
 
@@ -61,6 +64,16 @@ public class AuthController {
         ConfigIO.cleanup();
     }
 
+    private byte[] extractPasswordSalt() {
+        for (Configuration.Folder folder : ConfigIO.getConfig().getFolders()) {
+            if (!folder.getEncryptedData().isEmpty()) {
+                byte[] salt = folder.getEncryptedData().getFirst().extractSalt();
+                return salt;
+            }
+        }
+        return CypherEncryption.generateRandomSalt();
+    }
+
     @FXML
     private void onDecrypt() {
         if (passphraseIndicator == null) {
@@ -68,8 +81,23 @@ public class AuthController {
             if (success) {
                 allowCancelInternal = false;
                 if (Mangrypt.getBase().isObscuring()) {
+                    passwordField.setText("");
                     Mangrypt.getBase().hidePasswordDialog();
                     return;
+                }
+
+                char[] c = passwordField.getText().toCharArray();
+                try {
+                    byte[] passwordSalt = extractPasswordSalt();
+                    SecretKey key = CypherEncryption.deriveKey(c, passwordSalt);
+                    ConfigIO.getConfig().updatePassword(key, passwordSalt, c);
+                } catch (Exception e) {
+                    Mangrypt.getBase().showErrorAlert(String.valueOf(e));
+                    throw new RuntimeException("Error updating password", e);
+                }
+                finally {
+                    passwordField.setText("");
+                    Arrays.fill(c, '\0');
                 }
 
                 Mangrypt.getBase().playTransition(() -> {
@@ -139,7 +167,6 @@ public class AuthController {
             decreaseTries();
             return false;
         }
-        passwordField.setText("");
         return true;
     }
 

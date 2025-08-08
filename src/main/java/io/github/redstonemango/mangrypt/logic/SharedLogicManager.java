@@ -30,11 +30,10 @@ public class SharedLogicManager {
     }
 
     public static void showConfigureDialog(ImageView configureImage, BooleanProperty showHiddenContentProperty, boolean folderOverview) {
-        ContextMenu menu = new ContextMenu();
         CheckMenuItem showHiddenFoldersItem = new CheckMenuItem("Show hidden " + (folderOverview ? "folders" : "datasets"));
         MenuItem passwordChangeItem = new MenuItem("Change password & passphrase");
         MenuItem backMenuItem = new MenuItem("Back to vault overview");
-        menu.getItems().addAll(showHiddenFoldersItem, passwordChangeItem, new SeparatorMenuItem(), backMenuItem);
+        ContextMenu menu = new ContextMenu(showHiddenFoldersItem, passwordChangeItem, new SeparatorMenuItem(), backMenuItem);
         Point2D imagePos = configureImage.localToScreen(0, 0);
         menu.show(configureImage.getParent(), imagePos.getX(), imagePos.getY());
         if (folderOverview) menu.setX(imagePos.getX() - menu.getWidth());

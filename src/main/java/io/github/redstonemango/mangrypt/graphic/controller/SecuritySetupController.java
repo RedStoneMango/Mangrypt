@@ -149,6 +149,7 @@ public class SecuritySetupController {
                 Mangrypt.getBase().showAlert(Alert.AlertType.INFORMATION, "Working...", "Updating references to use the new password and passphrase", false, _ -> {});
                 try (ExecutorService service = Executors.newSingleThreadExecutor()) {
                     service.execute(() -> {
+                        boolean error = false;
                         try {
                             byte[] passwordSalt = CypherEncryption.generateRandomSalt();
                             SecretKey key = CypherEncryption.deriveKey(chars, passwordSalt);
@@ -170,6 +171,7 @@ public class SecuritySetupController {
                             ConfigIO.getConfig().updatePassphrase(passphrase, passphraseSalt);
                         }
                         catch (Exception e) {
+                            error = true;
                             Platform.runLater(() -> {
                                 Mangrypt.getBase().showErrorAlert(String.valueOf(e));
                                 throw new RuntimeException("Error updating password", e);
@@ -180,7 +182,9 @@ public class SecuritySetupController {
                             Arrays.fill(chars, '\0');
                         }
                         Mangrypt.getBase().setSecondLayerRoot(null);
-                        Platform.runLater(() -> Mangrypt.getBase().showInfoAlert("Successfully updated passphrase and password"));
+                        if (!error) {
+                            Platform.runLater(() -> Mangrypt.getBase().showInfoAlert("Successfully updated passphrase and password"));
+                        }
                     });
                 }
             }
@@ -208,6 +212,8 @@ public class SecuritySetupController {
             inTransition.play();
         });
         outTransition.play();
+
+        if (!isSetup) return; // When updating the password only, we do not need to load the folder overview layout
 
         try (ExecutorService service = Executors.newSingleThreadExecutor()) { // Lazy-load vault layout
             service.execute(() -> {

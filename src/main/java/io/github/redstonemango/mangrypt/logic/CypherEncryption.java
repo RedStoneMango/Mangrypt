@@ -105,11 +105,14 @@ public class CypherEncryption {
 
     public static @Nullable String decrypt(byte[] cypherBytes, SecretKey key) throws Exception {
         try {
-            byte[] iv = new byte[IV_SIZE];
-            byte[] ciphertext = new byte[cypherBytes.length - IV_SIZE];
+            // Skip salt (first SALT_LENGTH bytes)
+            int offset = SALT_LENGTH;
 
-            System.arraycopy(cypherBytes, 0, iv, 0, IV_SIZE);
-            System.arraycopy(cypherBytes, IV_SIZE, ciphertext, 0, ciphertext.length);
+            byte[] iv = new byte[IV_SIZE];
+            byte[] ciphertext = new byte[cypherBytes.length - offset - IV_SIZE];
+
+            System.arraycopy(cypherBytes, offset, iv, 0, IV_SIZE);
+            System.arraycopy(cypherBytes, offset + IV_SIZE, ciphertext, 0, ciphertext.length);
 
             Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
             GCMParameterSpec gcmSpec = new GCMParameterSpec(TAG_LENGTH, iv);
@@ -132,6 +135,10 @@ public class CypherEncryption {
 
     public static byte[] extractPayload(byte[] cypherBytes) {
         return Arrays.copyOfRange(cypherBytes, SALT_LENGTH, cypherBytes.length);
+    }
+    public static byte[] extractSaltFromString(String base64CipherText) {
+        byte[] cypherBytes = Base64.getDecoder().decode(base64CipherText);
+        return Arrays.copyOfRange(cypherBytes, 0, SALT_LENGTH);
     }
 
     public static SecretKey deriveKey(char[] password, byte[] salt) throws Exception {

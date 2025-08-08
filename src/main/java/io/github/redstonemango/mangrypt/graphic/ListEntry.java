@@ -2,11 +2,13 @@ package io.github.redstonemango.mangrypt.graphic;
 
 import io.github.redstonemango.mangrypt.graphic.elementBase.ListEntryBase;
 import io.github.redstonemango.mangrypt.logic.Configuration;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.ListView;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
+import javafx.scene.image.Image;
 import javafx.scene.input.MouseButton;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontPosture;
@@ -18,7 +20,7 @@ public class ListEntry extends ListEntryBase {
     private final Runnable onSelect;
     private final Runnable onDelete;
 
-    public ListEntry(String name, String description, Runnable onSelect, Runnable onDelete, Runnable onSetName, Runnable onSetDescription, ListView<?> view) {
+    public ListEntry(String name, String description, Runnable onSelect, Runnable onDelete, Runnable onSetName, Runnable onSetDescription, ListView<?> view, @Nullable Image icon) {
         nameLabel.setText(name);
         if (name.startsWith(".")) nameLabel.setFont(Font.font("", FontWeight.NORMAL, FontPosture.ITALIC, 17));
         descriptionLabel.setText(description);
@@ -27,6 +29,20 @@ public class ListEntry extends ListEntryBase {
         prefWidthProperty().bind(view.widthProperty().subtract(16));
         if (description.isBlank()) {
             nameLabel.setTranslateY(7); // If there is no description, shift the name label down
+        }
+
+        if (icon == null) {
+            setLeft(null);
+        }
+        else {
+            iconView.setImage(icon);
+            Platform.runLater(() -> {
+                double target = nameLabel.localToScene(0, 0).getY();
+                double element = iconView.localToScene(0, 0).getY();
+                double difference = target - element;
+                iconView.setTranslateY(difference + 3);
+                iconView.setTranslateX(5);
+            });
         }
 
         MenuItem openItem = new MenuItem("Open");

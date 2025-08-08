@@ -16,6 +16,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.paint.Color;
 
 import java.io.File;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
@@ -66,7 +67,7 @@ public class VaultSelectionController {
 
     private void updateVaultList() {
         vaultList.getItems().clear();
-        vaultList.getItems().addAll(ConfigIO.getVaultDirectory().listFiles((_, name) -> name.endsWith(".mgvault") && name.contains(filterField.getText())));
+        vaultList.getItems().addAll(ConfigIO.getVaultDirectory().listFiles((_, name) -> name.endsWith(".mgvault") && name.toLowerCase(Locale.ROOT).contains(filterField.getText().toLowerCase(Locale.ROOT))));
     }
 
     @FXML

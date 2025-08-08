@@ -14,10 +14,12 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.util.Duration;
 
 import java.io.IOException;
+import java.util.Locale;
 
 public class FolderOverviewController {
 
@@ -27,10 +29,11 @@ public class FolderOverviewController {
     @FXML Label nameLabel;
     @FXML ImageView addImage;
     @FXML ImageView configureImage;
+    @FXML TextField filterField;
 
     @FXML
     private void initialize() {
-        Utilities.applyCustomNodeCellFactory(folderView, folder -> new ListEntry(folder.getName(), folder.getDescription(), () -> onFolderOpen(folder), () -> onFolderDelete(folder), () -> onFolderRename(folder), () -> onFolderChangeDescription(folder), folderView));
+        Utilities.applyCustomNodeCellFactory(folderView, folder -> new ListEntry(folder.getName(), folder.getDescription(), () -> onFolderOpen(folder), () -> onFolderDelete(folder), () -> onFolderRename(folder), () -> onFolderChangeDescription(folder), folderView, null));
         updateFolderView();
 
         String name = ConfigIO.getVaultFile().getName().substring(0, ConfigIO.getVaultFile().getName().length() - ".mgvault".length());
@@ -38,6 +41,7 @@ public class FolderOverviewController {
         nameLabel.setText(name);
 
         showHiddenFoldersProperty.addListener((_, _, _) -> updateFolderView());
+        filterField.textProperty().addListener((_, _, _) -> updateFolderView());
 
         Platform.runLater(() -> {
             SharedLogicManager.registerHoverAnimation(configureImage);
@@ -93,6 +97,6 @@ public class FolderOverviewController {
 
     private void updateFolderView() {
         folderView.getItems().clear();
-        folderView.getItems().addAll(ConfigIO.getConfig().getFolders().stream().filter(folder -> showHiddenFoldersProperty.get() || !folder.getName().startsWith(".")).toList());
+        folderView.getItems().addAll(ConfigIO.getConfig().getFolders().stream().filter(folder -> (showHiddenFoldersProperty.get() || !folder.getName().startsWith(".")) && folder.getName().toLowerCase(Locale.ROOT).contains(filterField.getText().toLowerCase(Locale.ROOT))).toList());
     }
 }

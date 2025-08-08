@@ -4,10 +4,12 @@
 <?import javafx.scene.Cursor?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.Tooltip?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
 <BorderPane prefHeight="477.0" prefWidth="688.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.github.redstonemango.mangrypt.graphic.controller.FolderOverviewController">
@@ -15,54 +17,62 @@
       <ListView fx:id="folderView" fixedCellSize="60.0" prefHeight="508.0" prefWidth="688.0" />
    </center>
    <top>
-      <BorderPane prefHeight="52.0" prefWidth="688.0" BorderPane.alignment="CENTER">
-         <left>
-            <Label contentDisplay="GRAPHIC_ONLY" onMouseClicked="#onAdd" BorderPane.alignment="CENTER">
-               <BorderPane.margin>
-                  <Insets left="15.0" />
-               </BorderPane.margin>
-               <graphic>
-                  <ImageView fx:id="addImage" fitHeight="30.0" fitWidth="33.0" pickOnBounds="true" preserveRatio="true">
-                     <image>
-                        <Image url="@../image/add.png" />
-                     </image>
-                  </ImageView>
-               </graphic>
-               <cursor>
-                  <Cursor fx:constant="HAND" />
-               </cursor>
-               <tooltip>
-                  <Tooltip text="Add folder" />
-               </tooltip>
-            </Label>
-         </left>
-         <center>
-            <Label fx:id="nameLabel" styleClass="uncolored-label" text="Vault Name" BorderPane.alignment="CENTER">
-               <font>
-                  <Font size="19.0" />
-               </font>
-            </Label>
-         </center>
-         <right>
-            <Label contentDisplay="GRAPHIC_ONLY" onMouseClicked="#onConfigure" BorderPane.alignment="CENTER">
-               <graphic>
-                  <ImageView fx:id="configureImage" fitHeight="25.0" fitWidth="26.0" pickOnBounds="true" preserveRatio="true">
-                     <image>
-                        <Image url="@../image/configure.png" />
-                     </image>
-                  </ImageView>
-               </graphic>
-               <cursor>
-                  <Cursor fx:constant="HAND" />
-               </cursor>
-               <tooltip>
-                  <Tooltip text="More options" />
-               </tooltip>
-               <BorderPane.margin>
-                  <Insets right="18.0" />
-               </BorderPane.margin>
-            </Label>
-         </right>
-      </BorderPane>
+      <VBox BorderPane.alignment="CENTER">
+         <children>
+            <BorderPane prefHeight="52.0" prefWidth="688.0">
+               <left>
+                  <Label contentDisplay="GRAPHIC_ONLY" onMouseClicked="#onAdd" BorderPane.alignment="CENTER">
+                     <BorderPane.margin>
+                        <Insets left="15.0" />
+                     </BorderPane.margin>
+                     <graphic>
+                        <ImageView fx:id="addImage" fitHeight="30.0" fitWidth="33.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@../image/add.png" />
+                           </image>
+                        </ImageView>
+                     </graphic>
+                     <cursor>
+                        <Cursor fx:constant="HAND" />
+                     </cursor>
+                     <tooltip>
+                        <Tooltip text="Add folder" />
+                     </tooltip>
+                  </Label>
+               </left>
+               <center>
+                  <Label fx:id="nameLabel" styleClass="uncolored-label" text="Vault Name" BorderPane.alignment="CENTER">
+                     <font>
+                        <Font size="19.0" />
+                     </font>
+                  </Label>
+               </center>
+               <right>
+                  <Label contentDisplay="GRAPHIC_ONLY" onMouseClicked="#onConfigure" BorderPane.alignment="CENTER">
+                     <graphic>
+                        <ImageView fx:id="configureImage" fitHeight="25.0" fitWidth="26.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@../image/configure.png" />
+                           </image>
+                        </ImageView>
+                     </graphic>
+                     <cursor>
+                        <Cursor fx:constant="HAND" />
+                     </cursor>
+                     <tooltip>
+                        <Tooltip text="More options" />
+                     </tooltip>
+                     <BorderPane.margin>
+                        <Insets right="18.0" />
+                     </BorderPane.margin>
+                  </Label>
+               </right>
+            </BorderPane>
+            <TextField fx:id="filterField" />
+         </children>
+         <BorderPane.margin>
+            <Insets bottom="10.0" />
+         </BorderPane.margin>
+      </VBox>
    </top>
 </BorderPane>

@@ -87,8 +87,7 @@ public class ConfigIO {
         }
 
         SecretKey key = CypherEncryption.extractAndDeriveKey(encrypted, passphrase);
-        byte[] payload = CypherEncryption.extractPayload(encrypted);
-        String json = CypherEncryption.decrypt(payload, key);
+        String json = CypherEncryption.decrypt(encrypted, key); // Don't extractPayload
         if (json == null) {
             return false;
         }
