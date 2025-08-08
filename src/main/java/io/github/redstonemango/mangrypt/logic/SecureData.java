@@ -2,12 +2,12 @@ package io.github.redstonemango.mangrypt.logic;
 
 import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.Expose;
+import io.github.redstonemango.mangrypt.graphic.DataView;
 import io.github.redstonemango.mangrypt.graphic.controller.DataListController;
 import io.github.redstonemango.mangrypt.graphic.controller.SecuritySetupController;
 import javafx.scene.image.Image;
 
 import javax.crypto.SecretKey;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Objects;
 
@@ -39,6 +39,10 @@ public class SecureData {
                 if (text == null) text = new char[0];
             }
         }
+    }
+    public char[] text() {
+        Utilities.ensureAuthorizedAccess(DataView.class);
+        return text;
     }
     public void zeroOut() {
         Utilities.ensureAuthorizedAccess(SecureData.class);
@@ -151,8 +155,8 @@ public class SecureData {
             this.description = description;
         }
 
-        public void cleanup() {
-            Utilities.ensureAuthorizedAccess(Configuration.class);
+        public int getType() {
+            return type;
         }
 
         public Image getIcon() {
@@ -164,6 +168,10 @@ public class SecureData {
                 case TYPE_TEXT -> "text";
                 default -> "";
             } + ".png")));
+        }
+
+        public void cleanup() {
+            Utilities.ensureAuthorizedAccess(Configuration.class);
         }
     }
 }

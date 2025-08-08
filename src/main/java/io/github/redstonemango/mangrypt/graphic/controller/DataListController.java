@@ -54,9 +54,10 @@ public class DataListController {
 
     private void onOpen(SecureData.Encrypted data) {
         try {
-            System.out.println(data.decrypt());
+            Mangrypt.getBase().showData(folder, data);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            Mangrypt.getBase().showErrorAlert(String.valueOf(e));
+            throw new RuntimeException("Error showing an encrypted dataset", e);
         }
     }
     private void onDelete(SecureData.Encrypted data) {

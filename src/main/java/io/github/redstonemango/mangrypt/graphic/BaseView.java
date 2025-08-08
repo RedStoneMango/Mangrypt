@@ -2,6 +2,8 @@ package io.github.redstonemango.mangrypt.graphic;
 
 import io.github.redstonemango.mangrypt.graphic.controller.*;
 import io.github.redstonemango.mangrypt.logic.ConfigIO;
+import io.github.redstonemango.mangrypt.logic.Configuration;
+import io.github.redstonemango.mangrypt.logic.SecureData;
 import io.github.redstonemango.mangrypt.logic.Utilities;
 import javafx.animation.FadeTransition;
 import javafx.application.Platform;
@@ -25,6 +27,7 @@ public class BaseView extends StackPane {
 
     private boolean isObscuringDialog = false;
     private boolean isObscuring2ndLayer = false;
+    private boolean isObscuringDataLayer = false;
     private Node obscuredFocusOwner = null;
 
     private final StackPane passwordOverlayLayer;
@@ -32,6 +35,7 @@ public class BaseView extends StackPane {
     private final AuthController passwordOverlayController;
     private final Pane baseImageBackground;
     private final Pane transitionLayer;
+    private final DataView dataViewLayer;
 
     private final DefaultPaneBackground defaultPaneBackground;
     private final MatrixBackground matrixBackground;
@@ -97,10 +101,13 @@ public class BaseView extends StackPane {
         secondLayerRoot = new Pane();
         secondLayerRoot.setVisible(false);
 
+        dataViewLayer = new DataView();
+        dataViewLayer.setVisible(false);
 
         getChildren().add(matrixContainer);
         getChildren().add(baseImageBackground);
         getChildren().add(sceneRoot);
+        getChildren().add(dataViewLayer);
         getChildren().add(secondLayerRoot);
         getChildren().add(passwordOverlayLayer);
         getChildren().add(dialogLayer);
@@ -116,6 +123,8 @@ public class BaseView extends StackPane {
         secondLayerRoot.setPrefHeight(getHeight());
         passwordOverlayLayer.setPrefWidth(getWidth());
         passwordOverlayLayer.setPrefHeight(getHeight());
+        dataViewLayer.setPrefWidth(getWidth());
+        dataViewLayer.setPrefHeight(getHeight());
         if (!dialogLayer.getChildren().isEmpty() && dialogLayer.getChildren().getFirst() instanceof Region region) {
             region.setPrefWidth(getWidth());
             region.setPrefHeight(getHeight());
@@ -132,12 +141,25 @@ public class BaseView extends StackPane {
         sceneRoot.setMaxHeight(area.getHeight());
     }
 
+    public void showData(Configuration.Folder folder, SecureData.Encrypted data) throws Exception {
+        dataViewLayer.showData(folder, data);
+        if (!dataViewLayer.isVisible()) dataViewLayer.setVisible(true);
+    }
+
     public Pane getSceneRoot() {
         return sceneRoot;
     }
 
     public <T extends Pane> T getSceneRootCasted(Class<T> clazz) {
         return clazz.cast(sceneRoot);
+    }
+
+    public Pane getSecondLayerRoot() {
+        return secondLayerRoot;
+    }
+
+    public <T extends Pane> T getSecondLayerRootCasted(Class<T> clazz) {
+        return clazz.cast(secondLayerRoot);
     }
 
     public void setSceneRoot(Pane sceneRoot) {
@@ -169,11 +191,13 @@ public class BaseView extends StackPane {
     public void showPasswordDialog(boolean obscure) {
         isObscuringDialog = dialogLayer.isVisible();
         isObscuring2ndLayer = secondLayerRoot.isVisible();
+        isObscuringDataLayer = dataViewLayer.isVisible();
         if (obscure) {
             obscuredFocusOwner = getScene().getFocusOwner();
             dialogLayer.setVisible(false);
             sceneRoot.setVisible(false);
             secondLayerRoot.setVisible(false);
+            dataViewLayer.setVisible(false);
             baseImageBackground.setVisible(false);
         }
         else {
@@ -192,6 +216,7 @@ public class BaseView extends StackPane {
 
         if (isObscuringDialog) dialogLayer.setVisible(true); // If the layer was not visible when obscuring, don't show it
         if (isObscuring2ndLayer) secondLayerRoot.setVisible(true);
+        if (isObscuringDataLayer) dataViewLayer.setVisible(true);
         sceneRoot.setVisible(true);
         baseImageBackground.setVisible(true);
         passwordOverlayLayer.setVisible(false);

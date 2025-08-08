@@ -104,3 +104,11 @@
 .menu-item:selected .label {
     -fx-background-color: transparent
 }
+
+
+.swipe-arrow .arrow-shape {
+    -fx-fill: lightgreen;
+}
+.swipe-arrow .arrow-background {
+    -fx-fill: darkgreen;
+}
