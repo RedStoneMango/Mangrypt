@@ -2,7 +2,7 @@ package io.github.redstonemango.mangrypt.graphic.controller;
 
 import io.github.redstonemango.mangrypt.logic.Configuration;
 import io.github.redstonemango.mangrypt.logic.CypherEncryption;
-import io.github.redstonemango.mangrypt.logic.SharedLogicManager;
+import io.github.redstonemango.mangrypt.logic.Utilities;
 import javafx.animation.FadeTransition;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -51,7 +51,7 @@ public class AuthController {
         passwordField.setOnKeyPressed(e -> {
             if (e.getCode() == KeyCode.ENTER) onDecrypt();
         });
-        SharedLogicManager.registerClosableOverlay(root, this::cancelAuth, panelContainer);
+        Utilities.registerClosableOverlay(root, this::cancelAuth, panelContainer);
 
         Platform.runLater(() -> passwordField.requestFocus());
     }
@@ -104,6 +104,7 @@ public class AuthController {
                     ConfigIO.markShouldSave();
                     Mangrypt.getBase().hidePasswordDialog();
                     FXMLLoader loader = new FXMLLoader(getClass().getResource("/io/github/redstonemango/mangrypt/fxml/folder-overview.fxml"));
+                    allowCancelInternal = true;
                     try {
                         Mangrypt.getBase().setSceneRoot(loader.load());
                     } catch (IOException e) {
@@ -189,6 +190,6 @@ public class AuthController {
 
     public void prepare() {
         tries = 3;
-        allowCancelInternal = false;
+        allowCancelInternal = true;
     }
 }

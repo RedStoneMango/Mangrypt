@@ -6,20 +6,28 @@ import javafx.application.Platform;
 import javafx.css.PseudoClass;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Cursor;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.*;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Polygon;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontPosture;
+import javafx.scene.text.FontWeight;
+
+import java.util.List;
 
 public class DataView extends BorderPane {
 
+    private final Label nameLabel;
     private final AnchorPane centerContainer;
     private final StackPane swipeArrowLeft;
     private final StackPane swipeArrowRight;
 
-    private Configuration.Folder folder;
+    private List<SecureData.Encrypted> availableData;
     private SecureData.Encrypted encryptedData;
     private SecureData decryptedData;
     private boolean changed = false;
@@ -40,19 +48,26 @@ public class DataView extends BorderPane {
             }
         });
 
+        nameLabel = new Label();
+        nameLabel.getStyleClass().add("uncolored-label");
+        nameLabel.setFont(Font.font("", FontWeight.BOLD, FontPosture.REGULAR, 30));
+        nameLabel.setUnderline(true);
+        setTop(nameLabel);
+        BorderPane.setAlignment(nameLabel, Pos.CENTER);
+        BorderPane.setMargin(nameLabel, new Insets(10, 0, 10, 0));
+
 
         centerContainer = new AnchorPane();
-
         setCenter(centerContainer);
-        BorderPane.setMargin(centerContainer, new Insets(50, 0, 50, 0));
+        BorderPane.setMargin(centerContainer, new Insets(0, 0, 50, 0));
 
-        SharedLogicManager.registerClosableOverlay(this, () -> {
+        Utilities.registerClosableOverlay(this, () -> {
             storeData();
             setVisible(false);
         }, centerContainer, swipeArrowLeft, swipeArrowRight);
     }
 
-    public void showData(Configuration.Folder folder, SecureData.Encrypted data) {
+    public void showData(List<SecureData.Encrypted> availableData, SecureData.Encrypted data) {
         Region region;
         try {
             region = extractContentFrom(data);
@@ -60,6 +75,8 @@ public class DataView extends BorderPane {
             Mangrypt.getBase().showErrorAlert(String.valueOf(e));
             throw new RuntimeException("Error showing an encrypted dataset", e);
         }
+        nameLabel.setText(data.getName());
+        nameLabel.setFont(Font.font("", FontWeight.BOLD, data.getName().startsWith(".") ? FontPosture.ITALIC : FontPosture.REGULAR, 30));
         centerContainer.getChildren().clear();
         AnchorPane.setTopAnchor(region, 0.0);
         AnchorPane.setBottomAnchor(region, 0.0);
@@ -67,7 +84,7 @@ public class DataView extends BorderPane {
         AnchorPane.setRightAnchor(region, 0.0);
         centerContainer.getChildren().add(region);
         encryptedData = data;
-        this.folder = folder;
+        this.availableData = availableData;
         changed = false;
 
         checkSwipeable();
@@ -75,6 +92,7 @@ public class DataView extends BorderPane {
 
     public void storeData() {
         Utilities.ensureAuthorizedAccess(DataView.class, BaseView.class);
+        if (decryptedData == null) return;
 
         if (changed) {
             try {
@@ -110,15 +128,15 @@ public class DataView extends BorderPane {
     private void onSwipe(boolean toLeft) {
         storeData();
 
-        int index = folder.getEncryptedData().indexOf(encryptedData);
+        int index = availableData.indexOf(encryptedData);
         int newIndex = index + (toLeft ? -1 : 1);
-        showData(folder, folder.getEncryptedData().get(newIndex));
+        showData(availableData, availableData.get(newIndex));
     }
 
     private void checkSwipeable() {
-        int index = folder.getEncryptedData().indexOf(encryptedData);
+        int index = availableData.indexOf(encryptedData);
         swipeArrowLeft.setDisable(index <= 0);
-        swipeArrowRight.setDisable(index >= folder.getEncryptedData().size() - 1);
+        swipeArrowRight.setDisable(index >= availableData.size() - 1);
     }
 
 
@@ -154,7 +172,8 @@ public class DataView extends BorderPane {
 
         BorderPane.setAlignment(stack, Pos.CENTER_RIGHT);
         BorderPane.setMargin(stack, new Insets(0, 20, 0, 20));
-        SharedLogicManager.registerHoverAnimation(arrow);
+        Utilities.registerHoverAnimation(arrow);
+        stack.setCursor(Cursor.HAND);
 
         return stack;
     }

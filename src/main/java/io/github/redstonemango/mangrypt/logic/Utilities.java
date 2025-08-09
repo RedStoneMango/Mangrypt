@@ -1,11 +1,22 @@
 package io.github.redstonemango.mangrypt.logic;
 
+import io.github.redstonemango.mangrypt.Mangrypt;
+import javafx.animation.FadeTransition;
+import javafx.beans.property.BooleanProperty;
+import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
+import javafx.geometry.Point2D;
 import javafx.scene.Node;
-import javafx.scene.control.ListCell;
-import javafx.scene.control.ListView;
+import javafx.scene.control.*;
+import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.Region;
 import javafx.util.Callback;
+import javafx.util.Duration;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
@@ -70,6 +81,84 @@ public class Utilities {
                 };
             }
         });
+    }
+
+    public static void registerHoverAnimation(Node node) {
+        node.getParent().setOnMouseEntered(_ -> {
+            FadeTransition transition = new FadeTransition(Duration.millis(250), node);
+            transition.setFromValue(1);
+            transition.setToValue(0.45);
+            transition.play();
+        });
+        node.getParent().setOnMouseExited(_ -> {
+            FadeTransition transition = new FadeTransition(Duration.millis(250), node);
+            transition.setFromValue(0.45);
+            transition.setToValue(1);
+            transition.play();
+        });
+    }
+
+    public static void registerClosableOverlay(Pane root, Runnable onCancel, Region... allowedRegions) {
+        root.addEventFilter(KeyEvent.KEY_PRESSED, e -> {
+            if (e.getCode() == KeyCode.ESCAPE) {
+                onCancel.run();
+            }
+        });
+        root.setOnMousePressed(e -> {
+            boolean inRegion = false;
+
+            for (Region allowedRegion : allowedRegions) {
+                Point2D scenePos = allowedRegion.localToScene(0, 0);
+                double width = allowedRegion.getWidth();
+                double height = allowedRegion.getHeight();
+                if (e.getSceneX() >= scenePos.getX()
+                        && e.getSceneX() < scenePos.getX() + width
+                        && e.getSceneY() >= scenePos.getY()
+                        && e.getSceneY() < scenePos.getY() + height)
+                {
+                    inRegion = true;
+                }
+            }
+
+            if (!inRegion) onCancel.run();
+        });
+    }
+
+    public static void showConfigureDialog(ImageView configureImage, BooleanProperty showHiddenContentProperty, boolean folderOverview) {
+        CheckMenuItem showHiddenFoldersItem = new CheckMenuItem("Show hidden " + (folderOverview ? "folders" : "datasets"));
+        MenuItem passwordChangeItem = new MenuItem("Change password & passphrase");
+        MenuItem backMenuItem = new MenuItem("Back to vault overview");
+        ContextMenu menu = new ContextMenu(showHiddenFoldersItem, passwordChangeItem, new SeparatorMenuItem(), backMenuItem);
+        Point2D imagePos = configureImage.localToScreen(0, 0);
+        menu.show(configureImage.getParent(), imagePos.getX(), imagePos.getY());
+        if (folderOverview) menu.setX(imagePos.getX() - menu.getWidth());
+        else menu.setX(imagePos.getX() + configureImage.getFitWidth());
+
+        showHiddenFoldersItem.setSelected(showHiddenContentProperty.get());
+        showHiddenFoldersItem.selectedProperty().addListener((_, _, b) -> showHiddenContentProperty.set(b));
+
+        passwordChangeItem.setOnAction(_ -> {
+            try {
+                FXMLLoader loader = new FXMLLoader(Utilities.class.getResource("/io/github/redstonemango/mangrypt/fxml/security-setup.fxml"));
+                Mangrypt.getBase().setSecondLayerRoot(loader.load());
+            }
+            catch (IOException e) {
+                throw new RuntimeException(e); // I love happy compilers
+            }
+        });
+
+        backMenuItem.setOnAction(_ -> Mangrypt.getBase().playTransition(() -> {
+            ConfigIO.save();
+            ConfigIO.cleanup();
+
+            try {
+                FXMLLoader loader = new FXMLLoader(Utilities.class.getResource("/io/github/redstonemango/mangrypt/fxml/vault-selection.fxml"));
+                Mangrypt.getBase().setSceneRoot(loader.load());
+            }
+            catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }));
     }
 
 }

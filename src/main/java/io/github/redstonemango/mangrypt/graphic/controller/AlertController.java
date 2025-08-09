@@ -1,6 +1,6 @@
 package io.github.redstonemango.mangrypt.graphic.controller;
 
-import io.github.redstonemango.mangrypt.logic.SharedLogicManager;
+import io.github.redstonemango.mangrypt.logic.Utilities;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.*;
@@ -72,7 +72,7 @@ public class AlertController {
                     finalDefaultButton.fire();
                 }
             });
-            SharedLogicManager.registerClosableOverlay(root, () -> {
+            Utilities.registerClosableOverlay(root, () -> {
                 root.getParent().setVisible(false);
                 oldFocusOwner.requestFocus();
             }, (Region) headerLabel.getParent());

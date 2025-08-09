@@ -45,7 +45,7 @@ public class SecuritySetupController {
     @FXML
     private void initialize() {
         isSetup = !ConfigIO.shouldSave();
-        SharedLogicManager.registerClosableOverlay(root, () -> {
+        Utilities.registerClosableOverlay(root, () -> {
             root.setVisible(false);
         }, (Region) headerLabel.getParent());
 

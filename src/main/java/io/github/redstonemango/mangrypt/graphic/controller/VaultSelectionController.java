@@ -43,7 +43,7 @@ public class VaultSelectionController {
             label.setOnMouseExited(_ -> label.setUnderline(false));
             label.setOnMouseClicked(_ -> OperatingSystem.loadCurrentOS().browse(file));
             label.setCursor(Cursor.HAND);
-            label.setTextFill(Color.LIGHTGREEN);
+            label.getStyleClass().add("uncolored-label");
             label.setPadding(new Insets(0, 0, 0, 10));
             return label;
         }, file -> {

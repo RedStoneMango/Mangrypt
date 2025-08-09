@@ -24,7 +24,7 @@ public class ConfigIO {
     private static boolean shouldSave = false;
 
     public static void cleanup() {
-        Utilities.ensureAuthorizedAccess(Mangrypt.class, SecuritySetupController.class, AuthController.class, SharedLogicManager.class);
+        Utilities.ensureAuthorizedAccess(Mangrypt.class, SecuritySetupController.class, AuthController.class, Utilities.class);
 
         if (config != null) config.cleanup();
         config = null;

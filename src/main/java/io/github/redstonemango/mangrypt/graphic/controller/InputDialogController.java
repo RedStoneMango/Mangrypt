@@ -1,6 +1,6 @@
 package io.github.redstonemango.mangrypt.graphic.controller;
 
-import io.github.redstonemango.mangrypt.logic.SharedLogicManager;
+import io.github.redstonemango.mangrypt.logic.Utilities;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.fxml.FXML;
@@ -64,7 +64,7 @@ public class InputDialogController {
                 root.getParent().setVisible(false);
             });
 
-            SharedLogicManager.registerClosableOverlay(root, () -> {
+            Utilities.registerClosableOverlay(root, () -> {
                 root.getParent().setVisible(false);
                 oldFocusOwner.requestFocus();
             }, (Region) headerLabel.getParent());

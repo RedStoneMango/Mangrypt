@@ -3,20 +3,50 @@
     -fx-border-color: linear-gradient(lightgreen, green);
 }
 
-.text-area {
-    -fx-background-color: transparent;
-    -fx-background-radius: 20;
-    -fx-border-radius: 20;
-    -fx-border-width: 3;
-    -fx-border-color: transparent;
+.button .label,
+.uncolored-label {
+    -fx-text-fill: #20ff00;
 }
-.text-area .content {
-    -fx-background-color: green;
-    -fx-background-radius: 20;
+
+.text-field,
+.text-area,
+.text-field,
+.password-field {
+    -fx-background-color: linear-gradient(lightgreen, green);
+    -fx-border-color: green;
+    -fx-border-radius: 5;
+    -fx-text-fill: #eaffea;
+}
+
+.button {
+    -fx-background-color: linear-gradient(lightgreen, green);
+}
+
+.text-area {
     -fx-border-radius: 20;
     -fx-border-width: 3;
+    -fx-padding: 5 0 5 5;
     -fx-border-color: linear-gradient(lightgreen, darkgreen);
 }
+.text-area,
+.text-area .scroll-pane .content,
+.text-area .scroll-pane .viewport,
+.text-area .scroll-pane {
+    -fx-background-color: green;
+    -fx-background-radius: 20;
+}
+.text-area .scroll-bar {
+    -fx-background-color: transparent;
+    -fx-border-radius: 20;
+    -fx-border-width: 2;
+}
+.text-area .scroll-bar:vertical {
+    -fx-border-color: lightgreen transparent green linear-gradient(lightgreen, darkgreen);
+}
+.text-area .scroll-bar:horizontal {
+    -fx-border-color: darkgreen;
+}
+
 .list-view {
     -fx-background-color: transparent;
     -fx-border-radius: 20;
@@ -27,15 +57,15 @@
     -fx-background-color: transparent;
 }
 
-.scroll-bar {
+.list-view .scroll-bar {
     -fx-background-color: transparent;
     -fx-border-radius: 10;
     -fx-border-width: 2;
 }
-.scroll-bar:vertical {
+.list-view .scroll-bar:vertical {
     -fx-border-color: lightgreen transparent green linear-gradient(lightgreen, green);
 }
-.scroll-bar:horizontal {
+.list-view .scroll-bar:horizontal {
     -fx-border-color: green;
 }
 
@@ -87,21 +117,6 @@
     -fx-background-color: transparent;
 }
 
-.uncolored-label {
-    -fx-text-fill: #20ff00
-}
-
-.text-field,
-.password-field {
-    -fx-background-color: linear-gradient(lightgreen, green);
-    -fx-border-color: green;
-    -fx-border-radius: 5;
-}
-
-.button {
-    -fx-background-color: linear-gradient(lightgreen, green);
-}
-
 .context-menu,
 .menu-item .label,
 .menu-item {
@@ -117,7 +132,6 @@
 .menu-item:selected .label {
     -fx-background-color: transparent
 }
-
 
 .swipe-arrow .arrow-shape {
     -fx-fill: lightgreen;

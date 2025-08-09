@@ -46,14 +46,14 @@ public class DataListController {
         filterField.textProperty().addListener((_, _, _) -> updateDataView());
 
         Platform.runLater(() -> {
-            SharedLogicManager.registerHoverAnimation(backImage);
-            SharedLogicManager.registerHoverAnimation(addImage);
-            SharedLogicManager.registerHoverAnimation(configureImage);
+            Utilities.registerHoverAnimation(backImage);
+            Utilities.registerHoverAnimation(addImage);
+            Utilities.registerHoverAnimation(configureImage);
         });
     }
 
     private void onOpen(SecureData.Encrypted data) {
-        Mangrypt.getBase().showData(folder, data);
+        Mangrypt.getBase().showData(folder.getEncryptedData().stream().filter(dataset -> showHiddenDataProperty.get() || !dataset.getName().startsWith(".")).toList(), data);
     }
     private void onDelete(SecureData.Encrypted data) {
         Mangrypt.getBase().showConfirmationDialog("Delete dataset", "Do you really want to delete the dataset '" + data.getName() + "'?", () -> {
@@ -64,7 +64,7 @@ public class DataListController {
     private void onRename(SecureData.Encrypted data) {
         Mangrypt.getBase().showInputDialog("Please set a new name for the dataset", "Name", data.getName(), true, name -> !name.isBlank() && !name.equals("."), name -> name.startsWith(".") ? "Folders starting with . are hidden" : null, name -> {
             data.setName(name);
-            dataView.refresh();
+            updateDataView();
         });
     }
 
@@ -106,7 +106,7 @@ public class DataListController {
     @FXML
     private void onBack() {
         try {
-            FXMLLoader loader = new FXMLLoader(SharedLogicManager.class.getResource("/io/github/redstonemango/mangrypt/fxml/folder-overview.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/io/github/redstonemango/mangrypt/fxml/folder-overview.fxml"));
             Mangrypt.getBase().setSceneRoot(loader.load());
         }
         catch (IOException e) {
@@ -116,7 +116,7 @@ public class DataListController {
 
     @FXML
     private void onConfigure() {
-        SharedLogicManager.showConfigureDialog(configureImage, showHiddenDataProperty, false);
+        Utilities.showConfigureDialog(configureImage, showHiddenDataProperty, false);
     }
 
     private void updateDataView() {

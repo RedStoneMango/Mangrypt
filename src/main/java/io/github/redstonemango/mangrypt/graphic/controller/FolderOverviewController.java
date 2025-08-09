@@ -5,18 +5,14 @@ import io.github.redstonemango.mangrypt.Mangrypt;
 import io.github.redstonemango.mangrypt.graphic.ListEntry;
 import io.github.redstonemango.mangrypt.logic.ConfigIO;
 import io.github.redstonemango.mangrypt.logic.Configuration;
-import io.github.redstonemango.mangrypt.logic.SharedLogicManager;
 import io.github.redstonemango.mangrypt.logic.Utilities;
-import javafx.animation.FadeTransition;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.*;
-import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.util.Duration;
 
 import java.io.IOException;
 import java.util.Locale;
@@ -44,14 +40,14 @@ public class FolderOverviewController {
         filterField.textProperty().addListener((_, _, _) -> updateFolderView());
 
         Platform.runLater(() -> {
-            SharedLogicManager.registerHoverAnimation(configureImage);
-            SharedLogicManager.registerHoverAnimation(addImage);
+            Utilities.registerHoverAnimation(configureImage);
+            Utilities.registerHoverAnimation(addImage);
         });
     }
 
     private void onFolderOpen(Configuration.Folder folder) {
         try {
-            FXMLLoader loader = new FXMLLoader(SharedLogicManager.class.getResource("/io/github/redstonemango/mangrypt/fxml/data-list.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/io/github/redstonemango/mangrypt/fxml/data-list.fxml"));
             Mangrypt.getBase().setSceneRoot(loader.load());
             DataListController controller = loader.getController();
             controller.init(folder);
@@ -71,7 +67,7 @@ public class FolderOverviewController {
     private void onFolderRename(Configuration.Folder folder) {
         Mangrypt.getBase().showInputDialog("Please set a new name for the folder", "Folder name", folder.getName(), true, name -> !name.isBlank() && !name.equals("."), name -> name.startsWith(".") ? "Folders starting with . are hidden" : null, name -> {
             folder.setName(name);
-            folderView.refresh();
+            updateFolderView();
         });
     }
 
@@ -92,7 +88,7 @@ public class FolderOverviewController {
     }
     @FXML
     private void onConfigure() {
-        SharedLogicManager.showConfigureDialog(configureImage, showHiddenFoldersProperty, true);
+        Utilities.showConfigureDialog(configureImage, showHiddenFoldersProperty, true);
     }
 
     private void updateFolderView() {

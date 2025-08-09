@@ -17,6 +17,7 @@ import javafx.util.Duration;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -141,8 +142,8 @@ public class BaseView extends StackPane {
         sceneRoot.setMaxHeight(area.getHeight());
     }
 
-    public void showData(Configuration.Folder folder, SecureData.Encrypted data) {
-        dataViewLayer.showData(folder, data);
+    public void showData(List<SecureData.Encrypted> availableData, SecureData.Encrypted data) {
+        dataViewLayer.showData(availableData, data);
         if (!dataViewLayer.isVisible()) dataViewLayer.setVisible(true);
     }
 
