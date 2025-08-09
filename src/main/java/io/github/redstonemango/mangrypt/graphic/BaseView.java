@@ -141,9 +141,14 @@ public class BaseView extends StackPane {
         sceneRoot.setMaxHeight(area.getHeight());
     }
 
-    public void showData(Configuration.Folder folder, SecureData.Encrypted data) throws Exception {
+    public void showData(Configuration.Folder folder, SecureData.Encrypted data) {
         dataViewLayer.showData(folder, data);
         if (!dataViewLayer.isVisible()) dataViewLayer.setVisible(true);
+    }
+
+    public void storeShowingData() {
+        Utilities.ensureAuthorizedAccess(ConfigIO.class);
+        dataViewLayer.storeData();
     }
 
     public Pane getSceneRoot() {

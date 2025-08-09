@@ -1,23 +1,14 @@
 package io.github.redstonemango.mangrypt.graphic.controller;
 
-import io.github.redstonemango.mangrypt.graphic.ClosableOverlay;
+import io.github.redstonemango.mangrypt.logic.SharedLogicManager;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
 import javafx.fxml.FXML;
-import javafx.geometry.Point2D;
 import javafx.scene.Node;
 import javafx.scene.control.*;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
-import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
-import javafx.scene.paint.Color;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -73,10 +64,10 @@ public class InputDialogController {
                 root.getParent().setVisible(false);
             });
 
-            ClosableOverlay.apply(root, (Region) headerLabel.getParent(), () -> {
+            SharedLogicManager.registerClosableOverlay(root, () -> {
                 root.getParent().setVisible(false);
                 oldFocusOwner.requestFocus();
-            });
+            }, (Region) headerLabel.getParent());
         }
     }
 

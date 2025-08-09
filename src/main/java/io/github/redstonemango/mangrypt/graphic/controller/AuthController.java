@@ -1,8 +1,8 @@
 package io.github.redstonemango.mangrypt.graphic.controller;
 
-import io.github.redstonemango.mangrypt.graphic.ClosableOverlay;
 import io.github.redstonemango.mangrypt.logic.Configuration;
 import io.github.redstonemango.mangrypt.logic.CypherEncryption;
+import io.github.redstonemango.mangrypt.logic.SharedLogicManager;
 import javafx.animation.FadeTransition;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -51,7 +51,7 @@ public class AuthController {
         passwordField.setOnKeyPressed(e -> {
             if (e.getCode() == KeyCode.ENTER) onDecrypt();
         });
-        ClosableOverlay.apply(root, panelContainer, this::cancelAuth);
+        SharedLogicManager.registerClosableOverlay(root, this::cancelAuth, panelContainer);
 
         Platform.runLater(() -> passwordField.requestFocus());
     }

@@ -8,6 +8,10 @@ import javafx.geometry.Point2D;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.Region;
 import javafx.util.Duration;
 
 import java.io.IOException;
@@ -26,6 +30,32 @@ public class SharedLogicManager {
             transition.setFromValue(0.45);
             transition.setToValue(1);
             transition.play();
+        });
+    }
+
+    public static void registerClosableOverlay(Pane root, Runnable onCancel, Region... allowedRegions) {
+        root.addEventFilter(KeyEvent.KEY_PRESSED, e -> {
+            if (e.getCode() == KeyCode.ESCAPE) {
+                onCancel.run();
+            }
+        });
+        root.setOnMouseClicked(e -> {
+            boolean inRegion = false;
+
+            for (Region allowedRegion : allowedRegions) {
+                Point2D scenePos = allowedRegion.localToScene(0, 0);
+                double width = allowedRegion.getWidth();
+                double height = allowedRegion.getHeight();
+                if (e.getSceneX() >= scenePos.getX()
+                        && e.getSceneX() < scenePos.getX() + width
+                        && e.getSceneY() >= scenePos.getY()
+                        && e.getSceneY() < scenePos.getY() + height)
+                {
+                    inRegion = true;
+                }
+            }
+
+            if (!inRegion) onCancel.run();
         });
     }
 

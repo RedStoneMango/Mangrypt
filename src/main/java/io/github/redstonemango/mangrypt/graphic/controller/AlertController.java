@@ -1,16 +1,13 @@
 package io.github.redstonemango.mangrypt.graphic.controller;
 
-import io.github.redstonemango.mangrypt.graphic.ClosableOverlay;
-import javafx.application.Platform;
+import io.github.redstonemango.mangrypt.logic.SharedLogicManager;
 import javafx.fxml.FXML;
-import javafx.geometry.Point2D;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
@@ -75,10 +72,10 @@ public class AlertController {
                     finalDefaultButton.fire();
                 }
             });
-            ClosableOverlay.apply(root, (Region) headerLabel.getParent(), () -> {
+            SharedLogicManager.registerClosableOverlay(root, () -> {
                 root.getParent().setVisible(false);
                 oldFocusOwner.requestFocus();
-            });
+            }, (Region) headerLabel.getParent());
         }
     }
 

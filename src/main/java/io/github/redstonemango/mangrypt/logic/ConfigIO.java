@@ -4,7 +4,6 @@ import com.google.gson.GsonBuilder;
 import io.github.redstonemango.mangoutils.OperatingSystem;
 import io.github.redstonemango.mangrypt.Mangrypt;
 import io.github.redstonemango.mangrypt.graphic.controller.AuthController;
-import io.github.redstonemango.mangrypt.graphic.controller.FolderOverviewController;
 import io.github.redstonemango.mangrypt.graphic.controller.SecuritySetupController;
 import javafx.fxml.FXMLLoader;
 
@@ -13,7 +12,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
-import java.util.Locale;
 
 public class ConfigIO {
 
@@ -42,6 +40,8 @@ public class ConfigIO {
     }
 
     public static void save() {
+        Mangrypt.getBase().storeShowingData();
+
         if (!vaultFile.exists()) {
             try {
                 vaultFile.getParentFile().mkdirs();

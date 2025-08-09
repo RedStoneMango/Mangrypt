@@ -1,11 +1,7 @@
 package io.github.redstonemango.mangrypt.graphic.controller;
 
 import io.github.redstonemango.mangrypt.Mangrypt;
-import io.github.redstonemango.mangrypt.graphic.ClosableOverlay;
-import io.github.redstonemango.mangrypt.logic.ConfigIO;
-import io.github.redstonemango.mangrypt.logic.Configuration;
-import io.github.redstonemango.mangrypt.logic.CypherEncryption;
-import io.github.redstonemango.mangrypt.logic.SecureData;
+import io.github.redstonemango.mangrypt.logic.*;
 import javafx.animation.FadeTransition;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -49,9 +45,9 @@ public class SecuritySetupController {
     @FXML
     private void initialize() {
         isSetup = !ConfigIO.shouldSave();
-        ClosableOverlay.apply(root, (Region) headerLabel.getParent(), () -> {
+        SharedLogicManager.registerClosableOverlay(root, () -> {
             root.setVisible(false);
-        });
+        }, (Region) headerLabel.getParent());
 
         passwordField.setOnKeyPressed(e -> {
             if (e.getCode() == KeyCode.ENTER) onSetup();

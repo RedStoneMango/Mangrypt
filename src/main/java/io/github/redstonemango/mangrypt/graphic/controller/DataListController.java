@@ -53,12 +53,7 @@ public class DataListController {
     }
 
     private void onOpen(SecureData.Encrypted data) {
-        try {
-            Mangrypt.getBase().showData(folder, data);
-        } catch (Exception e) {
-            Mangrypt.getBase().showErrorAlert(String.valueOf(e));
-            throw new RuntimeException("Error showing an encrypted dataset", e);
-        }
+        Mangrypt.getBase().showData(folder, data);
     }
     private void onDelete(SecureData.Encrypted data) {
         Mangrypt.getBase().showConfirmationDialog("Delete dataset", "Do you really want to delete the dataset '" + data.getName() + "'?", () -> {
@@ -82,7 +77,7 @@ public class DataListController {
 
     @FXML
     private void onAdd() {
-        MenuItem textItem = new MenuItem("Text data");
+        MenuItem textItem = new MenuItem("Text Data");
         ImageView textImage = new ImageView(SecureData.Encrypted.buildIconImage(SecureData.TYPE_TEXT));
         textImage.setPreserveRatio(true);
         textImage.setFitHeight(20);

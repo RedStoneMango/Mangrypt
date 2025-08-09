@@ -15,9 +15,11 @@ public class SecureData {
 
     public static final int TYPE_TEXT = 0;
 
+    @Expose
     private int type;
 
     /* --- Text Data --- */
+    @Expose
     private char[] text;
 
     static SecureData newTextData() {
@@ -44,14 +46,14 @@ public class SecureData {
         Utilities.ensureAuthorizedAccess(DataView.class);
         return text;
     }
+    public void text(char[] c) {
+        Utilities.ensureAuthorizedAccess(DataView.class);
+        text = c;
+    }
     public void zeroOut() {
         Utilities.ensureAuthorizedAccess(SecureData.class);
 
         Arrays.fill(text, '\0');
-    }
-    @Override
-    public String toString() {
-        return "DEBUG:: " + type + " - " + Arrays.toString(text);
     }
 
 
@@ -92,7 +94,7 @@ public class SecureData {
         public static Encrypted newEncryptedTextData(String name) throws Exception {
             Encrypted encrypted = new Encrypted(TYPE_TEXT);
             encrypted.setName(name);
-            encrypted.encrypt(newTextData());
+            encrypted.store(newTextData());
             return encrypted;
         }
 
@@ -106,13 +108,11 @@ public class SecureData {
             return data;
         }
 
-        public void encrypt(SecureData data) throws Exception {
+        public void store(SecureData data) throws Exception {
             Utilities.ensureAuthorizedAccess(Encrypted.class);
 
             String json = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create().toJson(data);
-            String encrypted = CypherEncryption.encryptToString(json, ConfigIO.getConfig().password(), ConfigIO.getConfig().passwordSalt());
-            data.zeroOut();
-            content = encrypted;
+            content = CypherEncryption.encryptToString(json, ConfigIO.getConfig().password(), ConfigIO.getConfig().passwordSalt());
         }
 
         public void updatePassword(SecretKey key, byte[] salt) throws Exception {
