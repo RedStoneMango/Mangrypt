@@ -195,6 +195,8 @@ public class BaseView extends StackPane {
     }
 
     public void showPasswordDialog(boolean obscure) {
+        if (passwordOverlayLayer.isVisible()) return;
+
         isObscuringDialog = dialogLayer.isVisible();
         isObscuring2ndLayer = secondLayerRoot.isVisible();
         isObscuringDataLayer = dataViewLayer.isVisible();

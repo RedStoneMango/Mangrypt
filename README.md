@@ -8,20 +8,12 @@
 
 ## 🔽 Download & Installation
 
-You can use Mangrypt by downloading a pre-built executable or building it manually.
-
-### 📦 Executable (Recommended)
-
-- Visit the [Releases Page](https://github.com/RedStoneMango/Mangrypt/releases) to download the latest version for your OS.
-- Extract and run the executable:
+- Visit the [Releases Page](https://github.com/RedStoneMango/Mangrypt/releases) to download the latest version for your operating system.
+- Extract the executable:
   - `.exe` (Windows)
   - `.app` (macOS)
   - `.sh` (Linux)
-
-### 🧱 Build from Source
-
-To build Mangrypt yourself and generate a native executable, see:  
-👉 [**BUILDING.md →**](./BUILDING.md)
+- Run it natively on your OS.
 
 ---
 
@@ -29,9 +21,17 @@ To build Mangrypt yourself and generate a native executable, see:
 
 The following references illustrate the application UI's appearance:
 
-| Setting Up The Launch Passphrase       |
-|----------------------------------------|
-| ![Passphrase setup](MangryptSetup.gif) |
+| Vault File Overview                       | Accessing a Vault                                |
+|-------------------------------------------|--------------------------------------------------|
+| ![Vault List](uiReferences/VaultList.png) | ![Passphrase Input](uiReferences/VaultLogin.png) |
+
+| Folder Overview                            | Folder content                                      |
+|--------------------------------------------|-----------------------------------------------------|
+| ![Vault List](uiReferences/FolderList.png) | ![Passphrase Input](uiReferences/FolderContent.png) |
+
+| Text-Data View                               | Obscuring Sensitive Data                        |
+|----------------------------------------------|-------------------------------------------------|
+| ![Vault List](uiReferences/TextDataView.png) | ![Passphrase Input](uiReferences/Obscuring.png) |
 
 > ⚠️ UI elements shown may change in future versions and may not exactly match these screenshots.
 
@@ -88,7 +88,7 @@ For information on feedback or contributions, see [here](#-feedback--contributio
 
 ---
 
-## 🛠️ Build and Framework
+## 🛠️ Build, Frameworks and Dependencies
 
 Mangrypt is written using:
 
@@ -126,6 +126,14 @@ To run or build Mangrypt, ensure your environment meets the following minimum re
 | Memory           | All        | 4 GB minimum (8 GB recommended) |
 
 > 🧠 Info: Requirements marked as "Build only" are not needed if using a pre-built executable.
+
+---
+
+## 📎 License
+
+This project is licensed under [![GitHub License](https://img.shields.io/github/license/RedStoneMango/Mangrypt)](https://github.com/RedStoneMango/Mangrypt/blob/main/LICENSE).
+
+You may use the project as long as you follow the terms of that very license.
 
 ---
 
