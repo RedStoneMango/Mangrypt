@@ -2,6 +2,7 @@ package io.github.redstonemango.mangrypt.graphic.controller;
 
 import io.github.redstonemango.mangoutils.NameConverter;
 import io.github.redstonemango.mangrypt.Mangrypt;
+import io.github.redstonemango.mangrypt.graphic.FileChooserNode;
 import io.github.redstonemango.mangrypt.graphic.ListEntry;
 import io.github.redstonemango.mangrypt.logic.*;
 import javafx.application.Platform;
@@ -12,9 +13,11 @@ import javafx.fxml.FXMLLoader;
 import javafx.geometry.Point2D;
 import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
-import javafx.stage.FileChooser;
+import javafx.scene.layout.*;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Locale;
 
 public class DataListController {
@@ -85,8 +88,8 @@ public class DataListController {
         textItem.setGraphic(textIcon);
         textItem.setOnAction(_ -> addTextData());
 
-        MenuItem imageItem = new MenuItem("Text Data");
-        ImageView imageIcon = new ImageView(SecureData.Encrypted.buildIconImage(SecureData.TYPE_TEXT));
+        MenuItem imageItem = new MenuItem("Image Data");
+        ImageView imageIcon = new ImageView(SecureData.Encrypted.buildIconImage(SecureData.TYPE_IMAGE));
         imageIcon.setPreserveRatio(true);
         imageIcon.setFitHeight(20);
         imageItem.setGraphic(imageIcon);
@@ -99,11 +102,12 @@ public class DataListController {
     }
 
     private void addTextData() {
-        Mangrypt.getBase().showInputDialog("Please set a new name for the dataset", "Name", "", true, name -> !name.isBlank() && !name.equals("."), name -> name.startsWith(".") ? "Folders starting with . are hidden" : null, name -> {
+        Mangrypt.getBase().showInputDialog("Please set a name for the new dataset", "Name", "", true, name -> !name.isBlank() && !name.equals("."), name -> name.startsWith(".") ? "Folders starting with . are hidden" : null, name -> {
             try {
                 SecureData.Encrypted data = SecureData.Encrypted.newEncryptedTextData(name);
                 folder.getEncryptedData().add(data);
                 updateDataView();
+                onOpen(data);
             }
             catch (Exception e) {
                 Mangrypt.getBase().showErrorAlert(String.valueOf(e));
@@ -113,8 +117,38 @@ public class DataListController {
     }
 
     private void addImageData() {
-        Mangrypt.getBase().showInputDialog("Please set a new name for the dataset", "Name", "", true, name -> !name.isBlank() && !name.equals("."), name -> name.startsWith(".") ? "Folders starting with . are hidden" : null, name -> {
-
+        Mangrypt.getBase().showInputDialog("Please set a name for the new dataset", "Name", "", true, name -> !name.isBlank() && !name.equals("."), name -> name.startsWith(".") ? "Folders starting with . are hidden" : null, name -> {
+            File userHome = new File(System.getProperty("user.home"));
+            FileChooserNode chooser = new FileChooserNode("Select image file", false, userHome,
+            selectedFile -> {
+                Mangrypt.getBase().setSecondLayerRoot(null);
+                byte[] bytes;
+                try {
+                    bytes = Files.readAllBytes(selectedFile.toPath());
+                }
+                catch (Exception e) {
+                    Mangrypt.getBase().showErrorAlert(String.valueOf(e));
+                    throw new RuntimeException("Error reading image file", e);
+                }
+                SecureData.Encrypted data;
+                try {
+                    data = SecureData.Encrypted.newEncryptedImageData(name, bytes);
+                }
+                catch (Exception e) {
+                    Mangrypt.getBase().showErrorAlert(String.valueOf(e));
+                    throw new RuntimeException("Error creating image data", e);
+                }
+                folder.getEncryptedData().add(data);
+                updateDataView();
+                onOpen(data);
+            },
+            () -> Mangrypt.getBase().setSecondLayerRoot(null), "jpeg", "jpg", "png", "bmp", "gif");
+            StackPane background = new StackPane();
+            StackPane root = new StackPane();
+            chooser.prepareMangryptLayout(root, background);
+            Utilities.registerClosableOverlay(root, () -> Mangrypt.getBase().setSecondLayerRoot(null), background);
+            Mangrypt.getBase().setSecondLayerRoot(root);
+            Platform.runLater(chooser::requestFocus);
         });
     }
 

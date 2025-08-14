@@ -4,20 +4,28 @@ import io.github.redstonemango.mangrypt.Mangrypt;
 import io.github.redstonemango.mangrypt.logic.*;
 import javafx.application.Platform;
 import javafx.css.PseudoClass;
+import javafx.geometry.Bounds;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Cursor;
+import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Polygon;
+import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontPosture;
 import javafx.scene.text.FontWeight;
+import org.jetbrains.annotations.Nullable;
 
+import java.io.ByteArrayInputStream;
 import java.util.List;
 
 public class DataView extends BorderPane {
@@ -26,10 +34,14 @@ public class DataView extends BorderPane {
     private final AnchorPane centerContainer;
     private final StackPane swipeArrowLeft;
     private final StackPane swipeArrowRight;
+    private final Runnable onClose = () -> {
+        storeData();
+        setVisible(false);
+    };
 
     private List<SecureData.Encrypted> availableData;
     private SecureData.Encrypted encryptedData;
-    private SecureData decryptedData;
+    private @Nullable SecureData decryptedData;
     private boolean changed = false;
 
     public DataView() {
@@ -58,41 +70,70 @@ public class DataView extends BorderPane {
 
 
         centerContainer = new AnchorPane();
+        centerContainer.getChildren().add(new Pane());
         setCenter(centerContainer);
         BorderPane.setMargin(centerContainer, new Insets(0, 0, 50, 0));
 
-        Utilities.registerClosableOverlay(this, () -> {
-            storeData();
-            setVisible(false);
-        }, centerContainer, swipeArrowLeft, swipeArrowRight);
+        Utilities.registerDynamicClosableOverlay(this, onClose, () -> new Node[]{swipeArrowLeft, swipeArrowRight, centerContainer.getChildren().getFirst()});
+        centerContainer.widthProperty().addListener((_, _, width) -> sizeUpdate(width.doubleValue(), true));
+        centerContainer.heightProperty().addListener((_, _, height) -> sizeUpdate(height.doubleValue(), false));
     }
 
     public void showData(List<SecureData.Encrypted> availableData, SecureData.Encrypted data) {
-        Region region;
+        Node node;
         try {
-            region = extractContentFrom(data);
+            node = extractContentFrom(data);
         } catch (Exception e) {
             Mangrypt.getBase().showErrorAlert(String.valueOf(e));
-            throw new RuntimeException("Error showing an encrypted dataset", e);
+            throw new RuntimeException("Error extracting content from a dataset", e);
         }
         nameLabel.setText(data.getName());
         nameLabel.setFont(Font.font("", FontWeight.BOLD, data.getName().startsWith(".") ? FontPosture.ITALIC : FontPosture.REGULAR, 30));
         centerContainer.getChildren().clear();
-        AnchorPane.setTopAnchor(region, 0.0);
-        AnchorPane.setBottomAnchor(region, 0.0);
-        AnchorPane.setLeftAnchor(region, 0.0);
-        AnchorPane.setRightAnchor(region, 0.0);
-        centerContainer.getChildren().add(region);
+        AnchorPane.setTopAnchor(node, 0.0);
+        AnchorPane.setBottomAnchor(node, 0.0);
+        AnchorPane.setLeftAnchor(node, 0.0);
+        AnchorPane.setRightAnchor(node, 0.0);
+        centerContainer.getChildren().add(node);
         encryptedData = data;
         this.availableData = availableData;
         changed = false;
+        sizeUpdate(centerContainer.getWidth(), true);
+        sizeUpdate(centerContainer.getHeight(), false);
 
         checkSwipeable();
+    }
+
+    // TODO: The centering logic doesn't work reliably yet
+    private void sizeUpdate(double sideLength, boolean isWidth) {
+        // Most times this will be managed automatically by the layout, we just have to manually account for some exceptions
+        if (centerContainer.getChildren().getFirst() instanceof ImageView imageView) {
+            if (isWidth) {
+                imageView.setFitWidth(sideLength);
+            }
+            else {
+                imageView.setFitHeight(sideLength);
+            }
+
+            Platform.runLater(() -> {
+                Bounds newBounds = imageView.getBoundsInParent();
+
+                double containerWidth = isWidth ? sideLength : newBounds.getWidth();
+                double containerHeight = isWidth ? newBounds.getHeight() : sideLength;
+
+                double offsetX = (containerWidth - newBounds.getWidth()) / 2;
+                double offsetY = (containerHeight - newBounds.getHeight()) / 2;
+
+                imageView.setX(offsetX);
+                imageView.setY(offsetY);
+            });
+        }
     }
 
     public void storeData() {
         Utilities.ensureAuthorizedAccess(DataView.class, BaseView.class);
         if (decryptedData == null) return;
+        if (!decryptedData.requiresSave()) return;
 
         if (changed) {
             try {
@@ -106,9 +147,9 @@ public class DataView extends BorderPane {
         decryptedData.zeroOut();
     }
 
-    private Region extractContentFrom(SecureData.Encrypted data) throws Exception {
+    private Node extractContentFrom(SecureData.Encrypted data) throws Exception {
         decryptedData = data.decrypt();
-        Region region = switch (data.getType()) {
+        Node node = switch (data.getType()) {
             case SecureData.TYPE_TEXT ->  {
                 TextArea area = new TextArea();
                 area.setText(new String(decryptedData.text()));
@@ -119,10 +160,35 @@ public class DataView extends BorderPane {
                 });
                 yield area;
             }
-            default -> new Pane();
+            case SecureData.TYPE_IMAGE -> {
+                ByteArrayInputStream stream = new ByteArrayInputStream(decryptedData.imageBytes());
+                Image image = new Image(stream);
+                if (image.isError()) {
+                    yield createErrorDisplay();
+                }
+                ImageView imageView = new ImageView(image);
+                imageView.setPreserveRatio(true);
+                imageView.setManaged(false);
+                imageView.setSmooth(true);
+                yield imageView;
+            }
+            default -> createErrorDisplay();
         };
-        Platform.runLater(region::requestFocus);
-        return region;
+        Platform.runLater(node::requestFocus);
+        if (!decryptedData.requiresSave()) {
+            decryptedData.zeroOut(); // If we do not need to update you later, we can safely zero this out
+            decryptedData = null;
+        }
+        return node;
+    }
+
+    private FlowPane createErrorDisplay() {
+        Label label = new Label("Invalid or corrupted data");
+        label.setFont(Font.font("", FontWeight.NORMAL, FontPosture.REGULAR, 20));
+        label.setTextFill(Color.RED);
+        FlowPane flowPane = new FlowPane();
+        flowPane.setAlignment(Pos.CENTER);
+        return flowPane;
     }
 
     private void onSwipe(boolean toLeft) {

@@ -107,6 +107,7 @@ public class Configuration {
         public Folder(String name) {
             this.name = name;
             this.description = "";
+            ensureFields();
         }
 
         public List<SecureData.Encrypted> getEncryptedData() {

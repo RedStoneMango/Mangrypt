@@ -11,9 +11,9 @@ import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontPosture;
 import javafx.scene.text.FontWeight;
@@ -33,12 +33,13 @@ public class FileChooserNode extends VBox {
     private Button doneButton;
     private ContextMenu pathCompletionMenu;
     private ListView<String> pathCompletionList;
+    private Label titleLabel;
     private boolean ignorePathChange = false;
 
     public FileChooserNode(String title, boolean saveMode, File initialDirectory, Consumer<File> onAction, Runnable onCancel, String... allowedExtensions) {
         List<String> extensions = normalizeAllowedExtensions(allowedExtensions);
 
-        Label titleLabel = new Label(title);
+        titleLabel = new Label(title);
         titleLabel.setFont(Font.font("", FontWeight.NORMAL, FontPosture.REGULAR, 20));
 
         createPathPopup();
@@ -117,7 +118,6 @@ public class FileChooserNode extends VBox {
                     } else {
                         setText(file.getName().isEmpty() ? file.getAbsolutePath() : file.getName());
                         boolean valid = isValidFileExtension(file, extensions) || file.isDirectory();
-                        setTextFill(valid ? Color.BLACK : Color.GRAY);
                         pseudoClassStateChanged(PseudoClass.getPseudoClass("invalid-content"), !valid);
                     }
                 }
@@ -170,6 +170,37 @@ public class FileChooserNode extends VBox {
         ignorePathChange = true;
         pathField.setText(initialDirectory.getAbsolutePath());
         select(initialDirectory.getAbsolutePath(), true);
+    }
+
+    /**
+     * This method is not part of the file chooser logic itself, but was added for smoother intergety with the Mangrypt layout.
+     */
+    public void prepareMangryptLayout(StackPane root, StackPane backgroundBox) {
+        titleLabel.getStyleClass().add("uncolored-label");
+        setPadding(new Insets(5));
+
+        backgroundBox.getChildren().add(this);
+        backgroundBox.setPadding(new Insets(20));
+        backgroundBox.setBackground(
+                new Background(new BackgroundFill(Color.DARKGREEN, new CornerRadii(20), null))
+        );
+
+        Rectangle clip = new Rectangle();
+        clip.widthProperty().bind(backgroundBox.widthProperty());
+        clip.heightProperty().bind(backgroundBox.heightProperty());
+        clip.setArcWidth(40);
+        clip.setArcHeight(40);
+        backgroundBox.setClip(clip);
+
+        root.getChildren().add(backgroundBox);
+        root.setPickOnBounds(true);
+        root.setStyle("-fx-background-color: transparent;");
+        StackPane.setMargin(backgroundBox, new Insets(50));
+
+        pathCompletionList.getStyleClass().remove("list-view");
+        pathCompletionList.getStyleClass().add("popup-list");
+        pathCompletionMenu.getItems().getFirst().getStyleClass().remove("menu-item");
+        pathCompletionMenu.getItems().getFirst().getStyleClass().add("popup-menu-root");
     }
 
     private void select(String path, boolean requestFocus) {
@@ -306,7 +337,7 @@ public class FileChooserNode extends VBox {
         int visibleRows = Math.min(pathCompletionList.getItems().size(), 10);
         pathCompletionList.setPrefHeight(visibleRows * rowHeight);
         pathCompletionList.setMaxHeight(visibleRows * rowHeight);
-        double extraPadding = 50.0;
+        double extraPadding = 60.0;
         pathCompletionList.setPrefWidth(maxTextWidth + extraPadding);
         pathCompletionList.setMaxWidth(maxTextWidth + extraPadding);
 

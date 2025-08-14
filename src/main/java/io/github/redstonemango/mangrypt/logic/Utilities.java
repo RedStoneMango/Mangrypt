@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 public class Utilities {
 
@@ -45,6 +46,7 @@ public class Utilities {
                     return classes.get(index).getClassLoader().equals(caller.getClassLoader());
                 })
         );
+
 
         if (!trustedCaller) {
             throw new SecurityException("Unauthorized access to method '" + methodName + "'");
@@ -98,7 +100,7 @@ public class Utilities {
         });
     }
 
-    public static void registerClosableOverlay(Pane root, Runnable onCancel, Region... allowedRegions) {
+    public static void registerClosableOverlay(Pane root, Runnable onCancel, Node... allowedNodes) {
         root.addEventFilter(KeyEvent.KEY_PRESSED, e -> {
             if (e.getCode() == KeyCode.ESCAPE) {
                 onCancel.run();
@@ -107,10 +109,35 @@ public class Utilities {
         root.setOnMousePressed(e -> {
             boolean inRegion = false;
 
-            for (Region allowedRegion : allowedRegions) {
-                Point2D scenePos = allowedRegion.localToScene(0, 0);
-                double width = allowedRegion.getWidth();
-                double height = allowedRegion.getHeight();
+            for (Node allowedNode : allowedNodes) {
+                Point2D scenePos = allowedNode.localToScene(0, 0);
+                double width = allowedNode.getLayoutBounds().getWidth();
+                double height = allowedNode.getLayoutBounds().getHeight();
+                if (e.getSceneX() >= scenePos.getX()
+                        && e.getSceneX() < scenePos.getX() + width
+                        && e.getSceneY() >= scenePos.getY()
+                        && e.getSceneY() < scenePos.getY() + height)
+                {
+                    inRegion = true;
+                }
+            }
+
+            if (!inRegion) onCancel.run();
+        });
+    }
+    public static void registerDynamicClosableOverlay(Pane root, Runnable onCancel, Supplier<Node[]> allowedNodesSupplier) {
+        root.addEventFilter(KeyEvent.KEY_PRESSED, e -> {
+            if (e.getCode() == KeyCode.ESCAPE) {
+                onCancel.run();
+            }
+        });
+        root.setOnMousePressed(e -> {
+            boolean inRegion = false;
+
+            for (Node allowedNode : allowedNodesSupplier.get()) {
+                Point2D scenePos = allowedNode.localToScene(0, 0);
+                double width = allowedNode.getLayoutBounds().getWidth();
+                double height = allowedNode.getLayoutBounds().getHeight();
                 if (e.getSceneX() >= scenePos.getX()
                         && e.getSceneX() < scenePos.getX() + width
                         && e.getSceneY() >= scenePos.getY()

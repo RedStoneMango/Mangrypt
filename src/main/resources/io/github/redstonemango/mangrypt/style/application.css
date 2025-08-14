@@ -47,24 +47,48 @@
     -fx-border-color: darkgreen;
 }
 
-.list-view {
+.list-view,
+.tree-view {
     -fx-background-color: transparent;
     -fx-border-radius: 20;
     -fx-border-width: 3;
     -fx-border-color: linear-gradient(lightgreen, green);
 }
+.tree-cell {
+    -fx-text-fill: #20ff00;
+}
+.tree-cell:invalid-content {
+    -fx-text-fill: #009600;
+}
+.tree-cell,
 .list-cell {
     -fx-background-color: transparent;
 }
+.list-cell:filled:selected,
+.list-cell:filled:selected:hover,
+.tree-cell:filled:selected,
+.tree-cell:filled:selected:hover {
+    -fx-background-color: rgba(0, 0, 0, 0.2);
+}
 
+.tree-disclosure-node .arrow {
+    -fx-background-color: lightgreen;
+}
+
+.tree-view .scroll-bar,
+.popup-list .scroll-bar,
 .list-view .scroll-bar {
     -fx-background-color: transparent;
     -fx-border-radius: 10;
     -fx-border-width: 2;
 }
+.tree-view .scroll-bar:vertical,
+.popup-list .scroll-bar:vertical,
 .list-view .scroll-bar:vertical {
     -fx-border-color: lightgreen transparent green linear-gradient(lightgreen, green);
 }
+.tree-view .scroll-bar:horizontal,
+.popup-list .scroll-bar:horizontal,
 .list-view .scroll-bar:horizontal {
     -fx-border-color: green;
 }
@@ -104,11 +128,6 @@
     -fx-background-color: #009600;
 }
 
-.list-cell:filled:selected,
-.list-cell:filled:selected:hover {
-    -fx-background-color: rgba(0, 0, 0, 0.2);
-}
-
 .tab-pane {
     -fx-background-color: transparent;
 }
@@ -117,6 +136,7 @@
     -fx-background-color: transparent;
 }
 
+.popup-list .list-cell,
 .context-menu,
 .menu-item .label,
 .menu-item {
@@ -124,6 +144,8 @@
     -fx-text-fill: white;
 }
 
+.popup-list .list-cell:hover,
+.popup-list .list-cell:selected,
 .menu-item:hover,
 .menu-item:selected {
     -fx-background-color: linear-gradient(lightgreen, green);

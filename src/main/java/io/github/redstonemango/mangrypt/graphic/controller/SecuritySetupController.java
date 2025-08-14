@@ -30,8 +30,6 @@ public class SecuritySetupController {
     private SecretKey passphrase;
     private byte[] passphraseSalt;
 
-    private final CompletableFuture<Pane> vaultOverviewFuture = new CompletableFuture<>(); // For JavaFX node lazy-loaded after passphrase setup
-
     @FXML private StackPane root;
     @FXML private Label headerLabel;
     @FXML private Label contentLabel;
@@ -136,7 +134,13 @@ public class SecuritySetupController {
                 Mangrypt.getBase().playTransition(() -> {
                     ConfigIO.markShouldSave();
                     Mangrypt.getBase().setSecondLayerRoot(null);
-                    vaultOverviewFuture.thenAccept(Mangrypt.getBase()::setSceneRoot);
+                    FXMLLoader loader = new FXMLLoader(getClass().getResource("/io/github/redstonemango/mangrypt/fxml/folder-overview.fxml"));
+                    try {
+                        Mangrypt.getBase().setSceneRoot(loader.load());
+                    }
+                    catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
                 });
             }
             else {
@@ -208,20 +212,5 @@ public class SecuritySetupController {
             inTransition.play();
         });
         outTransition.play();
-
-        if (!isSetup) return; // When updating the password only, we do not need to load the folder overview layout
-
-        try (ExecutorService service = Executors.newSingleThreadExecutor()) { // Lazy-load vault layout
-            service.execute(() -> {
-                try {
-                    FXMLLoader loader = new FXMLLoader(getClass().getResource("/io/github/redstonemango/mangrypt/fxml/folder-overview.fxml"));
-                    vaultOverviewFuture.complete(loader.load());
-                } catch (IOException e) {
-                    vaultOverviewFuture.completeExceptionally(e);
-                } finally {
-                    service.shutdown();
-                }
-            });
-        }
     }
 }

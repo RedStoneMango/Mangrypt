@@ -263,7 +263,7 @@ public class BaseView extends StackPane {
         showAlert(Alert.AlertType.WARNING, "Something unexpected happened:", warning, true, _ -> {}, ButtonType.OK);
     }
     public void showErrorAlert(String error) {
-        showAlert(Alert.AlertType.ERROR, "An error occurred:", error, true, _ -> {}, ButtonType.OK);
+        showAlert(Alert.AlertType.ERROR, "An unexpected error occurred:", error, true, _ -> {}, ButtonType.OK);
     }
 
     public void showAlert(Alert.AlertType type, String header, String content, boolean cancelable, Consumer<ButtonType> onAction, ButtonType... buttons) {

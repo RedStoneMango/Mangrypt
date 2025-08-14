@@ -31,6 +31,12 @@ public class SecureData {
         return new SecureData(TYPE_TEXT);
     }
 
+    static SecureData newImageData(byte[] imageBytes) {
+        SecureData data = new SecureData(TYPE_IMAGE);
+        data.imageBytes = imageBytes;
+        return data;
+    }
+
     private SecureData(int type) {
         this.type = type;
         ensureFields();
@@ -69,7 +75,11 @@ public class SecureData {
     public void zeroOut() {
         Utilities.ensureAuthorizedAccess(SecureData.class);
 
-        Arrays.fill(text, '\0');
+        if (text != null) Arrays.fill(text, '\0');
+        if (imageBytes != null) Arrays.fill(imageBytes, (byte) 0);
+    }
+    public boolean requiresSave() {
+        return type == TYPE_TEXT;
     }
 
 
@@ -111,6 +121,12 @@ public class SecureData {
             Encrypted encrypted = new Encrypted(TYPE_TEXT);
             encrypted.setName(name);
             encrypted.store(newTextData());
+            return encrypted;
+        }
+        public static Encrypted newEncryptedImageData(String name, byte[] imageBytes) throws Exception {
+            Encrypted encrypted = new Encrypted(TYPE_IMAGE);
+            encrypted.setName(name);
+            encrypted.store(newImageData(imageBytes));
             return encrypted;
         }
 
