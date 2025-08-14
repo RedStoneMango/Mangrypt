@@ -14,6 +14,7 @@ import java.util.Objects;
 public class SecureData {
 
     public static final int TYPE_TEXT = 0;
+    public static final int TYPE_IMAGE = 1;
 
     @Expose
     private int type;
@@ -21,6 +22,10 @@ public class SecureData {
     /* --- Text Data --- */
     @Expose
     private char[] text;
+
+    /* --- Image Data --- */
+    @Expose
+    private byte[] imageBytes;
 
     static SecureData newTextData() {
         return new SecureData(TYPE_TEXT);
@@ -32,13 +37,16 @@ public class SecureData {
     }
 
     public void ensureFields() {
-        if (type < 0 || type > 0) {
+        if (type < 0 || type > 1) {
             type = TYPE_TEXT;
         }
 
         switch (type) {
             case TYPE_TEXT -> {
                 if (text == null) text = new char[0];
+            }
+            case TYPE_IMAGE -> {
+                if (imageBytes == null) imageBytes = new byte[0];
             }
         }
     }
@@ -49,6 +57,14 @@ public class SecureData {
     public void text(char[] c) {
         Utilities.ensureAuthorizedAccess(DataView.class);
         text = c;
+    }
+    public byte[] imageBytes() {
+        Utilities.ensureAuthorizedAccess(DataView.class);
+        return imageBytes;
+    }
+    public void imageBytes(byte[] b) {
+        Utilities.ensureAuthorizedAccess(DataView.class);
+        imageBytes = b;
     }
     public void zeroOut() {
         Utilities.ensureAuthorizedAccess(SecureData.class);
@@ -72,7 +88,7 @@ public class SecureData {
         private String newContent;
 
         public void ensureFields() {
-            if (type < 0 || type > 0) {
+            if (type < 0 || type > 1) {
                 type = TYPE_TEXT;
             }
             if (name == null || name.isBlank()) {
@@ -166,6 +182,7 @@ public class SecureData {
         public static Image buildIconImage(int type) {
             return new Image(Objects.requireNonNull(SecureData.class.getResourceAsStream("/io/github/redstonemango/mangrypt/image/data-type-icon/" + switch (type) {
                 case TYPE_TEXT -> "text";
+                case TYPE_IMAGE -> "image";
                 default -> "";
             } + ".png")));
         }

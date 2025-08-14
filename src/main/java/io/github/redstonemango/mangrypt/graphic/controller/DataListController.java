@@ -12,6 +12,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.geometry.Point2D;
 import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
+import javafx.stage.FileChooser;
 
 import java.io.IOException;
 import java.util.Locale;
@@ -78,15 +79,23 @@ public class DataListController {
     @FXML
     private void onAdd() {
         MenuItem textItem = new MenuItem("Text Data");
-        ImageView textImage = new ImageView(SecureData.Encrypted.buildIconImage(SecureData.TYPE_TEXT));
-        textImage.setPreserveRatio(true);
-        textImage.setFitHeight(20);
-        textItem.setGraphic(textImage);
-        ContextMenu menu = new ContextMenu(textItem);
+        ImageView textIcon = new ImageView(SecureData.Encrypted.buildIconImage(SecureData.TYPE_TEXT));
+        textIcon.setPreserveRatio(true);
+        textIcon.setFitHeight(20);
+        textItem.setGraphic(textIcon);
+        textItem.setOnAction(_ -> addTextData());
+
+        MenuItem imageItem = new MenuItem("Text Data");
+        ImageView imageIcon = new ImageView(SecureData.Encrypted.buildIconImage(SecureData.TYPE_TEXT));
+        imageIcon.setPreserveRatio(true);
+        imageIcon.setFitHeight(20);
+        imageItem.setGraphic(imageIcon);
+        imageItem.setOnAction(_ -> addImageData());
+
+        ContextMenu menu = new ContextMenu(textItem, imageItem);
         Point2D imagePos = addImage.localToScreen(0, 0);
         menu.show(addImage.getParent(), imagePos.getX() + addImage.getFitWidth(), imagePos.getY());
 
-        textItem.setOnAction(_ -> addTextData());
     }
 
     private void addTextData() {
@@ -100,6 +109,12 @@ public class DataListController {
                 Mangrypt.getBase().showErrorAlert(String.valueOf(e));
                 throw new RuntimeException("Error creating an encrypted text-data object", e);
             }
+        });
+    }
+
+    private void addImageData() {
+        Mangrypt.getBase().showInputDialog("Please set a new name for the dataset", "Name", "", true, name -> !name.isBlank() && !name.equals("."), name -> name.startsWith(".") ? "Folders starting with . are hidden" : null, name -> {
+
         });
     }
 
