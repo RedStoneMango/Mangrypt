@@ -33,7 +33,7 @@ public class FileChooserNode extends VBox {
     private Button doneButton;
     private ContextMenu pathCompletionMenu;
     private ListView<String> pathCompletionList;
-    private Label titleLabel;
+    private final Label titleLabel;
     private boolean ignorePathChange = false;
 
     public FileChooserNode(String title, boolean saveMode, File initialDirectory, Consumer<File> onAction, Runnable onCancel, String... allowedExtensions) {
@@ -55,7 +55,8 @@ public class FileChooserNode extends VBox {
             }
 
             if (saveMode && doneButton != null) {
-                doneButton.setDisable(fileFromString(pathField.getText()).isDirectory());
+                File file = fileFromString(pathField.getText());
+                doneButton.setDisable(!isValidFileExtension(file, extensions) || file.isDirectory());
             }
         });
         pathField.focusedProperty().addListener((_, _, focused) -> {
@@ -150,7 +151,11 @@ public class FileChooserNode extends VBox {
         doneButton.setDefaultButton(true);
         doneButton.setDisable(true);
         doneButton.setOnAction(_ -> {
-            if (saveMode) return;
+            if (saveMode) {
+                File file = fileFromString(pathField.getText());
+                if (isValidFileExtension(file, extensions) && !file.isDirectory()) onAction.accept(file);
+                return;
+            }
 
             if (view.getSelectionModel().getSelectedItem() == null) return;
             File file = view.getSelectionModel().getSelectedItem().getValue();
@@ -264,7 +269,7 @@ public class FileChooserNode extends VBox {
     private List<String> normalizeAllowedExtensions(String... allowedExtensions) {
         List<String> normalized = new ArrayList<>();
         for (String s : allowedExtensions) {
-            if (s.startsWith(".")) normalized.add(s);
+            if (s.startsWith(".") || s.isBlank()) normalized.add(s);
             else if (s.startsWith("*.")) normalized.add(s.substring("*".length()));
             else normalized.add("." + s);
         }

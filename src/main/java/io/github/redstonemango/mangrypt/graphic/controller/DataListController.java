@@ -1,6 +1,7 @@
 package io.github.redstonemango.mangrypt.graphic.controller;
 
 import io.github.redstonemango.mangoutils.NameConverter;
+import io.github.redstonemango.mangoutils.OperatingSystem;
 import io.github.redstonemango.mangrypt.Mangrypt;
 import io.github.redstonemango.mangrypt.graphic.FileChooserNode;
 import io.github.redstonemango.mangrypt.graphic.ListEntry;
@@ -15,10 +16,14 @@ import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 
+import javax.crypto.SecretKey;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.Arrays;
 import java.util.Locale;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class DataListController {
 
@@ -37,7 +42,7 @@ public class DataListController {
         if (this.folder != null) throw new IllegalStateException("Initialisation already happened");
         this.folder = folder;
 
-        Utilities.applyCustomNodeCellFactory(dataView, data -> new ListEntry(data.getName(), data.getDescription(), () -> onOpen(data), () -> onDelete(data), () -> onRename(data), () -> onChangeDescription(data), dataView, data.getIcon()));
+        Utilities.applyCustomNodeCellFactory(dataView, data -> new ListEntry(data.getName(), data.getDescription(), () -> onOpen(data), () -> onDelete(data), () -> onRename(data), () -> onChangeDescription(data), () -> onExport(data), data.getIcon(), dataView));
         updateDataView();
 
         String name = ConfigIO.getVaultFile().getName().substring(0, ConfigIO.getVaultFile().getName().length() - ".mgvault".length());
@@ -77,6 +82,48 @@ public class DataListController {
             data.setDescription(description);
             dataView.refresh();
         });
+    }
+
+    private void onExport(SecureData.Encrypted data) {
+        File userHome = new File(System.getProperty("user.home"));
+        String fileExtension = data.getFileExtension();
+        FileChooserNode chooser = new FileChooserNode("Save as " + (fileExtension.isBlank() ? "any file type" : fileExtension), true, userHome,
+                selectedFile -> {
+                    Mangrypt.getBase().showAlert(Alert.AlertType.INFORMATION, "Working...", "Exporting data as '" + selectedFile.getName() + "'", false, _ -> {});
+                    try (ExecutorService service = Executors.newSingleThreadExecutor()) {
+                        service.execute(() -> {
+                            boolean error = false;
+                            try {
+                                data.export(selectedFile);
+                            }
+                            catch (Exception e) {
+                                error = true;
+                                selectedFile.delete(); // Delete possibly damaged file if exists
+                                Platform.runLater(() -> {
+                                    Mangrypt.getBase().showErrorAlert(String.valueOf(e));
+                                    throw new RuntimeException("Error updating password", e);
+                                });
+                            }
+                            finally {
+                                data.zeroTmpData();
+                            }
+                            Mangrypt.getBase().setSecondLayerRoot(null);
+                            if (!error) {
+                                ButtonType openType = new ButtonType("Show file");
+                                Platform.runLater(() -> Mangrypt.getBase().showAlert(Alert.AlertType.INFORMATION, "Export successful", "Successfully exported the dataset as '" + selectedFile.getName() + "'", true, button -> {
+                                    if (button == openType) OperatingSystem.loadCurrentOS().browse(selectedFile);
+                                }, openType, ButtonType.CLOSE));
+                            }
+                        });
+                    }
+                },
+                () -> Mangrypt.getBase().setSecondLayerRoot(null), fileExtension);
+        StackPane background = new StackPane();
+        StackPane root = new StackPane();
+        chooser.prepareMangryptLayout(root, background);
+        Utilities.registerClosableOverlay(root, () -> Mangrypt.getBase().setSecondLayerRoot(null), background);
+        Mangrypt.getBase().setSecondLayerRoot(root);
+        Platform.runLater(chooser::requestFocus);
     }
 
     @FXML
@@ -132,7 +179,7 @@ public class DataListController {
                 }
                 SecureData.Encrypted data;
                 try {
-                    data = SecureData.Encrypted.newEncryptedImageData(name, bytes);
+                    data = SecureData.Encrypted.newEncryptedImageData(name, bytes, selectedFile.getName().substring(selectedFile.getName().lastIndexOf(".")));
                 }
                 catch (Exception e) {
                     Mangrypt.getBase().showErrorAlert(String.valueOf(e));

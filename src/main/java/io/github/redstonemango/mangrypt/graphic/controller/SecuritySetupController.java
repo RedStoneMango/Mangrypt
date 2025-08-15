@@ -150,12 +150,15 @@ public class SecuritySetupController {
                 try (ExecutorService service = Executors.newSingleThreadExecutor()) {
                     service.execute(() -> {
                         boolean error = false;
+                        SecureData.Encrypted currentlyIterated = null;
                         try {
                             byte[] passwordSalt = CypherEncryption.generateRandomSalt();
                             SecretKey key = CypherEncryption.deriveKey(chars, passwordSalt);
                             for (Configuration.Folder folder : ConfigIO.getConfig().getFolders()) {
                                 for (SecureData.Encrypted data : folder.getEncryptedData()) {
+                                    currentlyIterated = data;
                                     data.updatePassword(key, passwordSalt);
+                                    currentlyIterated = null;
                                 }
                             }
 
@@ -178,6 +181,7 @@ public class SecuritySetupController {
                             });
                         }
                         finally {
+                            if (currentlyIterated != null) currentlyIterated.zeroTmpData(); // If an exception is thrown during password update (stage 1), zero out temporary leftover data
                             passwordField.setText("");
                             Arrays.fill(chars, '\0');
                         }

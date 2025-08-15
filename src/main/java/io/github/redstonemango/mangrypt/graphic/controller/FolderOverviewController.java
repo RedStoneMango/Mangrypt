@@ -1,10 +1,13 @@
 package io.github.redstonemango.mangrypt.graphic.controller;
 
 import io.github.redstonemango.mangoutils.NameConverter;
+import io.github.redstonemango.mangoutils.OperatingSystem;
 import io.github.redstonemango.mangrypt.Mangrypt;
+import io.github.redstonemango.mangrypt.graphic.FileChooserNode;
 import io.github.redstonemango.mangrypt.graphic.ListEntry;
 import io.github.redstonemango.mangrypt.logic.ConfigIO;
 import io.github.redstonemango.mangrypt.logic.Configuration;
+import io.github.redstonemango.mangrypt.logic.SecureData;
 import io.github.redstonemango.mangrypt.logic.Utilities;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
@@ -13,9 +16,13 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.StackPane;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Locale;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class FolderOverviewController {
 
@@ -29,7 +36,7 @@ public class FolderOverviewController {
 
     @FXML
     private void initialize() {
-        Utilities.applyCustomNodeCellFactory(folderView, folder -> new ListEntry(folder.getName(), folder.getDescription(), () -> onFolderOpen(folder), () -> onFolderDelete(folder), () -> onFolderRename(folder), () -> onFolderChangeDescription(folder), folderView, null));
+        Utilities.applyCustomNodeCellFactory(folderView, folder -> new ListEntry(folder.getName(), folder.getDescription(), () -> onFolderOpen(folder), () -> onFolderDelete(folder), () -> onFolderRename(folder), () -> onFolderChangeDescription(folder), () -> onFolderExport(folder), null, folderView));
         updateFolderView();
 
         String name = ConfigIO.getVaultFile().getName().substring(0, ConfigIO.getVaultFile().getName().length() - ".mgvault".length());
@@ -76,6 +83,57 @@ public class FolderOverviewController {
             folder.setDescription(description);
             folderView.refresh();
         });
+    }
+
+    // TODO: Use newest Mango-Utils version for numbered file creation, zipping, etc
+    private void onFolderExport(Configuration.Folder folder) {
+        Mangrypt.getBase().showInfoAlert("This feature is not fully implemented yet");
+        if (true) return;
+        File userHome = new File(System.getProperty("user.home"));
+        FileChooserNode chooser = new FileChooserNode("Save folder as .zip file", true, userHome,
+                selectedFile -> {
+                    Mangrypt.getBase().showAlert(Alert.AlertType.INFORMATION, "Working...", "Exporting individual data'", false, _ -> {});
+                    File tmpFolder = ConfigIO.getTmpExportDirectory();
+                    try (ExecutorService service = Executors.newSingleThreadExecutor()) {
+                        service.execute(() -> {
+                            boolean error = false;
+                            SecureData.Encrypted currentData = null;
+                            try {
+                                for (SecureData.Encrypted data : folder.getEncryptedData()) {
+                                    currentData = data;
+                                    data.export(new File(tmpFolder, ""));
+                                    currentData = null;
+                                }
+                            }
+                            catch (Exception e) {
+                                error = true;
+
+                                Platform.runLater(() -> {
+                                    Mangrypt.getBase().showErrorAlert(String.valueOf(e));
+                                    throw new RuntimeException("Error updating password", e);
+                                });
+                            }
+                            finally {
+                                if (currentData != null) currentData.zeroTmpData();
+                            }
+
+                            Mangrypt.getBase().setSecondLayerRoot(null);
+                            if (!error) {
+                                ButtonType openType = new ButtonType("Show file");
+                                Platform.runLater(() -> Mangrypt.getBase().showAlert(Alert.AlertType.INFORMATION, "Export successful", "Successfully exported the dataset as '" + selectedFile.getName() + "'", true, button -> {
+                                    if (button == openType) OperatingSystem.loadCurrentOS().browse(selectedFile);
+                                }, openType, ButtonType.CLOSE));
+                            }
+                        });
+                    }
+                },
+                () -> Mangrypt.getBase().setSecondLayerRoot(null), ".zip");
+        StackPane background = new StackPane();
+        StackPane root = new StackPane();
+        chooser.prepareMangryptLayout(root, background);
+        Utilities.registerClosableOverlay(root, () -> Mangrypt.getBase().setSecondLayerRoot(null), background);
+        Mangrypt.getBase().setSecondLayerRoot(root);
+        Platform.runLater(chooser::requestFocus);
     }
 
     @FXML

@@ -10,6 +10,7 @@ import javafx.geometry.Pos;
 import javafx.scene.Cursor;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextArea;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -75,8 +76,8 @@ public class DataView extends BorderPane {
         BorderPane.setMargin(centerContainer, new Insets(0, 0, 50, 0));
 
         Utilities.registerDynamicClosableOverlay(this, onClose, () -> new Node[]{swipeArrowLeft, swipeArrowRight, centerContainer.getChildren().getFirst()});
-        centerContainer.widthProperty().addListener((_, _, width) -> sizeUpdate(width.doubleValue(), true));
-        centerContainer.heightProperty().addListener((_, _, height) -> sizeUpdate(height.doubleValue(), false));
+        centerContainer.widthProperty().addListener((_, _, width) -> sizeUpdate(width.doubleValue(), true, false));
+        centerContainer.heightProperty().addListener((_, _, height) -> sizeUpdate(height.doubleValue(), false, false));
     }
 
     public void showData(List<SecureData.Encrypted> availableData, SecureData.Encrypted data) {
@@ -98,14 +99,14 @@ public class DataView extends BorderPane {
         encryptedData = data;
         this.availableData = availableData;
         changed = false;
-        sizeUpdate(centerContainer.getWidth(), true);
-        sizeUpdate(centerContainer.getHeight(), false);
+        sizeUpdate(centerContainer.getWidth(), true, false);
+        sizeUpdate(centerContainer.getHeight(), false, true);
 
         checkSwipeable();
     }
 
     // TODO: The centering logic doesn't work reliably yet
-    private void sizeUpdate(double sideLength, boolean isWidth) {
+    private void sizeUpdate(double sideLength, boolean isWidth, boolean updateVisibility) {
         // Most times this will be managed automatically by the layout, we just have to manually account for some exceptions
         if (centerContainer.getChildren().getFirst() instanceof ImageView imageView) {
             if (isWidth) {
@@ -116,16 +117,18 @@ public class DataView extends BorderPane {
             }
 
             Platform.runLater(() -> {
-                Bounds newBounds = imageView.getBoundsInParent();
+                Bounds newBounds = imageView.getLayoutBounds();
 
-                double containerWidth = isWidth ? sideLength : newBounds.getWidth();
-                double containerHeight = isWidth ? newBounds.getHeight() : sideLength;
+                double containerWidth = centerContainer.getWidth();
+                double containerHeight = centerContainer.getHeight();
 
                 double offsetX = (containerWidth - newBounds.getWidth()) / 2;
                 double offsetY = (containerHeight - newBounds.getHeight()) / 2;
 
-                imageView.setX(offsetX);
-                imageView.setY(offsetY);
+                imageView.setLayoutX(offsetX);
+                imageView.setLayoutY(offsetY);
+
+                imageView.setVisible(true); // Prevent image pos jump on first load
             });
         }
     }
@@ -133,9 +136,8 @@ public class DataView extends BorderPane {
     public void storeData() {
         Utilities.ensureAuthorizedAccess(DataView.class, BaseView.class);
         if (decryptedData == null) return;
-        if (!decryptedData.requiresSave()) return;
 
-        if (changed) {
+        if (decryptedData.requiresSave() && changed) {
             try {
                 encryptedData.store(decryptedData);
             }
@@ -145,6 +147,7 @@ public class DataView extends BorderPane {
             }
         }
         decryptedData.zeroOut();
+        decryptedData = null;
     }
 
     private Node extractContentFrom(SecureData.Encrypted data) throws Exception {
@@ -170,15 +173,12 @@ public class DataView extends BorderPane {
                 imageView.setPreserveRatio(true);
                 imageView.setManaged(false);
                 imageView.setSmooth(true);
+                imageView.setVisible(false); // Prevent image pos jump on first load
                 yield imageView;
             }
             default -> createErrorDisplay();
         };
-        Platform.runLater(node::requestFocus);
-        if (!decryptedData.requiresSave()) {
-            decryptedData.zeroOut(); // If we do not need to update you later, we can safely zero this out
-            decryptedData = null;
-        }
+        Platform.runLater(centerContainer::requestFocus);
         return node;
     }
 

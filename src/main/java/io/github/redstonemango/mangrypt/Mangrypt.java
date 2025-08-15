@@ -22,7 +22,7 @@ public class Mangrypt extends Application {
         stage.show();
         double xDecoration = stage.getWidth() - scene.getWidth();
         double yDecoration = stage.getHeight() - scene.getHeight();
-        stage.setMinWidth(720 + xDecoration);
+        stage.setMinWidth(780 + xDecoration);
         stage.setMinHeight(480 + yDecoration);
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {

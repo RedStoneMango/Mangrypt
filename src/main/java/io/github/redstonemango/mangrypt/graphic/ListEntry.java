@@ -20,7 +20,7 @@ public class ListEntry extends ListEntryBase {
     private final Runnable onSelect;
     private final Runnable onDelete;
 
-    public ListEntry(String name, String description, Runnable onSelect, Runnable onDelete, Runnable onSetName, Runnable onSetDescription, ListView<?> view, @Nullable Image icon) {
+    public ListEntry(String name, String description, Runnable onSelect, Runnable onDelete, Runnable onSetName, Runnable onSetDescription, Runnable onExport, @Nullable Image icon, ListView<?> view) {
         nameLabel.setText(name);
         if (name.startsWith(".")) nameLabel.setFont(Font.font("", FontWeight.NORMAL, FontPosture.ITALIC, 17));
         descriptionLabel.setText(description);
@@ -53,7 +53,9 @@ public class ListEntry extends ListEntryBase {
         nameItem.setOnAction(_ -> onSetName.run());
         MenuItem descriptionItem = new MenuItem("Change Description");
         descriptionItem.setOnAction(_ -> onSetDescription.run());
-        ContextMenu menu = new ContextMenu(openItem, deleteItem, new SeparatorMenuItem(), nameItem, descriptionItem);
+        MenuItem exportItem = new MenuItem("Export");
+        exportItem.setOnAction(_ -> onExport.run());
+        ContextMenu menu = new ContextMenu(openItem, deleteItem, new SeparatorMenuItem(), nameItem, descriptionItem, new SeparatorMenuItem(), exportItem);
         setOnMouseClicked(e -> {
             if (menu.isShowing()) menu.hide();
             if (e.getButton() == MouseButton.SECONDARY) {

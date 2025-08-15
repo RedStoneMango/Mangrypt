@@ -6,8 +6,14 @@ import io.github.redstonemango.mangrypt.graphic.DataView;
 import io.github.redstonemango.mangrypt.graphic.controller.DataListController;
 import io.github.redstonemango.mangrypt.graphic.controller.SecuritySetupController;
 import javafx.scene.image.Image;
+import org.jetbrains.annotations.Nullable;
 
 import javax.crypto.SecretKey;
+import java.io.File;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Objects;
 
@@ -95,7 +101,14 @@ public class SecureData {
         private String content;
         @Expose
         private int type;
+        @Expose
+        private String fileExtension;
         private String newContent;
+
+        private @Nullable SecureData tmpData;
+        private byte[] tmpBytes;
+        private @Nullable CharBuffer tmpCharBuffer;
+        private @Nullable ByteBuffer tmpByteBuffer;
 
         public void ensureFields() {
             if (type < 0 || type > 1) {
@@ -110,21 +123,25 @@ public class SecureData {
             if (content == null) {
                 content = "";
             }
+            if (fileExtension == null) {
+                fileExtension = "";
+            }
         }
 
-        private Encrypted(int type) {
+        private Encrypted(int type, String fileExtension) {
             this.type = type;
+            this.fileExtension = fileExtension;
             ensureFields();
         }
 
         public static Encrypted newEncryptedTextData(String name) throws Exception {
-            Encrypted encrypted = new Encrypted(TYPE_TEXT);
+            Encrypted encrypted = new Encrypted(TYPE_TEXT, "");
             encrypted.setName(name);
             encrypted.store(newTextData());
             return encrypted;
         }
-        public static Encrypted newEncryptedImageData(String name, byte[] imageBytes) throws Exception {
-            Encrypted encrypted = new Encrypted(TYPE_IMAGE);
+        public static Encrypted newEncryptedImageData(String name, byte[] imageBytes, String fileExtension) throws Exception {
+            Encrypted encrypted = new Encrypted(TYPE_IMAGE, fileExtension);
             encrypted.setName(name);
             encrypted.store(newImageData(imageBytes));
             return encrypted;
@@ -150,10 +167,36 @@ public class SecureData {
         public void updatePassword(SecretKey key, byte[] salt) throws Exception {
             Utilities.ensureAuthorizedAccess(SecuritySetupController.class);
 
-            SecureData data = decrypt();
-            String json = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create().toJson(data);
+            tmpData = decrypt();
+            String json = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create().toJson(tmpData);
             newContent = CypherEncryption.encryptToString(json, key, salt);
-            data.zeroOut();
+            tmpData.zeroOut();
+            tmpData = null;
+        }
+
+        public void zeroTmpData() {
+            if (tmpData != null) {
+                tmpData.zeroOut();
+                tmpData = null;
+            }
+            if (tmpBytes != null) {
+                Arrays.fill(tmpBytes, (byte) 0);
+                tmpBytes = null;
+            }
+            if (tmpCharBuffer != null) {
+                tmpCharBuffer.clear();
+                while (tmpCharBuffer.hasRemaining()) {
+                    tmpCharBuffer.put('\0');
+                }
+                tmpCharBuffer = null;
+            }
+            if (tmpByteBuffer != null) {
+                tmpByteBuffer.clear();
+                while (tmpByteBuffer.hasRemaining()) {
+                    tmpByteBuffer.put((byte) 0);
+                }
+                tmpByteBuffer = null;
+            }
         }
 
         public void finalizePasswordUpdate() {
@@ -165,6 +208,27 @@ public class SecureData {
 
             content = newContent;
             newContent = null;
+        }
+
+        public String getFileExtension() {
+            return fileExtension;
+        }
+
+        public void export(File targetDestination) throws Exception {
+            tmpData = decrypt();
+            targetDestination.getParentFile().mkdirs();
+            targetDestination.createNewFile();
+            switch (type) {
+                case TYPE_TEXT -> { // Do not convert to immutable java.lang.String
+                    tmpCharBuffer = CharBuffer.wrap(tmpData.text);
+                    tmpByteBuffer = StandardCharsets.UTF_8.encode(tmpCharBuffer);
+                    tmpBytes = new byte[tmpByteBuffer.remaining()];
+                    tmpByteBuffer.get(tmpBytes);
+                }
+                case TYPE_IMAGE -> tmpBytes = tmpData.imageBytes;
+                default -> throw new Exception("Invalid data type");
+            }
+            Files.write(targetDestination.toPath(), tmpBytes);
         }
 
         public byte[] extractSalt() {
