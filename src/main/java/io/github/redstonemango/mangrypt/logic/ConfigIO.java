@@ -15,8 +15,7 @@ import java.nio.file.Files;
 
 public class ConfigIO {
 
-    private static final File VAULT_DIRECTORY = OperatingSystem.loadCurrentOS().createAppConfigDir("mangrypt/vaults");
-    private static final File TMP_EXPORT_DIRECTORY = OperatingSystem.loadCurrentOS().createAppConfigDir("mangrypt/exportTmp");
+    private static final File VAULT_DIRECTORY = OperatingSystem.loadCurrentOS().createAppConfigDir("mangrypt");
     private static final int VERSION = 1;
 
     private static File vaultFile;
@@ -169,8 +168,5 @@ public class ConfigIO {
     }
     public static File getVaultDirectory() {
         return VAULT_DIRECTORY;
-    }
-    public static File getTmpExportDirectory() {
-        return TMP_EXPORT_DIRECTORY;
     }
 }

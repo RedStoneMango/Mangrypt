@@ -16,7 +16,7 @@ import java.util.Arrays;
 import java.util.Base64;
 
 /**
- * Technically duplicate of {@link io.github.redstonemango.mangoutils.CypherEncryption} but I like it more to exist here due to better control and more transparency.
+ * Updated version of {@link io.github.redstonemango.mangoutils.CypherEncryption}, refined for Mangrypt's use cases
  */
 public class CypherEncryption {
 
@@ -133,9 +133,6 @@ public class CypherEncryption {
         return deriveKey(password, salt);
     }
 
-    public static byte[] extractPayload(byte[] cypherBytes) {
-        return Arrays.copyOfRange(cypherBytes, SALT_LENGTH, cypherBytes.length);
-    }
     public static byte[] extractSaltFromString(String base64CipherText) {
         byte[] cypherBytes = Base64.getDecoder().decode(base64CipherText);
         return Arrays.copyOfRange(cypherBytes, 0, SALT_LENGTH);

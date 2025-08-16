@@ -98,11 +98,17 @@ public class DataListController {
                             }
                             catch (Exception e) {
                                 error = true;
-                                selectedFile.delete(); // Delete possibly damaged file if exists
-                                Platform.runLater(() -> {
-                                    Mangrypt.getBase().showErrorAlert(String.valueOf(e));
-                                    throw new RuntimeException("Error updating password", e);
-                                });
+                                boolean cleanupError = false;
+                                if (selectedFile.exists() && !selectedFile.delete()) {
+                                    cleanupError = true;
+                                    Mangrypt.getBase().showErrorAlert("Action failed! Unable to delete possible leftovers. THAT FILE MIGHT CONTAIN UNPROTECTED SENSITIVE DATA");
+                                }
+                                if (!cleanupError) {
+                                    Platform.runLater(() -> {
+                                        Mangrypt.getBase().showErrorAlert(String.valueOf(e));
+                                        throw new RuntimeException("Error exporting data", e);
+                                    });
+                                }
                             }
                             finally {
                                 data.zeroTmpData();

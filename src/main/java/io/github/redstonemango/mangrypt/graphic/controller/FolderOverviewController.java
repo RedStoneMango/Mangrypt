@@ -1,5 +1,6 @@
 package io.github.redstonemango.mangrypt.graphic.controller;
 
+import io.github.redstonemango.mangoutils.MangoIO;
 import io.github.redstonemango.mangoutils.NameConverter;
 import io.github.redstonemango.mangoutils.OperatingSystem;
 import io.github.redstonemango.mangrypt.Mangrypt;
@@ -20,6 +21,7 @@ import javafx.scene.layout.StackPane;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -85,15 +87,13 @@ public class FolderOverviewController {
         });
     }
 
-    // TODO: Use newest Mango-Utils version for numbered file creation, zipping, etc
     private void onFolderExport(Configuration.Folder folder) {
-        Mangrypt.getBase().showInfoAlert("This feature is not fully implemented yet");
-        if (true) return;
         File userHome = new File(System.getProperty("user.home"));
         FileChooserNode chooser = new FileChooserNode("Save folder as .zip file", true, userHome,
                 selectedFile -> {
-                    Mangrypt.getBase().showAlert(Alert.AlertType.INFORMATION, "Working...", "Exporting individual data'", false, _ -> {});
-                    File tmpFolder = ConfigIO.getTmpExportDirectory();
+                    Mangrypt.getBase().showAlert(Alert.AlertType.INFORMATION, "Working...", "Exporting individual data", false, _ -> {});
+                    File tmpFolder = MangoIO.getNextAvailableFile(new File(selectedFile.getParent(), folder.getName()));
+                    tmpFolder.mkdirs();
                     try (ExecutorService service = Executors.newSingleThreadExecutor()) {
                         service.execute(() -> {
                             boolean error = false;
@@ -101,20 +101,58 @@ public class FolderOverviewController {
                             try {
                                 for (SecureData.Encrypted data : folder.getEncryptedData()) {
                                     currentData = data;
-                                    data.export(new File(tmpFolder, ""));
+                                    data.export(MangoIO.getNextAvailableFile(new File(tmpFolder, data.getName())));
                                     currentData = null;
                                 }
                             }
                             catch (Exception e) {
                                 error = true;
+                                boolean cleanupError = false;
 
-                                Platform.runLater(() -> {
-                                    Mangrypt.getBase().showErrorAlert(String.valueOf(e));
-                                    throw new RuntimeException("Error updating password", e);
-                                });
+                                try {
+                                    MangoIO.deleteDirectoryRecursively(tmpFolder);
+                                } catch (IOException _) {
+                                    cleanupError = true;
+                                    Mangrypt.getBase().showErrorAlert("Export failed! Unable to delete export-folder. THIS FOLDER MIGHT CONTAIN UNPROTECTED SENSITIVE DATA");
+                                }
+
+                                if (!cleanupError) {
+                                    Platform.runLater(() -> {
+                                        Mangrypt.getBase().showErrorAlert(String.valueOf(e));
+                                        throw new RuntimeException("Error exporting folder", e);
+                                    });
+                                }
+
                             }
                             finally {
                                 if (currentData != null) currentData.zeroTmpData();
+                            }
+
+                            try {
+                                MangoIO.compressFile(tmpFolder, selectedFile, true);
+                            } catch (IOException e) {
+                                error = true;
+                                boolean cleanupError = false;
+
+                                try {
+                                    MangoIO.deleteDirectoryRecursively(tmpFolder);
+                                } catch (IOException _) {
+                                    cleanupError = true;
+                                    Mangrypt.getBase().showErrorAlert("Compression failed! Unable to delete export-folder etc. THESE FILES MIGHT CONTAIN UNPROTECTED SENSITIVE DATA");
+                                }
+
+                                if (!cleanupError) {
+                                    Platform.runLater(() -> {
+                                        Mangrypt.getBase().showErrorAlert(String.valueOf(e));
+                                        throw new RuntimeException("Error compressing folder", e);
+                                    });
+                                }
+                            }
+
+                            try {
+                                MangoIO.deleteDirectoryRecursively(tmpFolder);
+                            } catch (IOException _) {
+                                Mangrypt.getBase().showErrorAlert("Cleanup failed! Unable to delete export-folder. THIS FOLDER MIGHT CONTAIN UNPROTECTED SENSITIVE DATA");
                             }
 
                             Mangrypt.getBase().setSecondLayerRoot(null);

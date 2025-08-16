@@ -100,7 +100,7 @@ Mangrypt is written using:
 - **UI Framework:** [`JavaFX`](https://openjfx.io) 23
 - **Native Packaging:** [`javapackager`](https://github.com/javapackager/JavaPackager) 1.7.6
 - **Json Handling:** [`Gson`](https://github.com/google/gson) 2.11.0
-- **Utility dependencies:** [`Mango-Utils`](https://github.com/RedStoneMango/Mango-Utils) 1.1.1
+- **Utility dependencies:** [`Mango-Utils`](https://github.com/RedStoneMango/Mango-Utils) 2.0.1
 
 ---
 
