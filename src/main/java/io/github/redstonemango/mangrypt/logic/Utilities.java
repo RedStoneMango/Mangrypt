@@ -15,10 +15,16 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
 import javafx.util.Callback;
 import javafx.util.Duration;
+import org.jetbrains.annotations.Nullable;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -188,4 +194,14 @@ public class Utilities {
         }));
     }
 
+    public static String getSupportedMimeType(String fileName) {
+        String ext = fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase();
+        return switch (ext) {
+            case "mp3" -> "audio/mpeg";
+            case "aac" -> "audio/aac";
+            case "wav" -> "audio/wav";
+            case "mp4" -> "video/mp4";
+            default -> throw new IllegalArgumentException("Extension not supported: " + ext);
+        };
+    }
 }
