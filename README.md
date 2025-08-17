@@ -64,10 +64,11 @@ The first layer secures a minimal configuration structure (vault names and other
 
 Once Layer One is decrypted, sensitive data can be unlocked by a second password. This layer uses:
 
-- The same **AES-128-GCM** encryption configuration  
+- A **Base64** encoded ciphertext
+- The same **AES-128-GCM** encryption configuration
 - A separate **Access Password**
 
-On startup, **Mangrypt** also prompts for this password but does not immediately use it. Instead the key is securely stored and will be used automatically to decrypt sensitive data on demand.
+On startup, **Mangrypt** also prompts for this password but does not immediately use it. Instead, the key is securely stored and will be used automatically to decrypt sensitive data on demand.
 
 > If the Mangrypt window loses focus, the app automatically obscures all content and re-prompts for the **Access Password** to protect unattended data.
 

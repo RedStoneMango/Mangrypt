@@ -167,3 +167,24 @@
 .swipe-arrow:disabled .arrow-background {
     -fx-fill: darkgray;
 }
+
+.slider .track {
+    -fx-background-color: darkgreen;
+    -fx-background-radius: 5;
+    -fx-border-color: green;
+    -fx-border-radius: 5;
+}
+
+.slider .thumb {
+    -fx-background-color: green;
+    -fx-border-color: lightgreen;
+    -fx-border-radius: 20;
+}
+.slider:disabled .thumb {
+    -fx-opacity: 0;
+    -fx-visible: false;
+}
+.slider .thumb:hover,
+.slider .thumb:pressed {
+    -fx-background-color: #009600;
+}

@@ -34,6 +34,7 @@ public class MediaDisplay extends VBox {
         durationSlider.valueProperty().addListener((_, _, value) -> {
             if (durationSlider.isValueChanging()) player.seek(Duration.seconds(value.doubleValue()));
         });
+        durationSlider.setDisable(true);
         VBox.setMargin(durationSlider, new Insets(0, 5, 0, 5));
         Button pauseButton = new Button(">");
         pauseButton.setPrefWidth(33);
@@ -120,12 +121,14 @@ public class MediaDisplay extends VBox {
             backardButton.setDisable(true);
             timeLabel.setText("--:-- / --:--");
             pauseButton.setText(">");
+            durationSlider.setDisable(true);
         });
         player.setOnPlaying(() -> {
             stopButton.setDisable(false);
             forwardButton.setDisable(false);
             backardButton.setDisable(false);
             pauseButton.setText("||");
+            durationSlider.setDisable(false);
         });
         player.setOnPaused(() -> pauseButton.setText(">"));
         player.setOnEndOfMedia(() -> {
