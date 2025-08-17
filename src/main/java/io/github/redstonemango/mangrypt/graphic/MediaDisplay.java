@@ -15,7 +15,6 @@ import javafx.scene.media.VideoTrack;
 import javafx.scene.paint.Color;
 import javafx.util.Duration;
 
-import javax.swing.plaf.nimbus.NimbusStyle;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -150,7 +149,7 @@ public class MediaDisplay extends VBox {
         setSpacing(20);
     }
 
-    public List<Node> getUiElementUnmodifiable() {
+    public List<Node> getUiElementsUnmodifiable() {
         List<Node> es = new ArrayList<>();
         getChildren().forEach(child -> {
             if (child instanceof AnchorPane pane) es.add(pane.getChildren().getFirst());

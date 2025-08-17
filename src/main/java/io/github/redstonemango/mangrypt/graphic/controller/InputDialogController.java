@@ -67,7 +67,7 @@ public class InputDialogController {
             Utilities.registerClosableOverlay(root, () -> {
                 root.getParent().setVisible(false);
                 oldFocusOwner.requestFocus();
-            }, (Region) headerLabel.getParent());
+            }, headerLabel.getParent());
         }
     }
 

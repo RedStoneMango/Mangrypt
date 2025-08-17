@@ -88,7 +88,7 @@ public class DataView extends BorderPane {
         }, () -> {
             List<Node> nodes = new ArrayList<>(List.of(swipeArrowLeft, swipeArrowRight, nameLabel));
             if (centerContainer.getChildren().getFirst() instanceof MediaDisplay display) {
-                nodes.addAll(display.getUiElementUnmodifiable());
+                nodes.addAll(display.getUiElementsUnmodifiable());
             }
             else {
                 nodes.add(centerContainer.getChildren().getFirst());
