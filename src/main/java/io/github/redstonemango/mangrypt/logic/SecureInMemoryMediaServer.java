@@ -25,9 +25,6 @@ public class SecureInMemoryMediaServer {
     private HttpServer server;
     private String accessToken;
 
-    /**
-     * Port 0 automatically resolves a free port
-     */
     public SecureInMemoryMediaServer(byte[] mediaBytes, String mimeType, int port, String path) {
         this.mediaBytes = mediaBytes;
         this.mimeType = mimeType;
@@ -43,7 +40,7 @@ public class SecureInMemoryMediaServer {
 
         server.createContext(path, exchange -> {
             URI requestURI = exchange.getRequestURI();
-            String query = requestURI.getRawQuery(); // raw query preserves encoding
+            String query = requestURI.getRawQuery();
             String token = null;
 
             if (query != null) {
@@ -60,12 +57,66 @@ public class SecureInMemoryMediaServer {
                 exchange.sendResponseHeaders(403, -1);
                 return;
             }
-            accessToken = generateSecureToken();
+
+            String rangeHeader = exchange.getRequestHeaders().getFirst("Range");
+            boolean isPartial = false;
+
+            int totalLength = mediaBytes.length;
+            int start = 0;
+            int end = totalLength - 1;
+
+            if (rangeHeader != null && rangeHeader.startsWith("bytes=")) {
+                isPartial = true;
+                String[] parts = rangeHeader.substring("bytes=".length()).split("-");
+                try {
+                    start = Integer.parseInt(parts[0]);
+                    if (parts.length > 1 && !parts[1].isEmpty()) {
+                        end = Integer.parseInt(parts[1]);
+                    }
+                    end = Math.min(end, totalLength - 1);
+                    if (start > end || start >= totalLength) {
+                        exchange.sendResponseHeaders(416, -1); // Range Not Satisfiable
+                        return;
+                    }
+                } catch (NumberFormatException e) {
+                    exchange.sendResponseHeaders(400, -1); // Bad Request
+                    return;
+                }
+            }
+
+            int contentLength = end - start + 1;
 
             exchange.getResponseHeaders().add("Content-Type", mimeType);
-            exchange.sendResponseHeaders(200, mediaBytes.length);
+            exchange.getResponseHeaders().add("Accept-Ranges", "bytes");
+            exchange.getResponseHeaders().add("Content-Disposition", "inline; filename=\"media.mp3\"");
+
+            // HEAD method (respond with headers only)
+            if ("HEAD".equalsIgnoreCase(exchange.getRequestMethod())) {
+                if (isPartial) {
+                    exchange.getResponseHeaders().add("Content-Range",
+                            String.format("bytes %d-%d/%d", start, end, totalLength));
+                    exchange.getResponseHeaders().add("Content-Length", String.valueOf(contentLength));
+                    exchange.sendResponseHeaders(206, -1);
+                } else {
+                    exchange.getResponseHeaders().add("Content-Length", String.valueOf(totalLength));
+                    exchange.sendResponseHeaders(200, -1);
+                }
+                return;
+            }
+
+            // GET method (respond with body)
+            if (isPartial) {
+                exchange.getResponseHeaders().add("Content-Range",
+                        String.format("bytes %d-%d/%d", start, end, totalLength));
+                exchange.getResponseHeaders().add("Content-Length", String.valueOf(contentLength));
+                exchange.sendResponseHeaders(206, contentLength);
+            } else {
+                exchange.getResponseHeaders().add("Content-Length", String.valueOf(totalLength));
+                exchange.sendResponseHeaders(200, totalLength);
+            }
+
             try (OutputStream os = exchange.getResponseBody()) {
-                os.write(mediaBytes);
+                os.write(mediaBytes, start, contentLength);
             }
         });
 
@@ -82,6 +133,10 @@ public class SecureInMemoryMediaServer {
 
     public String getStreamUrl() {
         return "http://127.0.0.1:" + actualPort + path;
+    }
+
+    public String getTokenizedUrl() {
+        return getStreamUrl() + "?token=" + accessToken;
     }
 
     public String getAccessToken() {
@@ -101,10 +156,6 @@ public class SecureInMemoryMediaServer {
                 return new InetSocketAddress("127.0.0.1", freePort);
             }
         }
-    }
-
-    public String getTokenizedUrl() {
-        return getStreamUrl() + "?token=" + accessToken;
     }
 
     private String generateSecureToken() {

@@ -16,11 +16,9 @@ import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 
-import javax.crypto.SecretKey;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.Arrays;
 import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -148,7 +146,14 @@ public class DataListController {
         imageItem.setGraphic(imageIcon);
         imageItem.setOnAction(_ -> addImageData());
 
-        ContextMenu menu = new ContextMenu(textItem, imageItem);
+        MenuItem mediaItem = new MenuItem("Audio/Video Data");
+        ImageView mediaIcon = new ImageView(SecureData.Encrypted.buildIconImage(SecureData.TYPE_MEDIA));
+        mediaIcon.setPreserveRatio(true);
+        mediaIcon.setFitHeight(20);
+        mediaItem.setGraphic(mediaIcon);
+        mediaItem.setOnAction(_ -> addMediaData());
+
+        ContextMenu menu = new ContextMenu(textItem, imageItem, mediaItem);
         Point2D imagePos = addImage.localToScreen(0, 0);
         menu.show(addImage.getParent(), imagePos.getX() + addImage.getFitWidth(), imagePos.getY());
 
@@ -196,6 +201,42 @@ public class DataListController {
                 onOpen(data);
             },
             () -> Mangrypt.getBase().setSecondLayerRoot(null), "jpeg", "jpg", "png", "bmp", "gif");
+            StackPane background = new StackPane();
+            StackPane root = new StackPane();
+            chooser.prepareMangryptLayout(root, background);
+            Utilities.registerClosableOverlay(root, () -> Mangrypt.getBase().setSecondLayerRoot(null), background);
+            Mangrypt.getBase().setSecondLayerRoot(root);
+            Platform.runLater(chooser::requestFocus);
+        });
+    }
+
+    private void addMediaData() {
+        Mangrypt.getBase().showInputDialog("Please set a name for the new dataset", "Name", "", true, name -> !name.isBlank() && !name.equals("."), name -> name.startsWith(".") ? "Folders starting with . are hidden" : null, name -> {
+            File userHome = new File(System.getProperty("user.home"));
+            FileChooserNode chooser = new FileChooserNode("Select video or audio file", false, userHome,
+            selectedFile -> {
+                Mangrypt.getBase().setSecondLayerRoot(null);
+                byte[] bytes;
+                try {
+                    bytes = Files.readAllBytes(selectedFile.toPath());
+                }
+                catch (Exception e) {
+                    Mangrypt.getBase().showErrorAlert(String.valueOf(e));
+                    throw new RuntimeException("Error reading media file", e);
+                }
+                SecureData.Encrypted data;
+                try {
+                    data = SecureData.Encrypted.newEncryptedMediaData(name, bytes, selectedFile.getName().substring(selectedFile.getName().lastIndexOf(".")));
+                }
+                catch (Exception e) {
+                    Mangrypt.getBase().showErrorAlert(String.valueOf(e));
+                    throw new RuntimeException("Error creating media data", e);
+                }
+                folder.getEncryptedData().add(data);
+                updateDataView();
+                onOpen(data);
+            },
+            () -> Mangrypt.getBase().setSecondLayerRoot(null), "mp4", "mp3", "aac", "wav");
             StackPane background = new StackPane();
             StackPane root = new StackPane();
             chooser.prepareMangryptLayout(root, background);

@@ -1,5 +1,6 @@
 package io.github.redstonemango.mangrypt.graphic;
 
+import io.github.redstonemango.mangrypt.Mangrypt;
 import io.github.redstonemango.mangrypt.graphic.controller.*;
 import io.github.redstonemango.mangrypt.logic.ConfigIO;
 import io.github.redstonemango.mangrypt.logic.Configuration;
@@ -145,6 +146,11 @@ public class BaseView extends StackPane {
     public void showData(List<SecureData.Encrypted> availableData, SecureData.Encrypted data) {
         dataViewLayer.showData(availableData, data);
         if (!dataViewLayer.isVisible()) dataViewLayer.setVisible(true);
+    }
+
+    public void shutdownMediaServer() {
+        Utilities.ensureAuthorizedAccess(Mangrypt.class);
+        dataViewLayer.shutdownMediaServer();
     }
 
     public void storeShowingData() {

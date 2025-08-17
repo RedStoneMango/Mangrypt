@@ -1,6 +1,5 @@
 package io.github.redstonemango.mangrypt;
 
-import io.github.redstonemango.mangoutils.MangoIO;
 import io.github.redstonemango.mangrypt.logic.ConfigIO;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
@@ -29,7 +28,13 @@ public class Mangrypt extends Application {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             if (ConfigIO.shouldSave()) ConfigIO.save();
             ConfigIO.cleanup(); // Try to unset all mutable objects to minimize the risk of memory leaks
+            base.shutdownMediaServer();
         }));
+        stage.setOnCloseRequest(e -> {
+            if (!e.isConsumed()) {
+                base.shutdownMediaServer(); // Shutdown when closing window, to allow app to exit
+            }
+        });
 
         if (!ConfigIO.getVaultDirectory().exists()) ConfigIO.getVaultDirectory().mkdirs();
 

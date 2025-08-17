@@ -194,13 +194,12 @@ public class Utilities {
         }));
     }
 
-    public static String getSupportedMimeType(String fileName) {
-        String ext = fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase();
+    public static String getSupportedMimeType(String ext) {
         return switch (ext) {
-            case "mp3" -> "audio/mpeg";
-            case "aac" -> "audio/aac";
-            case "wav" -> "audio/wav";
-            case "mp4" -> "video/mp4";
+            case "mp3", ".mp3" -> "audio/mpeg";
+            case "aac", ".aac" -> "audio/aac";
+            case "wav", ".wav" -> "audio/wav";
+            case "mp4", ".mp4" -> "video/mp4";
             default -> throw new IllegalArgumentException("Extension not supported: " + ext);
         };
     }

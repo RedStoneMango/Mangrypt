@@ -1,5 +1,6 @@
 package io.github.redstonemango.mangrypt.graphic;
 
+import io.github.redstonemango.mangoutils.OperatingSystem;
 import io.github.redstonemango.mangrypt.Mangrypt;
 import io.github.redstonemango.mangrypt.logic.*;
 import javafx.application.Platform;
@@ -9,24 +10,28 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Cursor;
 import javafx.scene.Node;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
-import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextArea;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.*;
+import javafx.scene.media.Media;
+import javafx.scene.media.MediaException;
+import javafx.scene.media.MediaPlayer;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Polygon;
-import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontPosture;
 import javafx.scene.text.FontWeight;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.ByteArrayInputStream;
+import java.util.ArrayList;
 import java.util.List;
 
 public class DataView extends BorderPane {
@@ -35,15 +40,17 @@ public class DataView extends BorderPane {
     private final AnchorPane centerContainer;
     private final StackPane swipeArrowLeft;
     private final StackPane swipeArrowRight;
-    private final Runnable onClose = () -> {
-        storeData();
-        setVisible(false);
-    };
 
     private List<SecureData.Encrypted> availableData;
     private SecureData.Encrypted encryptedData;
     private @Nullable SecureData decryptedData;
     private boolean changed = false;
+
+    private @Nullable TextArea textArea;
+    private @Nullable Image image;
+    private @Nullable ImageView imageView;
+    private @Nullable MediaPlayer mediaPlayer;
+    private @Nullable SecureInMemoryMediaServer mediaServer;
 
     public DataView() {
         swipeArrowLeft = createSwipeArrow(40, true);
@@ -75,9 +82,21 @@ public class DataView extends BorderPane {
         setCenter(centerContainer);
         BorderPane.setMargin(centerContainer, new Insets(0, 0, 50, 0));
 
-        Utilities.registerDynamicClosableOverlay(this, onClose, () -> new Node[]{swipeArrowLeft, swipeArrowRight, centerContainer.getChildren().getFirst()});
-        centerContainer.widthProperty().addListener((_, _, width) -> sizeUpdate(width.doubleValue(), true, false));
-        centerContainer.heightProperty().addListener((_, _, height) -> sizeUpdate(height.doubleValue(), false, false));
+        Utilities.registerDynamicClosableOverlay(this, () -> {
+            storeData();
+            setVisible(false);
+        }, () -> {
+            List<Node> nodes = new ArrayList<>(List.of(swipeArrowLeft, swipeArrowRight, nameLabel));
+            if (centerContainer.getChildren().getFirst() instanceof MediaDisplay display) {
+                nodes.addAll(display.getUiElementUnmodifiable());
+            }
+            else {
+                nodes.add(centerContainer.getChildren().getFirst());
+            }
+            return nodes.toArray(Node[]::new);
+        });
+        centerContainer.widthProperty().addListener((_, _, width) -> sizeUpdate(width.doubleValue(), true));
+        centerContainer.heightProperty().addListener((_, _, height) -> sizeUpdate(height.doubleValue(), false));
     }
 
     public void showData(List<SecureData.Encrypted> availableData, SecureData.Encrypted data) {
@@ -99,16 +118,15 @@ public class DataView extends BorderPane {
         encryptedData = data;
         this.availableData = availableData;
         changed = false;
-        sizeUpdate(centerContainer.getWidth(), true, false);
-        sizeUpdate(centerContainer.getHeight(), false, true);
+        sizeUpdate(centerContainer.getWidth(), true);
+        sizeUpdate(centerContainer.getHeight(), false);
 
         checkSwipeable();
     }
 
-    // TODO: The centering logic doesn't work reliably yet
-    private void sizeUpdate(double sideLength, boolean isWidth, boolean updateVisibility) {
+    private void sizeUpdate(double sideLength, boolean isWidth) {
         // Most times this will be managed automatically by the layout, we just have to manually account for some exceptions
-        if (centerContainer.getChildren().getFirst() instanceof ImageView imageView) {
+        if (centerContainer.getChildren().getFirst() instanceof ImageView) {
             if (isWidth) {
                 imageView.setFitWidth(sideLength);
             }
@@ -146,40 +164,107 @@ public class DataView extends BorderPane {
                 throw new RuntimeException("Error storing secure data", e);
             }
         }
+
+        cleanup();
+    }
+
+    private void cleanup() {
+        Utilities.ensureAuthorizedAccess(DataView.class);
+
         decryptedData.zeroOut();
         decryptedData = null;
+
+        if (textArea != null) {
+            textArea.setText("");
+            textArea = null;
+        }
+
+        if (image != null) {
+            image = null;
+        }
+        if (imageView != null) {
+            imageView = null;
+        }
+
+        if (mediaPlayer != null) {
+            mediaPlayer.dispose();
+            mediaPlayer = null;
+        }
+        shutdownMediaServer();
+    }
+    protected void shutdownMediaServer() {
+        Utilities.ensureAuthorizedAccess(DataView.class, BaseView.class);
+
+        if (mediaServer != null) {
+            mediaServer.stop();
+            mediaServer = null;
+        }
     }
 
     private Node extractContentFrom(SecureData.Encrypted data) throws Exception {
         decryptedData = data.decrypt();
         Node node = switch (data.getType()) {
             case SecureData.TYPE_TEXT ->  {
-                TextArea area = new TextArea();
-                area.setText(new String(decryptedData.text()));
-                area.setWrapText(true);
-                area.textProperty().addListener((_, _, text) -> {
-                    changed = true;
+                textArea = new TextArea();
+                textArea.setText(new String(decryptedData.text()));
+                textArea.setWrapText(true);
+                textArea.textProperty().addListener((_, _, text) -> {
+                    if (decryptedData == null) return;
                     decryptedData.text(text.toCharArray());
+                    changed = true;
                 });
-                yield area;
+                yield textArea;
             }
             case SecureData.TYPE_IMAGE -> {
-                ByteArrayInputStream stream = new ByteArrayInputStream(decryptedData.imageBytes());
-                Image image = new Image(stream);
+                ByteArrayInputStream stream = new ByteArrayInputStream(decryptedData.binaryBytes());
+                image = new Image(stream);
                 if (image.isError()) {
                     yield createErrorDisplay();
                 }
-                ImageView imageView = new ImageView(image);
+                imageView = new ImageView(image);
                 imageView.setPreserveRatio(true);
                 imageView.setManaged(false);
                 imageView.setSmooth(true);
                 imageView.setVisible(false); // Prevent image pos jump on first load
                 yield imageView;
             }
+            case SecureData.TYPE_MEDIA -> {
+                mediaServer = new SecureInMemoryMediaServer(decryptedData.binaryBytes(), decryptedData.mimeType(), 0, "media-stream");
+                mediaServer.start();
+                Media media;
+                try {
+                    media = new Media(mediaServer.getTokenizedUrl());
+                }
+                catch (MediaException e) {
+                    mediaServer.stop();
+                    tryShowCodecMessage(e);
+                    yield createErrorDisplay();
+                }
+                try {
+                    mediaPlayer = new MediaPlayer(media);
+                }
+                catch (MediaException e) {
+                    mediaServer.stop();
+                    tryShowCodecMessage(e);
+                    yield createErrorDisplay();
+                }
+                yield new MediaDisplay(mediaPlayer);
+            }
             default -> createErrorDisplay();
         };
         Platform.runLater(centerContainer::requestFocus);
         return node;
+    }
+
+    private static void tryShowCodecMessage(MediaException e) {
+        if (e.getType() == MediaException.Type.UNKNOWN && OperatingSystem.isLinux()) {
+            ButtonType learnMore = new ButtonType("Learn more");
+            Mangrypt.getBase().showAlert(Alert.AlertType.ERROR, "Unable to create media", "This could be due to missing codec on your Linux system", true, btn -> {
+                if (btn == learnMore) {
+                    OperatingSystem.loadCurrentOS().open("https://www.oracle.com/java/technologies/javase/products-doc-jdk8-jre8-certconfig.html#:~:text=decoding%20will%20fail.-,Linux,on%20Ubuntu%20Linux%2012.04%20or%20equivalent.");
+                }
+            }, learnMore, ButtonType.CLOSE);
+        }
     }
 
     private FlowPane createErrorDisplay() {

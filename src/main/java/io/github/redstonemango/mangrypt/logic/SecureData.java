@@ -21,6 +21,7 @@ public class SecureData {
 
     public static final int TYPE_TEXT = 0;
     public static final int TYPE_IMAGE = 1;
+    public static final int TYPE_MEDIA = 2;
 
     @Expose
     private int type;
@@ -29,9 +30,13 @@ public class SecureData {
     @Expose
     private char[] text;
 
-    /* --- Image Data --- */
+    /* --- Image, Media Data --- */
     @Expose
-    private byte[] imageBytes;
+    private byte[] binaryBytes;
+
+    /* --- Media Data --- */
+    @Expose
+    private String mimeType;
 
     static SecureData newTextData() {
         return new SecureData(TYPE_TEXT);
@@ -39,7 +44,13 @@ public class SecureData {
 
     static SecureData newImageData(byte[] imageBytes) {
         SecureData data = new SecureData(TYPE_IMAGE);
-        data.imageBytes = imageBytes;
+        data.binaryBytes = imageBytes;
+        return data;
+    }
+    static SecureData newMediaData(byte[] imageBytes, String mimeType) {
+        SecureData data = new SecureData(TYPE_MEDIA);
+        data.binaryBytes = imageBytes;
+        data.mimeType = mimeType;
         return data;
     }
 
@@ -49,16 +60,16 @@ public class SecureData {
     }
 
     public void ensureFields() {
-        if (type < 0 || type > 1) {
+        if (type < 0 || type > 2) {
             type = TYPE_TEXT;
         }
-
         switch (type) {
             case TYPE_TEXT -> {
                 if (text == null) text = new char[0];
             }
-            case TYPE_IMAGE -> {
-                if (imageBytes == null) imageBytes = new byte[0];
+            case TYPE_IMAGE, TYPE_MEDIA -> {
+                if (binaryBytes == null) binaryBytes = new byte[0];
+                if (mimeType == null || mimeType.isBlank()) mimeType = "audio/mpeg"; // Fallback, but should theoretically never happen
             }
         }
     }
@@ -70,19 +81,20 @@ public class SecureData {
         Utilities.ensureAuthorizedAccess(DataView.class);
         text = c;
     }
-    public byte[] imageBytes() {
+    public byte[] binaryBytes() {
         Utilities.ensureAuthorizedAccess(DataView.class);
-        return imageBytes;
+        return binaryBytes;
     }
-    public void imageBytes(byte[] b) {
+    public String mimeType() {
         Utilities.ensureAuthorizedAccess(DataView.class);
-        imageBytes = b;
+        return mimeType;
     }
     public void zeroOut() {
         Utilities.ensureAuthorizedAccess(SecureData.class);
 
         if (text != null) Arrays.fill(text, '\0');
-        if (imageBytes != null) Arrays.fill(imageBytes, (byte) 0);
+        if (binaryBytes != null) Arrays.fill(binaryBytes, (byte) 0);
+        if (mimeType != null) mimeType = null; // Even tough, this is not a sensitive object, it can't hurt to encourage GC
     }
     public boolean requiresSave() {
         return type == TYPE_TEXT;
@@ -111,7 +123,7 @@ public class SecureData {
         private @Nullable ByteBuffer tmpByteBuffer;
 
         public void ensureFields() {
-            if (type < 0 || type > 1) {
+            if (type < 0 || type > 2) {
                 type = TYPE_TEXT;
             }
             if (name == null || name.isBlank()) {
@@ -144,6 +156,12 @@ public class SecureData {
             Encrypted encrypted = new Encrypted(TYPE_IMAGE, fileExtension);
             encrypted.setName(name);
             encrypted.store(newImageData(imageBytes));
+            return encrypted;
+        }
+        public static Encrypted newEncryptedMediaData(String name, byte[] videoBytes, String fileExtension) throws Exception {
+            Encrypted encrypted = new Encrypted(TYPE_MEDIA, fileExtension);
+            encrypted.setName(name);
+            encrypted.store(newMediaData(videoBytes, Utilities.getSupportedMimeType(fileExtension)));
             return encrypted;
         }
 
@@ -219,13 +237,13 @@ public class SecureData {
             targetDestination.getParentFile().mkdirs();
             targetDestination.createNewFile();
             switch (type) {
-                case TYPE_TEXT -> { // Do not convert to immutable java.lang.String
+                case TYPE_TEXT -> { // Do not convert to immutable java.lang.String but do workaround using char-buffer and byte-buffer
                     tmpCharBuffer = CharBuffer.wrap(tmpData.text);
                     tmpByteBuffer = StandardCharsets.UTF_8.encode(tmpCharBuffer);
                     tmpBytes = new byte[tmpByteBuffer.remaining()];
                     tmpByteBuffer.get(tmpBytes);
                 }
-                case TYPE_IMAGE -> tmpBytes = tmpData.imageBytes;
+                case TYPE_IMAGE, TYPE_MEDIA -> tmpBytes = tmpData.binaryBytes;
                 default -> throw new Exception("Invalid data type");
             }
             Files.write(targetDestination.toPath(), tmpBytes);
@@ -263,6 +281,7 @@ public class SecureData {
             return new Image(Objects.requireNonNull(SecureData.class.getResourceAsStream("/io/github/redstonemango/mangrypt/image/data-type-icon/" + switch (type) {
                 case TYPE_TEXT -> "text";
                 case TYPE_IMAGE -> "image";
+                case TYPE_MEDIA -> "media";
                 default -> "";
             } + ".png")));
         }
