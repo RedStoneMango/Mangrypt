@@ -79,7 +79,7 @@ Mangrypt prioritizes your data privacy even while the application is running. To
 
 When this happens, the vault content is hidden behind a secure overlay, and you will need to re-enter the **access password** to unlock it again.
 
-> ℹ️ The **access password** is one of the two passwords used to encrypt your vault and can is set individually for each vault. This design allows you to secure each vault separately, ensuring that only someone with the correct access password can view its contents after the app is locked.
+> ℹ️ The **access password** is one of the two passwords used to encrypt your vault and can be set individually for each vault. This design allows you to secure each vault separately, ensuring that only someone with the correct access password can view its contents after the app is locked.
 
 After unlocking with the access password, you can seamlessly continue working with your vault exactly where you left off. This obscuring layer temporarily covers the app’s UI but **does not close or unload the vault in the background**, maintaining your session and unsaved changes intact.
 
