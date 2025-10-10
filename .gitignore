@@ -12,6 +12,7 @@ gimp_prog_b.xcf
 .idea/modules.xml
 .idea/jarRepositories.xml
 .idea/compiler.xml
+.idea/.name
 .idea/libraries/
 *.iws
 *.iml
