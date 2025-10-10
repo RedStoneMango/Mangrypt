@@ -1,10 +1,5 @@
 # 🔐 Mangrypt
 
-> ⚠️ **This is the development branch of _Mangrypt_. It is actively evolving and may undergo significant changes. Critical bugs and instability are possible at any time.**
-> 
-> ⚠️ **For a more stable (though possibly less feature-rich) version of the app, please refer to the project's [main branch](https://github.com/RedStoneMango/Mangrypt/tree/main).**
-
-
 **Mangrypt** is a user-friendly encryption application designed to protect sensitive user data. It supports encryption for text, images, audio, and video, storing data in individually encrypted `.mgvault` files for easy management.
 
 ---
