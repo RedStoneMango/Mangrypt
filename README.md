@@ -6,12 +6,7 @@
 
 ## 🔽 Download & Installation
 
-- Visit the [Releases Page](https://github.com/RedStoneMango/Mangrypt/releases) to download the latest version for your operating system.
-- Extract the executable:
-  - `.exe` (Windows)
-  - `.app` (macOS)
-  - `.sh` (Linux)
-- Run it natively on your OS.
+_[Coming soon]_
 
 ---
 
@@ -37,49 +32,60 @@ The following references illustrate the application UI's appearance:
 
 ## 🔒 Encryption Architecture
 
-Mangrypt uses a **two-layer encryption model** to ensure data integrity and privacy.
+### 🔑 How Vault Encryption Works
 
-### 🗂️ Architecture Overview
+Mangrypt uses a layered and secure encryption model built on modern cryptographic standards to encrypt the `.mgvault` files on your disk:
 
-![Encryption Architecture Diagram](ArchitectureDiagram.gif)
+1. **Master Key Derivation**  
+   Two passwords are securely combined, hashed individually using SHA-256, and concatenated. This combined secret is then used with **Argon2id** to derive a 256-bit master key.
 
-### 1️⃣ Layer One – *Launch Passphrase*
+   > ℹ️ Mangrypt uses two separate passwords and the Argon2id algorithm (winner of the Password Hashing Competition) to securely derive your master key. Argon2id is widely regarded as one of the safest password hashing algorithms available today.
 
-The first layer secures a minimal configuration structure (vault names and other insensitive metadata), encrypted using:
+2. **Per-Encryption Key Derivation**  
+   For each encryption operation, a random per-encryption salt is generated. This salt, together with the master key, is processed through **HKDF** (HMAC-based Key Derivation Function) to create a unique encryption key.
 
-- **AES-128-GCM** with a 128-bit key and 12-byte IV  
-- **128-bit authentication tag**  
-- **PBKDF2 with HMAC-SHA256** (65,536 iterations)  
-- **16-byte salt**  
-- A **user-defined passphrase**
+   > ℹ️ Every time you encrypt data, Mangrypt generates a fresh key — even if you're encrypting the same data with the same passwords. This prevents patterns from forming and increases security.
 
-> This passphrase is required every time Mangrypt is launched. Use a strong and unique passphrase.
+3. **Encryption Algorithm**  
+   AES in GCM mode is used for authenticated encryption, providing both confidentiality and integrity. Each encryption operation uses a new random IV (12 bytes).
 
-### 2️⃣ Layer Two – *Access Password*
+   > ℹ️ AES-GCM encrypts your data while ensuring any tampering is detected through an authentication tag that verifies data integrity. AES is a widely used encryption standard, adopted by governments and organizations worldwide for its strong security.
 
-Once Layer One is decrypted, sensitive data can be unlocked by a second password. This layer uses:
+4. **Data Format**  
+   Encrypted data is structured as:  
+   `version (4B) | masterSalt (16B) | perEncryptSalt (16B) | IV (12B) | Ciphertext + Tag`
 
-- A **Base64** encoded ciphertext
-- The same **AES-128-GCM** encryption configuration
-- A separate **Access Password**
+   > ℹ️ Just a few inevitable pieces of data remain unencrypted: the salts and IV are internal, non-sensitive values required for decryption. The version field enables future compatibility and seamless migration with newer versions of Mangrypt. All actual content is securely encrypted within the ciphertext.
 
-On startup, **Mangrypt** also prompts for this password but does not immediately use it. Instead, the key is securely stored and will be used automatically to decrypt sensitive data on demand.
+5. **Domain Separation**  
+   A constant domain separator (e.g. `mangrypt-vault-v1`) is included as Additional Authenticated Data (AAD) during encryption.
 
-> If the Mangrypt window loses focus, the app automatically obscures all content and re-prompts for the **Access Password** to protect unattended data.
+   > ℹ️ The domain separator helps cryptographic tools recognize Mangrypt data and defend against certain types of protocol confusion or replay attacks.
+   
+
+This model provides:
+- **Strong forward secrecy**
+- **Unique encryption keys per operation**
+- **No persistent unencrypted secrets**
+- **Resilience against tampering and cryptographic misuse**
+
+Sensitive keys and passwords are immediately zeroed (= erased) from memory after use.
+
+---
 
 ### 🧠 Memory Usage
 
 The **Java Virtual Machine** employs a **Garbage Collector (GC)** that automatically identifies and clears unused objects from memory, automatically erasing possibly sensitive data after their use.
 
-Mangrypt follows secure memory handling practices to reduce the risk of memory leaks and unintended data persistence. Sensitive data and passwords are immediately overwritten after use, encryption is performed only on demand, and no sensitive values are stored in immutable objects.
+Mangrypt follows secure memory handling practices to reduce the risk of memory leaks and unintended data persistence. Passwords are immediately overwritten after use and the use of immutable objects is minimized.
 
 While **JavaFX (JFX)** components internally use `String` objects, Mangrypt ensures that any sensitive input from the UI is promptly converted to `char[]` for controlled handling. These UI fields are cleared as soon as they’re no longer needed, minimizing exposure within the application's memory.
 
 ---
 
-## ⚠️ Security Notice
+### ⚠️ Security Notice
 
-While Mangrypt is designed with strong encryption practices and careful attention to security, it has **not yet undergone a formal third-party security audit**. This means that, although it is built with best practices in mind, absolute protection cannot be guaranteed at this stage.
+While Mangrypt is designed with strong encryption practices and careful attention to security, it has **not yet undergone a formal third-party security audit**. This means that, although it is built with nothing but best practices in mind, absolute protection cannot be guaranteed at this stage.
 
 **Help harden Mangrypt. If you're a security expert, your review or audit would be extremely valuable.**
 
@@ -94,17 +100,21 @@ Mangrypt is written using:
 - **JDK:** [`OpenJDK`](https://openjdk.org/) 23
 - **Build Tool:** [`Apache Maven`](https://maven.apache.org/) 3.8.5
 - **UI Framework:** [`JavaFX`](https://openjfx.io) 23
+- **Object Serialisation:** [`Kryo`](https://github.com/EsotericSoftware/kryo) 5.6.2
+- **Cryptographic algorithms:** [`Bouncy Castle`](https://www.bouncycastle.org/) 1.82 (jdk18on)
+- **Utility dependencies:** [`Mango-Utils`](https://github.com/RedStoneMango/Mango-Utils) 2.1.0
 - **Native Packaging:** [`javapackager`](https://github.com/javapackager/JavaPackager) 1.7.6
-- **Json Handling:** [`Gson`](https://github.com/google/gson) 2.11.0
-- **Utility dependencies:** [`Mango-Utils`](https://github.com/RedStoneMango/Mango-Utils) 2.0.1
 
 ---
 
 ## ✅ Benefits
 
-- **Two-Layer Encryption:** Dual-password system ensures both configuration and session data are securely protected.
-- **Multi-Media Support:** Encrypts text, images, audio, and video files.
+Mangrypt offers a robust and secure encryption experience with several technical advantages:
+
+- **Strong Encryption Architecture:** Combines **Argon2id**, **HKDF**, and **AES-GCM** to ensure both confidentiality and authenticity of user data.
+- **Multi-Media Support:** Encrypts text _(including formatting)_, images, audio, and video files.
 - **Auto-Lock on Focus Loss:** Automatically obscures sensitive content when the app loses focus.
+- **Memory Safety:** Implements secure memory handling and zeroization of sensitive variables after use.
 - **File Management:** Stores vaults in individually encrypted `.mgvault` files, providing easy backup and export capabilities.
 - **Cross-Platform:** Works on Windows, macOS, and Linux.
 - **Open Source:** Transparent development with opportunities for community contributions.
@@ -113,17 +123,14 @@ Mangrypt is written using:
 
 ## 💻 Requirements
 
-To run or build Mangrypt, ensure your environment meets the following minimum requirements:
+To run Mangrypt, ensure your environment meets the following minimum requirements:
 
-| Requirement      | Needed For | Specification                   |
-|------------------|------------|---------------------------------|
-| Java JDK         | Build only | Version 23+                     |
-| Apache Maven     | Build only | Version 3.8.5+                  |
-| JavaFX SDK       | Build only | Version 23+ (matching your JDK) |
-| Operating System | All        | Windows, macOS, or Linux        |
-| Memory           | All        | 4 GB minimum (8 GB recommended) |
-
-> 🧠 Info: Requirements marked as "Build only" are not needed if using a pre-built executable.
+| Requirement       | Specification                                |
+|-------------------|----------------------------------------------|
+| Operating System  | Windows, macOS, or Linux                     |
+| Memory            | 4 GB minimum (8 GB recommended)              |
+| Disk Space        | At least 100 MB (more for vault storage)     |
+| Screen Resolution | 1280x720 or higher for optimal UI experience |
 
 ---
 
