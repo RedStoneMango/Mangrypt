@@ -11,7 +11,7 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.text.Font?>
 
-<StackPane fx:id="root" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="634.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.github.redstonemango.mangrypt.graphic.controller.AuthController">
+<StackPane fx:id="root" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="634.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.github.redstonemango.mangrypt.front.controller.AuthController">
    <children>
       <Pane fx:id="backgroundContainer" prefHeight="200.0" prefWidth="200.0" />
       <FlowPane alignment="CENTER" prefHeight="200.0" prefWidth="200.0">

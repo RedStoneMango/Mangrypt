@@ -1,7 +1,6 @@
-package io.github.redstonemango.mangrypt.graphic;
+package io.github.redstonemango.mangrypt.front;
 
-import io.github.redstonemango.mangrypt.graphic.elementBase.ListEntryBase;
-import io.github.redstonemango.mangrypt.logic.Configuration;
+import io.github.redstonemango.mangrypt.front.elementBase.ListEntryBase;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.scene.control.ContextMenu;

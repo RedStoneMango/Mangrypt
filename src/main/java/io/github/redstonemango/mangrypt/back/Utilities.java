@@ -1,4 +1,4 @@
-package io.github.redstonemango.mangrypt.logic;
+package io.github.redstonemango.mangrypt.back;
 
 import io.github.redstonemango.mangrypt.Mangrypt;
 import javafx.animation.FadeTransition;
@@ -12,19 +12,12 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Pane;
-import javafx.scene.layout.Region;
 import javafx.util.Callback;
 import javafx.util.Duration;
-import org.jetbrains.annotations.Nullable;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;

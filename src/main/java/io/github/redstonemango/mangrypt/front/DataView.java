@@ -1,8 +1,8 @@
-package io.github.redstonemango.mangrypt.graphic;
+package io.github.redstonemango.mangrypt.front;
 
 import io.github.redstonemango.mangoutils.OperatingSystem;
 import io.github.redstonemango.mangrypt.Mangrypt;
-import io.github.redstonemango.mangrypt.logic.*;
+import io.github.redstonemango.mangrypt.back.*;
 import javafx.application.Platform;
 import javafx.css.PseudoClass;
 import javafx.geometry.Bounds;

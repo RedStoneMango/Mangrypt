@@ -1,8 +1,8 @@
-package io.github.redstonemango.mangrypt.graphic.controller;
+package io.github.redstonemango.mangrypt.front.controller;
 
-import io.github.redstonemango.mangrypt.logic.Configuration;
-import io.github.redstonemango.mangrypt.logic.CypherEncryption;
-import io.github.redstonemango.mangrypt.logic.Utilities;
+import io.github.redstonemango.mangrypt.back.Configuration;
+import io.github.redstonemango.mangrypt.back.CypherEncryption;
+import io.github.redstonemango.mangrypt.back.Utilities;
 import javafx.animation.FadeTransition;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -16,15 +16,15 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.util.Duration;
 import io.github.redstonemango.mangrypt.Mangrypt;
-import io.github.redstonemango.mangrypt.graphic.ShakeTransition;
-import io.github.redstonemango.mangrypt.logic.ConfigIO;
+import io.github.redstonemango.mangrypt.front.ShakeTransition;
+import io.github.redstonemango.mangrypt.back.ConfigIO;
 
 import javax.crypto.SecretKey;
 import java.io.IOException;
 import java.util.Arrays;
 
 /**
- * This class controls the authentication passphrase as well as the password check screen, for they have almost the same underlying logic.
+ * This class controls the authentication passphrase as well as the password check screen, for they have almost the same underlying back.
  */
 public class AuthController {
 
@@ -35,7 +35,7 @@ public class AuthController {
     @FXML ImageView image;
     @FXML AnchorPane panelContainer;
     /**
-     * If this is not <code>null</code>, we are to apply the passphrase logic; otherwise the password logic should be applied.
+     * If this is not <code>null</code>, we are to apply the passphrase back; otherwise the password back should be applied.
      */
     @FXML Label passphraseIndicator;
 

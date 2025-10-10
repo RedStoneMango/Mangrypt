@@ -1,13 +1,12 @@
-package io.github.redstonemango.mangrypt.graphic.controller;
+package io.github.redstonemango.mangrypt.front.controller;
 
-import io.github.redstonemango.mangrypt.logic.Utilities;
+import io.github.redstonemango.mangrypt.back.Utilities;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
-import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 
 import java.util.function.Consumer;

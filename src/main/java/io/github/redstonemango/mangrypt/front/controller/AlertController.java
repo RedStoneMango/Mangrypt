@@ -1,6 +1,6 @@
-package io.github.redstonemango.mangrypt.graphic.controller;
+package io.github.redstonemango.mangrypt.front.controller;
 
-import io.github.redstonemango.mangrypt.logic.Utilities;
+import io.github.redstonemango.mangrypt.back.Utilities;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.*;

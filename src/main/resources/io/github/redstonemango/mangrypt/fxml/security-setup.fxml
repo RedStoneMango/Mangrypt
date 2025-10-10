@@ -5,7 +5,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<StackPane fx:id="root" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="634.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.github.redstonemango.mangrypt.graphic.controller.SecuritySetupController">
+<StackPane fx:id="root" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="634.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.github.redstonemango.mangrypt.front.controller.SecuritySetupController">
    <children>
       <Pane fx:id="backgroundContainer" prefHeight="200.0" prefWidth="200.0" />
       <FlowPane alignment="CENTER" prefHeight="200.0" prefWidth="200.0">

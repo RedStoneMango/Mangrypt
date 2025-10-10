@@ -1,4 +1,4 @@
-package io.github.redstonemango.mangrypt.logic;
+package io.github.redstonemango.mangrypt.back;
 
 import com.sun.net.httpserver.HttpServer;
 

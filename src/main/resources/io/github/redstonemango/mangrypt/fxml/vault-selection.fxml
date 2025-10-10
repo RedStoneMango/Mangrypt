@@ -8,7 +8,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
 
-<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="299.0" prefWidth="491.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.github.redstonemango.mangrypt.graphic.controller.VaultSelectionController">
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="299.0" prefWidth="491.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.github.redstonemango.mangrypt.front.controller.VaultSelectionController">
    <center>
       <ListView fx:id="vaultList" fixedCellSize="30.0" prefHeight="230.0" prefWidth="491.0" BorderPane.alignment="CENTER">
          <BorderPane.margin>

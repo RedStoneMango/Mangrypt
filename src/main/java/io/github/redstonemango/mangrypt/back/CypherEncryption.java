@@ -1,4 +1,4 @@
-package io.github.redstonemango.mangrypt.logic;
+package io.github.redstonemango.mangrypt.back;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -26,33 +26,8 @@ public class CypherEncryption {
     private static final int ITERATIONS = 65536;
     private static final int SALT_LENGTH = 16;
 
-    public static String encryptToString(String input, char[] password) throws Exception {
-        return Base64.getEncoder().encodeToString(encrypt(input, password));
-    }
-
     public static String encryptToString(String input, SecretKey key, byte[] salt) throws Exception {
         return Base64.getEncoder().encodeToString(encrypt(input, key, salt));
-    }
-
-    public static byte[] encrypt(String input, char[] password) throws Exception {
-        byte[] salt = generateRandomBytes(SALT_LENGTH);
-        byte[] iv = generateRandomBytes(IV_SIZE);
-
-        SecretKey key = deriveKey(password, salt);
-
-        Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
-        GCMParameterSpec gcmSpec = new GCMParameterSpec(TAG_LENGTH, iv);
-        cipher.init(Cipher.ENCRYPT_MODE, key, gcmSpec);
-
-        byte[] encryptedBytes = cipher.doFinal(input.getBytes(StandardCharsets.UTF_8));
-
-        // Combine salt + IV + ciphertext
-        byte[] combined = new byte[salt.length + iv.length + encryptedBytes.length];
-        System.arraycopy(salt, 0, combined, 0, salt.length);
-        System.arraycopy(iv, 0, combined, salt.length, iv.length);
-        System.arraycopy(encryptedBytes, 0, combined, salt.length + iv.length, encryptedBytes.length);
-
-        return combined;
     }
 
     public static byte[] encrypt(String input, SecretKey key, byte[] salt) throws Exception {
@@ -73,34 +48,8 @@ public class CypherEncryption {
         return combined;
     }
 
-    public static @Nullable String decryptFromString(String base64CypherText, char[] password) throws Exception {
-        return decrypt(Base64.getDecoder().decode(base64CypherText), password);
-    }
-
     public static @Nullable String decryptFromString(String base64CypherText, SecretKey key) throws Exception {
         return decrypt(Base64.getDecoder().decode(base64CypherText), key);
-    }
-
-    public static @Nullable String decrypt(byte[] cypherBytes, char[] password) throws Exception {
-        try {
-            byte[] salt = new byte[SALT_LENGTH];
-            byte[] iv = new byte[IV_SIZE];
-            byte[] ciphertext = new byte[cypherBytes.length - SALT_LENGTH - IV_SIZE];
-
-            System.arraycopy(cypherBytes, 0, salt, 0, SALT_LENGTH);
-            System.arraycopy(cypherBytes, SALT_LENGTH, iv, 0, IV_SIZE);
-            System.arraycopy(cypherBytes, SALT_LENGTH + IV_SIZE, ciphertext, 0, ciphertext.length);
-
-            SecretKey key = deriveKey(password, salt);
-
-            Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
-            GCMParameterSpec gcmSpec = new GCMParameterSpec(TAG_LENGTH, iv);
-            cipher.init(Cipher.DECRYPT_MODE, key, gcmSpec);
-
-            return new String(cipher.doFinal(ciphertext), StandardCharsets.UTF_8);
-        } catch (AEADBadTagException e) {
-            return null;
-        }
     }
 
     public static @Nullable String decrypt(byte[] cypherBytes, SecretKey key) throws Exception {

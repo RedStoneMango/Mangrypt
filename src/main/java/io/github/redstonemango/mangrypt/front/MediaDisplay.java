@@ -1,4 +1,4 @@
-package io.github.redstonemango.mangrypt.graphic;
+package io.github.redstonemango.mangrypt.front;
 
 import javafx.application.Platform;
 import javafx.geometry.Bounds;

@@ -1,9 +1,9 @@
-package io.github.redstonemango.mangrypt.graphic.controller;
+package io.github.redstonemango.mangrypt.front.controller;
 
 import io.github.redstonemango.mangoutils.OperatingSystem;
 import io.github.redstonemango.mangrypt.Mangrypt;
-import io.github.redstonemango.mangrypt.logic.ConfigIO;
-import io.github.redstonemango.mangrypt.logic.Utilities;
+import io.github.redstonemango.mangrypt.back.ConfigIO;
+import io.github.redstonemango.mangrypt.back.Utilities;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.scene.Cursor;
@@ -13,7 +13,6 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
-import javafx.scene.paint.Color;
 
 import java.io.File;
 import java.util.Locale;

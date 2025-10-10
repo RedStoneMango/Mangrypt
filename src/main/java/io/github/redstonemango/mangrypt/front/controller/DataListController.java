@@ -1,11 +1,11 @@
-package io.github.redstonemango.mangrypt.graphic.controller;
+package io.github.redstonemango.mangrypt.front.controller;
 
 import io.github.redstonemango.mangoutils.NameConverter;
 import io.github.redstonemango.mangoutils.OperatingSystem;
 import io.github.redstonemango.mangrypt.Mangrypt;
-import io.github.redstonemango.mangrypt.graphic.FileChooserNode;
-import io.github.redstonemango.mangrypt.graphic.ListEntry;
-import io.github.redstonemango.mangrypt.logic.*;
+import io.github.redstonemango.mangrypt.front.FileChooserNode;
+import io.github.redstonemango.mangrypt.front.ListEntry;
+import io.github.redstonemango.mangrypt.back.*;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;

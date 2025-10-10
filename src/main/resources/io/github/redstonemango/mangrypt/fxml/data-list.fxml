@@ -14,7 +14,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.github.redstonemango.mangrypt.graphic.controller.DataListController">
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.github.redstonemango.mangrypt.front.controller.DataListController">
    <left>
       <VBox alignment="CENTER" prefHeight="400.0" prefWidth="161.0" style="-fx-border-color: lightgreen linear-gradient(lightgreen, green) green linear-gradient(lightgreen, green); -fx-border-width: 3; -fx-border-radius: 20;" BorderPane.alignment="CENTER">
          <children>

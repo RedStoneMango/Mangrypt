@@ -1,10 +1,10 @@
-package io.github.redstonemango.mangrypt.logic;
+package io.github.redstonemango.mangrypt.back;
 
 import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.Expose;
-import io.github.redstonemango.mangrypt.graphic.DataView;
-import io.github.redstonemango.mangrypt.graphic.controller.DataListController;
-import io.github.redstonemango.mangrypt.graphic.controller.SecuritySetupController;
+import io.github.redstonemango.mangrypt.front.DataView;
+import io.github.redstonemango.mangrypt.front.controller.DataListController;
+import io.github.redstonemango.mangrypt.front.controller.SecuritySetupController;
 import javafx.scene.image.Image;
 import org.jetbrains.annotations.Nullable;
 

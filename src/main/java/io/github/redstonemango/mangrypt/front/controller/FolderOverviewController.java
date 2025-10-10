@@ -1,15 +1,15 @@
-package io.github.redstonemango.mangrypt.graphic.controller;
+package io.github.redstonemango.mangrypt.front.controller;
 
 import io.github.redstonemango.mangoutils.MangoIO;
 import io.github.redstonemango.mangoutils.NameConverter;
 import io.github.redstonemango.mangoutils.OperatingSystem;
 import io.github.redstonemango.mangrypt.Mangrypt;
-import io.github.redstonemango.mangrypt.graphic.FileChooserNode;
-import io.github.redstonemango.mangrypt.graphic.ListEntry;
-import io.github.redstonemango.mangrypt.logic.ConfigIO;
-import io.github.redstonemango.mangrypt.logic.Configuration;
-import io.github.redstonemango.mangrypt.logic.SecureData;
-import io.github.redstonemango.mangrypt.logic.Utilities;
+import io.github.redstonemango.mangrypt.front.FileChooserNode;
+import io.github.redstonemango.mangrypt.front.ListEntry;
+import io.github.redstonemango.mangrypt.back.ConfigIO;
+import io.github.redstonemango.mangrypt.back.Configuration;
+import io.github.redstonemango.mangrypt.back.SecureData;
+import io.github.redstonemango.mangrypt.back.Utilities;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -21,7 +21,6 @@ import javafx.scene.layout.StackPane;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;

@@ -1,10 +1,10 @@
-package io.github.redstonemango.mangrypt.logic;
+package io.github.redstonemango.mangrypt.back;
 
 import com.google.gson.GsonBuilder;
 import io.github.redstonemango.mangoutils.OperatingSystem;
 import io.github.redstonemango.mangrypt.Mangrypt;
-import io.github.redstonemango.mangrypt.graphic.controller.AuthController;
-import io.github.redstonemango.mangrypt.graphic.controller.SecuritySetupController;
+import io.github.redstonemango.mangrypt.front.controller.AuthController;
+import io.github.redstonemango.mangrypt.front.controller.SecuritySetupController;
 import javafx.fxml.FXMLLoader;
 
 import javax.crypto.SecretKey;

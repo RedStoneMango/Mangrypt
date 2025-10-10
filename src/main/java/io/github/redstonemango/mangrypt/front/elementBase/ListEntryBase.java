@@ -1,4 +1,4 @@
-package io.github.redstonemango.mangrypt.graphic.elementBase;
+package io.github.redstonemango.mangrypt.front.elementBase;
 
 import javafx.geometry.Insets;
 import javafx.scene.control.Button;

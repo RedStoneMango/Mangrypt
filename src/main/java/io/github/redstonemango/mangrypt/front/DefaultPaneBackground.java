@@ -1,4 +1,4 @@
-package io.github.redstonemango.mangrypt.graphic;
+package io.github.redstonemango.mangrypt.front;
 
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;

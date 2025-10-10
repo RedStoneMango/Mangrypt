@@ -1,11 +1,10 @@
-package io.github.redstonemango.mangrypt.graphic;
+package io.github.redstonemango.mangrypt.front;
 
 import io.github.redstonemango.mangrypt.Mangrypt;
-import io.github.redstonemango.mangrypt.graphic.controller.*;
-import io.github.redstonemango.mangrypt.logic.ConfigIO;
-import io.github.redstonemango.mangrypt.logic.Configuration;
-import io.github.redstonemango.mangrypt.logic.SecureData;
-import io.github.redstonemango.mangrypt.logic.Utilities;
+import io.github.redstonemango.mangrypt.front.controller.*;
+import io.github.redstonemango.mangrypt.back.ConfigIO;
+import io.github.redstonemango.mangrypt.back.SecureData;
+import io.github.redstonemango.mangrypt.back.Utilities;
 import javafx.animation.FadeTransition;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;

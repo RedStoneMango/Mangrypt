@@ -1,7 +1,7 @@
-package io.github.redstonemango.mangrypt.graphic.controller;
+package io.github.redstonemango.mangrypt.front.controller;
 
 import io.github.redstonemango.mangrypt.Mangrypt;
-import io.github.redstonemango.mangrypt.logic.*;
+import io.github.redstonemango.mangrypt.back.*;
 import javafx.animation.FadeTransition;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -10,15 +10,12 @@ import javafx.geometry.Point2D;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.util.Duration;
 
 import javax.crypto.SecretKey;
-import java.io.IOException;
 import java.util.Arrays;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 

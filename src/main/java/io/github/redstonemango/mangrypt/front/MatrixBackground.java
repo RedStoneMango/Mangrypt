@@ -1,15 +1,12 @@
-package io.github.redstonemango.mangrypt.graphic;
+package io.github.redstonemango.mangrypt.front;
 
 import javafx.animation.Interpolator;
 import javafx.animation.TranslateTransition;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Pane;
-import javafx.stage.Screen;
 import javafx.util.Duration;
-import io.github.redstonemango.mangrypt.graphic.controller.AuthController;
-
-import java.util.List;
+import io.github.redstonemango.mangrypt.front.controller.AuthController;
 
 public class MatrixBackground {
 

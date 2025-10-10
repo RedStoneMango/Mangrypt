@@ -1,12 +1,11 @@
-package io.github.redstonemango.mangrypt.logic;
+package io.github.redstonemango.mangrypt.back;
 
 import com.google.gson.annotations.Expose;
-import io.github.redstonemango.mangrypt.graphic.controller.AuthController;
-import io.github.redstonemango.mangrypt.graphic.controller.SecuritySetupController;
+import io.github.redstonemango.mangrypt.front.controller.AuthController;
+import io.github.redstonemango.mangrypt.front.controller.SecuritySetupController;
 
 import javax.crypto.SecretKey;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class Configuration {

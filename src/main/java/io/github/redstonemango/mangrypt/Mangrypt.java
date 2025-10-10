@@ -1,11 +1,11 @@
 package io.github.redstonemango.mangrypt;
 
-import io.github.redstonemango.mangrypt.logic.ConfigIO;
+import io.github.redstonemango.mangrypt.back.ConfigIO;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-import io.github.redstonemango.mangrypt.graphic.BaseView;
+import io.github.redstonemango.mangrypt.front.BaseView;
 
 import java.io.IOException;
 
