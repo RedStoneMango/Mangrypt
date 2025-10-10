@@ -73,6 +73,21 @@ Sensitive keys and passwords are immediately zeroed (= erased) from memory after
 
 ---
 
+### 🛡️ In-App Obscuring
+
+Mangrypt prioritizes your data privacy even while the application is running. To protect sensitive information from accidental exposure, Mangrypt automatically **locks and obscures your vault** whenever the application window loses focus (for example, if you switch to another program or minimize the app).
+
+When this happens, the vault content is hidden behind a secure overlay, and you will need to re-enter the **access password** to unlock it again.
+
+> ℹ️ The **access password** is one of the two passwords used to encrypt your vault and can is set individually for each vault. This design allows you to secure each vault separately, ensuring that only someone with the correct access password can view its contents after the app is locked.
+
+After unlocking with the access password, you can seamlessly continue working with your vault exactly where you left off. This obscuring layer temporarily covers the app’s UI but **does not close or unload the vault in the background**, maintaining your session and unsaved changes intact.
+
+This automatic locking mechanism helps safeguard your sensitive data from prying eyes during moments of inactivity or distraction, giving you peace of mind that your encrypted vault remains secure at all times.
+
+---
+
+
 ### 🧠 Memory Usage
 
 The **Java Virtual Machine** employs a **Garbage Collector (GC)** that automatically identifies and clears unused objects from memory, automatically erasing possibly sensitive data after their use.
