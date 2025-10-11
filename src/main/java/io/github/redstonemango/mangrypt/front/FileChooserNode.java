@@ -178,7 +178,7 @@ public class FileChooserNode extends VBox {
     }
 
     /**
-     * This method is not part of the file chooser back itself, but was added for smoother intergety with the Mangrypt layout.
+     * This method is not part of the file chooser logic itself, but was added for smoother intergety with the Mangrypt layout.
      */
     public void prepareMangryptLayout(StackPane root, StackPane backgroundBox) {
         titleLabel.getStyleClass().add("uncolored-label");
