@@ -1,5 +1,7 @@
 # 🔐 Mangrypt
 
+> ⚠️ **Mangrypt currently is under active development and neither stable nor completed (yet). Features may change and bugs may occur. Use with caution!**
+
 **Mangrypt** is a user-friendly encryption application designed to protect sensitive user data. It supports encryption for text, images, audio, and video, storing data in individually encrypted `.mgvault` files for easy management.
 
 ---
