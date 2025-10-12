@@ -24,8 +24,6 @@ public class VaultSelectionController {
     public static final Pattern NAME_PATTERN = Pattern.compile("^[^\\\\/:*?\"<>|\\s]+$");
 
     @FXML
-    private ImageView background;
-    @FXML
     private ListView<File> vaultList;
     @FXML
     private Button openVaultButton;
@@ -76,7 +74,7 @@ public class VaultSelectionController {
             return;
         }
         ConfigIO.useVault(vaultList.getSelectionModel().getSelectedItem());
-        ConfigIO.authenticateUserAndLoadConfig();
+        ConfigIO.authenticateUser();
     }
 
     @FXML
@@ -90,14 +88,21 @@ public class VaultSelectionController {
 
     @FXML
     private void onAdd() {
-        Mangrypt.getBase().showInputDialog("Please enter the name for the new vault's file", "File name", "", true, name -> NAME_PATTERN.matcher(name).matches() && !buildAbstractVaultFile(name).exists(), name -> {
-            if (!name.isEmpty() && !NAME_PATTERN.matcher(name).matches()) return "Invalid characters in file name";
-            if (buildAbstractVaultFile(name).exists()) return "This file already exists";
-            return null;
-        }, name -> {
-            ConfigIO.useVault(buildAbstractVaultFile(name));
-            ConfigIO.authenticateUserAndLoadConfig();
-        });
+        Mangrypt.getBase().showInputDialog("Please enter the name for the new vault's file",
+                "File name",
+                "",
+                true,
+                name -> NAME_PATTERN.matcher(name).matches() && !buildAbstractVaultFile(name).exists(),
+                name -> {
+                    if (!name.isEmpty() && !NAME_PATTERN.matcher(name).matches()) return "Invalid characters in file name";
+                    if (buildAbstractVaultFile(name).exists()) return "Such a file already exists";
+                    return null;
+                },
+                name -> {
+                    ConfigIO.useVault(buildAbstractVaultFile(name));
+                    ConfigIO.authenticateUser();
+                }
+        );
     }
 
     private static File buildAbstractVaultFile(String name) {

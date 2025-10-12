@@ -10,22 +10,17 @@ import javafx.geometry.Point2D;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.util.Duration;
 
-import javax.crypto.SecretKey;
 import java.util.Arrays;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public class SecuritySetupController {
 
     private boolean setupPassphrase = true;
-    private boolean hasDecrypted = false;
+    private boolean disallowCancel = false;
     private boolean isSetup;
-    private SecretKey passphrase;
-    private byte[] passphraseSalt;
+    private char[] passphrase;
 
     @FXML private StackPane root;
     @FXML private Label headerLabel;
@@ -42,7 +37,7 @@ public class SecuritySetupController {
         isSetup = !ConfigIO.shouldSave();
         Utilities.registerClosableOverlay(root, () -> {
             root.setVisible(false);
-        }, (Region) headerLabel.getParent());
+        }, headerLabel.getParent());
 
         passwordField.setOnKeyPressed(e -> {
             if (e.getCode() == KeyCode.ENTER) onSetup();
@@ -68,13 +63,11 @@ public class SecuritySetupController {
             }
         });
 
-        Platform.runLater(() -> {
-            passwordField.requestFocus();
-        });
+        Platform.runLater(() -> passwordField.requestFocus());
     }
 
     private void cancelSetup() {
-        if (hasDecrypted) return; // If this is called during the baseView transition, cancel the cleanup to avoid empty configs while the encrypted view is shown.
+        if (disallowCancel) return;
         if (isSetup) ConfigIO.cleanup(); // If we are setting up, clean all the data. If we are just updating the password, maintain the old ones
         Mangrypt.getBase().setSecondLayerRoot(null);
     }
@@ -82,56 +75,51 @@ public class SecuritySetupController {
     @FXML
     private void onSetup() {
         char[] chars = passwordField.getText().toCharArray();
-        char[] controlChars = passwordConfirmationField.getText().toCharArray();
+        char[] confirmChars = passwordConfirmationField.getText().toCharArray();
         if (chars.length == 0) {
+            passwordField.requestFocus();
             Mangrypt.getBase().showWarningAlert("A " + (setupPassphrase ? "passphrase" : "password") + " has to be specified in the first field");
             return;
         }
-        if (controlChars.length == 0) {
+        if (confirmChars.length == 0) {
+            passwordConfirmationField.requestFocus();
             Mangrypt.getBase().showWarningAlert("The " + (setupPassphrase ? "passphrase" : "password") + " has to be confirmed by re-typing it in the second field");
             return;
         }
-        if (!Arrays.equals(chars, controlChars)) {
+        if (!Arrays.equals(chars, confirmChars)) {
+            passwordConfirmationField.requestFocus();
+            passwordConfirmationField.selectAll();
             Mangrypt.getBase().showWarningAlert("The entered " + (setupPassphrase ? "passphrases" : "passwords") + " do not match");
             return;
         }
-        Arrays.fill(controlChars, '\0');
+        passwordField.setText("");
         passwordConfirmationField.setText("");
+        Arrays.fill(confirmChars, '\0');
 
         if (setupPassphrase) {
-            try {
-                passphraseSalt = CypherEncryption.generateRandomSalt();
-                passphrase = CypherEncryption.deriveKey(chars, passphraseSalt);
-            }
-            catch (Exception e) {
-                Mangrypt.getBase().showErrorAlert(String.valueOf(e));
-                throw new RuntimeException("Error updating passphrase", e);
-            }
-            finally {
-                passwordField.setText("");
-                Arrays.fill(chars, '\0');
-            }
+            passphrase = chars;
             preparePasswordSetup();
         }
         else {
+            // At this point, 'chars' is our password and 'passphrase' our passphrase
+            try {
+                ConfigIO.setPasswords(passphrase, chars);
+            }
+            catch (Exception e) {
+                Mangrypt.getBase().showErrorAlert(String.valueOf(e));
+                throw new RuntimeException("Error updating password", e);
+            }
+            finally {
+                Arrays.fill(chars, '\0');
+                Arrays.fill(passphrase, '\0');
+            }
+
             if (isSetup) {
-                try {
-                    ConfigIO.getConfig().updatePassword(chars);
-                    ConfigIO.getConfig().updatePassphrase(passphrase, passphraseSalt);
-                }
-                catch (Exception e) {
-                    Mangrypt.getBase().showErrorAlert(String.valueOf(e));
-                    throw new RuntimeException("Error updating password", e);
-                }
-                finally {
-                    passwordField.setText("");
-                    Arrays.fill(chars, '\0');
-                }
-                hasDecrypted = true;
+                disallowCancel = true; // Do not allow cancel while transition is playing
                 Mangrypt.getBase().playTransition(() -> {
                     ConfigIO.markShouldSave();
                     Mangrypt.getBase().setSecondLayerRoot(null);
-                    FXMLLoader loader = new FXMLLoader(getClass().getResource("/io/github/redstonemango/mangrypt/fxml/folder-overview.fxml"));
+                    FXMLLoader loader = new FXMLLoader(getClass().getResource("/io/github/redstonemango/mangrypt/fxml/file-system.fxml"));
                     try {
                         Mangrypt.getBase().setSceneRoot(loader.load());
                     }
@@ -141,53 +129,8 @@ public class SecuritySetupController {
                 });
             }
             else {
-
-                hasDecrypted = true;
-                Mangrypt.getBase().showAlert(Alert.AlertType.INFORMATION, "Working...", "Updating references to use the new password and passphrase", false, _ -> {});
-                try (ExecutorService service = Executors.newSingleThreadExecutor()) {
-                    service.execute(() -> {
-                        boolean error = false;
-                        SecureData.Encrypted currentlyIterated = null;
-                        try {
-                            byte[] passwordSalt = CypherEncryption.generateRandomSalt();
-                            SecretKey key = CypherEncryption.deriveKey(chars, passwordSalt);
-                            for (Configuration.Folder folder : ConfigIO.getConfig().getFolders()) {
-                                for (SecureData.Encrypted data : folder.getEncryptedData()) {
-                                    currentlyIterated = data;
-                                    data.updatePassword(key, passwordSalt);
-                                    currentlyIterated = null;
-                                }
-                            }
-
-                            // Use 2 different stages to prevent en exception thrown in between, resulting in half the data being encrypted with the new password, half the data with the old one
-                            Platform.runLater(() -> Mangrypt.getBase().showAlert(Alert.AlertType.INFORMATION, "Working...", "Finalizing update", false, _ -> {}));
-
-                            for (Configuration.Folder folder : ConfigIO.getConfig().getFolders()) {
-                                for (SecureData.Encrypted data : folder.getEncryptedData()) {
-                                    data.finalizePasswordUpdate();
-                                }
-                            }
-                            ConfigIO.getConfig().updatePassword(key, passwordSalt, chars);
-                            ConfigIO.getConfig().updatePassphrase(passphrase, passphraseSalt);
-                        }
-                        catch (Exception e) {
-                            error = true;
-                            Platform.runLater(() -> {
-                                Mangrypt.getBase().showErrorAlert(String.valueOf(e));
-                                throw new RuntimeException("Error updating password", e);
-                            });
-                        }
-                        finally {
-                            if (currentlyIterated != null) currentlyIterated.zeroTmpData(); // If an exception is thrown during password update (stage 1), zero out temporary leftover data
-                            passwordField.setText("");
-                            Arrays.fill(chars, '\0');
-                        }
-                        Mangrypt.getBase().setSecondLayerRoot(null);
-                        if (!error) {
-                            Platform.runLater(() -> Mangrypt.getBase().showInfoAlert("Successfully updated passphrase and password"));
-                        }
-                    });
-                }
+                Mangrypt.getBase().setSecondLayerRoot(null);
+                Mangrypt.getBase().showInfoAlert("Successfully updated password and passphrase");
             }
         }
     }

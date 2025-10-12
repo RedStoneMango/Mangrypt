@@ -1,0 +1,121 @@
+package io.github.redstonemango.mangrypt.front.controller;
+
+import io.github.redstonemango.mangrypt.back.Utilities;
+import javafx.application.Platform;
+import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.control.Label;
+import javafx.scene.control.PasswordField;
+import javafx.scene.input.KeyCode;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.StackPane;
+import javafx.util.Duration;
+import io.github.redstonemango.mangrypt.Mangrypt;
+import io.github.redstonemango.mangrypt.front.ShakeTransition;
+import io.github.redstonemango.mangrypt.back.ConfigIO;
+
+import javax.crypto.AEADBadTagException;
+import java.io.IOException;
+import java.util.Arrays;
+
+public class AuthenticationController {
+
+    @FXML StackPane root;
+    @FXML Pane backgroundContainer;
+    @FXML PasswordField passphraseField;
+    @FXML PasswordField passwordField;
+    @FXML Label triesLeftLabel;
+    @FXML AnchorPane panelContainer;
+
+    private int tries = 3;
+
+    private boolean allowCancelInternal = true;
+
+    @FXML
+    private void initialize() {
+        passphraseField.setOnKeyPressed(e -> {
+            if (e.getCode() == KeyCode.ENTER) onDecrypt();
+        });
+        passwordField.setOnKeyPressed(e -> {
+            if (e.getCode() == KeyCode.ENTER) onDecrypt();
+        });
+        Utilities.registerClosableOverlay(root, this::cancelAuth, panelContainer);
+
+        Platform.runLater(() -> passphraseField.requestFocus());
+    }
+
+    private void cancelAuth() {
+        if (!allowCancelInternal) return; // If this is called during the baseView transition, cancel the cleanup to avoid empty configs while the encrypted view is shown.
+        Mangrypt.getBase().hidePasswordDialog();
+        Mangrypt.getBase().setSecondLayerRoot(null);
+        ConfigIO.cleanup();
+    }
+
+    @FXML
+    private void onDecrypt() {
+        char[] passphrase = passphraseField.getText().toCharArray();
+        char[] password = passwordField.getText().toCharArray();
+        boolean decryptionSuccess;
+        try {
+            decryptionSuccess = ConfigIO.decryptConfig(passphrase, password);
+            if (decryptionSuccess) {
+                decryptionSuccess = ConfigIO.getConfig().verifyPassword(password); // Check for password hash too, to minimize collision risk
+            }
+        }
+        catch (AEADBadTagException _) {
+            decryptionSuccess = false; // GCM tag mismatch: Wrong password
+        }
+        catch (Exception e) {
+            passwordField.setText("");
+            Mangrypt.getBase().showErrorAlert(String.valueOf(e));
+            throw new RuntimeException("Error decrypting config", e);
+        }
+        finally {
+            Arrays.fill(password, '\0');
+        }
+        if (!decryptionSuccess) {
+            decreaseTries();
+            return;
+        }
+
+        // If we reach this, decryption was successful
+
+        passphraseField.setText("");
+        passwordField.setText("");
+
+        allowCancelInternal = false;
+        Mangrypt.getBase().playTransition(() -> {
+            ConfigIO.markShouldSave();
+            Mangrypt.getBase().setSecondLayerRoot(null);
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/io/github/redstonemango/mangrypt/fxml/file-system.fxml"));
+            try {
+                Mangrypt.getBase().setSceneRoot(loader.load());
+            } catch (IOException e) {
+                throw new RuntimeException(e); // We can throw here without an error screen; If this is ever caught, the app was compiled incorrectly, and we're cooked wither way
+            }
+        });
+    }
+
+    private void decreaseTries() {
+        tries --;
+        triesLeftLabel.setText((tries > 1 ? tries + " tries" : (tries == 1 ? "1 try" : "No tries")) + " left");
+        ShakeTransition transition = new ShakeTransition(Duration.seconds(1), triesLeftLabel);
+        transition.setShakeX(-2);
+        transition.setCycles(5);
+        transition.play();
+        if (tries == 0) {
+            passwordField.setText("");
+            passphraseField.setText("");
+            transition.setOnFinished(_ -> cancelAuth());
+        }
+        else {
+            if (Mangrypt.getBase().getScene().getFocusOwner() instanceof PasswordField field) {
+                field.selectAll();
+            }
+            else {
+                passphraseField.requestFocus(); // Automatically selects text
+            }
+        }
+    }
+}

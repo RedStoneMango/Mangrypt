@@ -1,155 +1,63 @@
 package io.github.redstonemango.mangrypt.back;
 
-import com.google.gson.annotations.Expose;
-import io.github.redstonemango.mangrypt.front.controller.AuthController;
-import io.github.redstonemango.mangrypt.front.controller.SecuritySetupController;
+import io.github.redstonemango.mangrypt.back.dataTypes.FileSystemElement;
+import io.github.redstonemango.mangrypt.back.dataTypes.FolderElement;
+import io.github.redstonemango.mangrypt.back.encryption.VersionedEncryptionHandler;
+import io.github.redstonemango.mangrypt.front.controller.AuthenticationController;
 
 import javax.crypto.SecretKey;
-import java.util.ArrayList;
-import java.util.List;
 
 public class Configuration {
 
-    private SecretKey passphrase;
-    private byte[] passphraseSalt;
-    private SecretKey password;
-    private byte[] passwordSalt;
-    @Expose
+    private transient SecretKey masterKey;
+    private transient byte[] masterSalt;
     private String hash;
-    @Expose
-    private List<Folder> folders;
+    private FolderElement rootFolder;
 
-    public SecretKey passphrase() {
+    public SecretKey masterKey() {
+        Utilities.ensureAuthorizedAccess(VersionedEncryptionHandler.class);
+        return masterKey;
+    }
+    public byte[] masterSalt() {
+        return masterSalt;
+    }
+    public void updateMasterKey(SecretKey key, byte[] salt) {
+        Utilities.ensureAuthorizedAccess(VersionedEncryptionHandler.class);
+        this.masterKey = key;
+        this.masterSalt = salt;
+    }
+    public void definePassword(String hash) {
         Utilities.ensureAuthorizedAccess(ConfigIO.class);
-        return passphrase;
-    }
-    public byte[] passphraseSalt() {
-        return passphraseSalt;
-    }
-    public void updatePassphrase(char[] passphrase) throws Exception {
-        Utilities.ensureAuthorizedAccess(ConfigIO.class);
-
-        passphraseSalt = CypherEncryption.generateRandomSalt();
-        this.passphrase = CypherEncryption.deriveKey(passphrase, passphraseSalt);
-    }
-    public void updatePassphrase(SecretKey key, byte[] salt) {
-        Utilities.ensureAuthorizedAccess(SecuritySetupController.class);
-
-        passphraseSalt = salt;
-        this.passphrase = key;
-    }
-
-    protected SecretKey password() {
-        Utilities.ensureAuthorizedAccess(SecureData.Encrypted.class);
-        return password;
-    }
-
-    protected byte[] passwordSalt() {
-        return passwordSalt;
-    }
-    public void updatePassword(char[] password) throws Exception {
-        Utilities.ensureAuthorizedAccess(SecuritySetupController.class);
-
-        hash = Hasher.hash(password);
-        passwordSalt = CypherEncryption.generateRandomSalt();
-        this.password = CypherEncryption.deriveKey(password, passwordSalt);
-    }
-    public void updatePassword(SecretKey key, byte[] salt, char[] pwd) throws Exception {
-        Utilities.ensureAuthorizedAccess(SecuritySetupController.class, AuthController.class);
-
-        hash = Hasher.hash(pwd);
-        passwordSalt = salt;
-        this.password = key;
+        this.hash = hash;
     }
 
     public void cleanup() {
         Utilities.ensureAuthorizedAccess(ConfigIO.class);
 
-        passphrase = null;
-        password = null;
-        if (folders != null) folders.forEach(Folder::cleanup);
-        folders = null;
-
+        masterKey = null;
+        if (rootFolder != null) rootFolder.getContent().forEach(FileSystemElement::zeroOut);
+        rootFolder = null;
     }
 
-    public boolean verifyPassword(char[] password) throws Exception {
-        Utilities.ensureAuthorizedAccess(AuthController.class);
+    public boolean verifyPassword(char[] password) {
+        Utilities.ensureAuthorizedAccess(AuthenticationController.class);
 
-        return Hasher.verifyHash(password, hash);
+        return VersionedEncryptionHandler.verifyHash(ConfigIO.VERSION, hash, password);
     }
 
-    public List<Folder> getFolders() {
-        return folders;
+    public FolderElement getRootFolder() {
+        return rootFolder;
     }
 
     public void ensureFields() {
         if (hash == null) {
             hash = "";
         }
-        if (folders == null) {
-            folders = new ArrayList<>();
+        if (rootFolder == null) {
+            rootFolder = new FolderElement();
         }
-        else {
-            folders.forEach(Folder::ensureFields);
-        }
+        rootFolder.ensureFields();
+
+        // Master key & salt have to be set separately
     }
-
-    public static class Folder {
-
-        @Expose
-        private String name;
-        @Expose
-        private String description;
-        @Expose
-        private List<SecureData.Encrypted> data;
-
-        public Folder(String name) {
-            this.name = name;
-            this.description = "";
-            ensureFields();
-        }
-
-        public List<SecureData.Encrypted> getEncryptedData() {
-            return data;
-        }
-
-        public String getDescription() {
-            return description;
-        }
-
-        public void setDescription(String description) {
-            this.description = description;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public void setName(String name) {
-            this.name = name;
-        }
-
-        public void ensureFields() {
-            if (name == null || name.isBlank()) {
-                name = "UNNAMED VAULT";
-            }
-            if (description == null) {
-                description = "";
-            }
-            if (data == null) {
-                data = new ArrayList<>();
-            }
-            else {
-                data.forEach(SecureData.Encrypted::ensureFields);
-            }
-        }
-
-        public void cleanup() {
-            Utilities.ensureAuthorizedAccess(Configuration.class);
-
-            if (data != null) data.forEach(SecureData.Encrypted::cleanup);
-            data = null;
-        }
-    }
-
 }

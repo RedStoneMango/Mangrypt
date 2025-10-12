@@ -19,15 +19,18 @@ public class ListEntry extends ListEntryBase {
     private final Runnable onSelect;
     private final Runnable onDelete;
 
-    public ListEntry(String name, String description, Runnable onSelect, Runnable onDelete, Runnable onSetName, Runnable onSetDescription, Runnable onExport, @Nullable Image icon, ListView<?> view) {
+    public ListEntry(String name, String description, Runnable onSelect, Runnable onDelete, Runnable onSetName,
+                     Runnable onSetDescription, Runnable onExport, @Nullable Image icon, boolean folder,
+                     ListView<?> view) {
         nameLabel.setText(name);
         if (name.startsWith(".")) nameLabel.setFont(Font.font("", FontWeight.NORMAL, FontPosture.ITALIC, 17));
         descriptionLabel.setText(description);
         this.onSelect = onSelect;
         this.onDelete = onDelete;
         prefWidthProperty().bind(view.widthProperty().subtract(16));
-        if (description.isBlank()) {
+        if (description == null || description.isBlank()) {
             nameLabel.setTranslateY(7); // If there is no description, shift the name label down
+            descriptionLabel.setVisible(false);
         }
 
         if (icon == null) {
@@ -39,7 +42,7 @@ public class ListEntry extends ListEntryBase {
                 double target = nameLabel.localToScene(0, 0).getY();
                 double element = iconView.localToScene(0, 0).getY();
                 double difference = target - element;
-                iconView.setTranslateY(difference + 3);
+                iconView.setTranslateY(difference - 5);
                 iconView.setTranslateX(5);
             });
         }

@@ -92,8 +92,8 @@ public abstract class ListEntryBase extends BorderPane {
         setCenter(vBox);
 
         BorderPane.setAlignment(iconView, javafx.geometry.Pos.CENTER);
-        iconView.setFitHeight(17.0);
-        iconView.setFitWidth(21.0);
+        iconView.setFitHeight(32.0);
+        iconView.setFitWidth(32.0);
         iconView.setPickOnBounds(true);
         iconView.setPreserveRatio(true);
         setLeft(iconView);

@@ -11,27 +11,27 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.text.Font?>
 
-<StackPane fx:id="root" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="634.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.github.redstonemango.mangrypt.front.controller.AuthController">
+<StackPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="634.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1">
    <children>
-      <Pane fx:id="backgroundContainer" prefHeight="200.0" prefWidth="200.0" />
+      <Pane prefHeight="200.0" prefWidth="200.0" />
       <FlowPane alignment="CENTER" prefHeight="200.0" prefWidth="200.0">
          <children>
             <StackPane prefHeight="361.0" prefWidth="634.0">
                <children>
-                  <ImageView fx:id="image" fitHeight="361.0" fitWidth="639.0" pickOnBounds="true" preserveRatio="true">
+                  <ImageView fitHeight="361.0" fitWidth="639.0" pickOnBounds="true" preserveRatio="true">
                      <image>
                         <Image url="@../image/pane_background_small.png" />
                      </image>
                   </ImageView>
-                  <AnchorPane fx:id="panelContainer" prefHeight="200.0" prefWidth="607.0">
+                  <AnchorPane prefHeight="200.0" prefWidth="607.0">
                      <children>
-                        <Label fx:id="triesLeftLabel" layoutX="108.0" layoutY="286.0" text="3 tries left" textFill="RED">
+                        <Label layoutX="108.0" layoutY="286.0" text="3 tries left" textFill="RED">
                            <font>
                               <Font name="System Bold" size="18.0" />
                            </font>
                         </Label>
-                        <PasswordField fx:id="passwordField" layoutX="364.0" layoutY="231.0" prefHeight="28.0" prefWidth="160.0" />
-                        <Button layoutX="400.0" layoutY="264.0" mnemonicParsing="false" onAction="#onDecrypt" prefHeight="26.0" prefWidth="89.0" text="Decrypt..." />
+                        <PasswordField layoutX="364.0" layoutY="231.0" prefHeight="28.0" prefWidth="160.0" />
+                        <Button layoutX="400.0" layoutY="264.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="89.0" text="Decrypt..." />
                         <Label layoutX="237.0" layoutY="80.0" styleClass="uncolored-label" text="Password required" underline="true">
                            <font>
                               <Font size="18.0" />

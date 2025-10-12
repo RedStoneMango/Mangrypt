@@ -2,6 +2,7 @@ package io.github.redstonemango.mangrypt;
 
 import io.github.redstonemango.mangrypt.back.ConfigIO;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
@@ -25,14 +26,27 @@ public class Mangrypt extends Application {
         stage.setMinWidth(780 + xDecoration);
         stage.setMinHeight(480 + yDecoration);
 
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            if (ConfigIO.shouldSave()) ConfigIO.save();
-            ConfigIO.cleanup(); // Try to unset all mutable objects to minimize the risk of memory leaks
-            base.shutdownMediaServer();
-        }));
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> Platform.runLater(stage::close)));
         stage.setOnCloseRequest(e -> {
             if (!e.isConsumed()) {
-                base.shutdownMediaServer(); // Shutdown when closing window, to allow app to exit
+                try {
+                    if (ConfigIO.shouldSave()) ConfigIO.save();
+                }
+                catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+                try {
+                    ConfigIO.cleanup();
+                }
+                catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+                try {
+                    base.shutdownMediaServer();
+                }
+                catch (Exception ex) {
+                    ex.printStackTrace();
+                }
             }
         });
 

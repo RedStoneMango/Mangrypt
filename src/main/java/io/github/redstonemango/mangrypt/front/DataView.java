@@ -3,6 +3,10 @@ package io.github.redstonemango.mangrypt.front;
 import io.github.redstonemango.mangoutils.OperatingSystem;
 import io.github.redstonemango.mangrypt.Mangrypt;
 import io.github.redstonemango.mangrypt.back.*;
+import io.github.redstonemango.mangrypt.back.dataTypes.DataElement;
+import io.github.redstonemango.mangrypt.back.dataTypes.ImageDataElement;
+import io.github.redstonemango.mangrypt.back.dataTypes.MediaDataElement;
+import io.github.redstonemango.mangrypt.back.dataTypes.TextDataElement;
 import javafx.application.Platform;
 import javafx.css.PseudoClass;
 import javafx.geometry.Bounds;
@@ -31,7 +35,9 @@ import javafx.scene.text.FontWeight;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class DataView extends BorderPane {
@@ -41,16 +47,16 @@ public class DataView extends BorderPane {
     private final StackPane swipeArrowLeft;
     private final StackPane swipeArrowRight;
 
-    private List<SecureData.Encrypted> availableData;
-    private SecureData.Encrypted encryptedData;
-    private @Nullable SecureData decryptedData;
-    private boolean changed = false;
+    private List<DataElement> availableData;
+    private DataElement currentData;
 
     private @Nullable TextArea textArea;
     private @Nullable Image image;
     private @Nullable ImageView imageView;
     private @Nullable MediaPlayer mediaPlayer;
     private @Nullable SecureInMemoryMediaServer mediaServer;
+
+    private boolean isShowingData = false;
 
     public DataView() {
         swipeArrowLeft = createSwipeArrow(40, true);
@@ -59,7 +65,7 @@ public class DataView extends BorderPane {
         swipeArrowRight = createSwipeArrow(40, false);
         setRight(swipeArrowRight);
 
-        addEventHandler(KeyEvent.KEY_PRESSED, e -> { // Do not register a filter, for we do not want to override the cursor-move event in the text-data-editor
+        addEventHandler(KeyEvent.KEY_PRESSED, e -> { // Do not register a filter, for we do not want to override the caret-move event in the text-data-editor
             if (e.getCode() == KeyCode.LEFT && !swipeArrowLeft.isDisabled()) {
                 onSwipe(true);
             }
@@ -83,7 +89,7 @@ public class DataView extends BorderPane {
         BorderPane.setMargin(centerContainer, new Insets(0, 0, 50, 0));
 
         Utilities.registerDynamicClosableOverlay(this, () -> {
-            storeData();
+            cleanup();
             setVisible(false);
         }, () -> {
             List<Node> nodes = new ArrayList<>(List.of(swipeArrowLeft, swipeArrowRight, nameLabel));
@@ -99,7 +105,7 @@ public class DataView extends BorderPane {
         centerContainer.heightProperty().addListener((_, _, height) -> sizeUpdate(height.doubleValue(), false));
     }
 
-    public void showData(List<SecureData.Encrypted> availableData, SecureData.Encrypted data) {
+    public void showData(List<DataElement> availableData, DataElement data) {
         Node node;
         try {
             node = extractContentFrom(data);
@@ -107,6 +113,7 @@ public class DataView extends BorderPane {
             Mangrypt.getBase().showErrorAlert(String.valueOf(e));
             throw new RuntimeException("Error extracting content from a dataset", e);
         }
+        isShowingData = true;
         nameLabel.setText(data.getName());
         nameLabel.setFont(Font.font("", FontWeight.BOLD, data.getName().startsWith(".") ? FontPosture.ITALIC : FontPosture.REGULAR, 30));
         centerContainer.getChildren().clear();
@@ -115,9 +122,8 @@ public class DataView extends BorderPane {
         AnchorPane.setLeftAnchor(node, 0.0);
         AnchorPane.setRightAnchor(node, 0.0);
         centerContainer.getChildren().add(node);
-        encryptedData = data;
+        currentData = data;
         this.availableData = availableData;
-        changed = false;
         sizeUpdate(centerContainer.getWidth(), true);
         sizeUpdate(centerContainer.getHeight(), false);
 
@@ -151,28 +157,9 @@ public class DataView extends BorderPane {
         }
     }
 
-    public void storeData() {
+    public void cleanup() {
         Utilities.ensureAuthorizedAccess(DataView.class, BaseView.class);
-        if (decryptedData == null) return;
-
-        if (decryptedData.requiresSave() && changed) {
-            try {
-                encryptedData.store(decryptedData);
-            }
-            catch (Exception e) {
-                Mangrypt.getBase().showErrorAlert(String.valueOf(e));
-                throw new RuntimeException("Error storing secure data", e);
-            }
-        }
-
-        cleanup();
-    }
-
-    private void cleanup() {
-        Utilities.ensureAuthorizedAccess(DataView.class);
-
-        decryptedData.zeroOut();
-        decryptedData = null;
+        isShowingData = false;
 
         if (textArea != null) {
             textArea.setText("");
@@ -201,22 +188,19 @@ public class DataView extends BorderPane {
         }
     }
 
-    private Node extractContentFrom(SecureData.Encrypted data) throws Exception {
-        decryptedData = data.decrypt();
-        Node node = switch (data.getType()) {
-            case SecureData.TYPE_TEXT ->  {
+    private Node extractContentFrom(DataElement data) throws Exception {
+        Node node = switch (data) {
+            case TextDataElement textData ->  {
                 textArea = new TextArea();
-                textArea.setText(new String(decryptedData.text()));
+                textArea.setText(new String(textData.bytes(), StandardCharsets.UTF_8));
                 textArea.setWrapText(true);
                 textArea.textProperty().addListener((_, _, text) -> {
-                    if (decryptedData == null) return;
-                    decryptedData.text(text.toCharArray());
-                    changed = true;
+                    if (isShowingData) textData.bytes(text.getBytes(StandardCharsets.UTF_8));
                 });
                 yield textArea;
             }
-            case SecureData.TYPE_IMAGE -> {
-                ByteArrayInputStream stream = new ByteArrayInputStream(decryptedData.binaryBytes());
+            case ImageDataElement imageData -> {
+                ByteArrayInputStream stream = new ByteArrayInputStream(imageData.bytes());
                 image = new Image(stream);
                 if (image.isError()) {
                     yield createErrorDisplay();
@@ -228,8 +212,8 @@ public class DataView extends BorderPane {
                 imageView.setVisible(false); // Prevent image pos jump on first load
                 yield imageView;
             }
-            case SecureData.TYPE_MEDIA -> {
-                mediaServer = new SecureInMemoryMediaServer(decryptedData.binaryBytes(), decryptedData.mimeType(), 0, "media-stream");
+            case MediaDataElement mediaData -> {
+                mediaServer = new SecureInMemoryMediaServer(mediaData.bytes(), mediaData.mimeType(), 0, "media-stream");
                 mediaServer.start();
                 Media media;
                 try {
@@ -257,11 +241,11 @@ public class DataView extends BorderPane {
     }
 
     private static void tryShowCodecMessage(MediaException e) {
-        if (e.getType() == MediaException.Type.UNKNOWN && OperatingSystem.isLinux()) {
+        if (e.getType() == MediaException.Type.UNKNOWN) {
             ButtonType learnMore = new ButtonType("Learn more");
-            Mangrypt.getBase().showAlert(Alert.AlertType.ERROR, "Unable to create media", "This could be due to missing codec on your Linux system", true, btn -> {
+            Mangrypt.getBase().showAlert(Alert.AlertType.ERROR, "Unable to create media", "This could be due to missing system libraries on your device", true, btn -> {
                 if (btn == learnMore) {
-                    OperatingSystem.loadCurrentOS().open("https://www.oracle.com/java/technologies/javase/products-doc-jdk8-jre8-certconfig.html#:~:text=decoding%20will%20fail.-,Linux,on%20Ubuntu%20Linux%2012.04%20or%20equivalent.");
+                    OperatingSystem.loadCurrentOS().open("https://www.oracle.com/java/technologies/javase/products-doc-jdk8-jre8-certconfig.html#:~:text=JavaFX%20Media,12.04%20or%20equivalent.");
                 }
             }, learnMore, ButtonType.CLOSE);
         }
@@ -277,15 +261,15 @@ public class DataView extends BorderPane {
     }
 
     private void onSwipe(boolean toLeft) {
-        storeData();
+        cleanup();
 
-        int index = availableData.indexOf(encryptedData);
+        int index = availableData.indexOf(currentData);
         int newIndex = index + (toLeft ? -1 : 1);
         showData(availableData, availableData.get(newIndex));
     }
 
     private void checkSwipeable() {
-        int index = availableData.indexOf(encryptedData);
+        int index = availableData.indexOf(currentData);
         swipeArrowLeft.setDisable(index <= 0);
         swipeArrowRight.setDisable(index >= availableData.size() - 1);
     }

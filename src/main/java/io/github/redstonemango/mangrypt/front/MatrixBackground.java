@@ -6,11 +6,11 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Pane;
 import javafx.util.Duration;
-import io.github.redstonemango.mangrypt.front.controller.AuthController;
+import io.github.redstonemango.mangrypt.front.controller.AuthenticationController;
 
 public class MatrixBackground {
 
-    public static final Image BACKGROUND_SPRITE = new Image(AuthController.class.getResourceAsStream("/io/github/redstonemango/mangrypt/image/matrix-rain-sprite.png"));
+    public static final Image BACKGROUND_SPRITE = new Image(AuthenticationController.class.getResourceAsStream("/io/github/redstonemango/mangrypt/image/matrix-rain-sprite.png"));
     public static final int BACKGROUND_SPRITE_SIZE = 400;
     public static final Duration BACKGROUND_SCROLL_DURATION = Duration.seconds(20);
 

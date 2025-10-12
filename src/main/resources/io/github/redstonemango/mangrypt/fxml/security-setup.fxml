@@ -1,11 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.*?>
-<?import javafx.scene.image.*?>
-<?import javafx.scene.layout.*?>
-<?import javafx.scene.text.*?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.Tooltip?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.text.Font?>
 
-<StackPane fx:id="root" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="634.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.github.redstonemango.mangrypt.front.controller.SecuritySetupController">
+<StackPane fx:id="root" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="634.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.github.redstonemango.mangrypt.front.controller.SecuritySetupController">
    <children>
       <Pane fx:id="backgroundContainer" prefHeight="200.0" prefWidth="200.0" />
       <FlowPane alignment="CENTER" prefHeight="200.0" prefWidth="200.0">
@@ -24,16 +31,16 @@
                               <Font size="20.0" />
                            </font>
                         </Label>
-                        <Label fx:id="contentLabel" layoutX="102.0" layoutY="125.0" maxWidth="230.0" prefHeight="60.0" prefWidth="230.0" styleClass="uncolored-label" text="Please setup a &quot;Launch passphrase&quot; for which you will be prompted on every application startup:" wrapText="true">
+                        <Label fx:id="contentLabel" layoutX="102.0" layoutY="125.0" maxWidth="230.0" prefHeight="60.0" prefWidth="230.0" styleClass="uncolored-label" text="Please setup a &quot;Data passphrase&quot; for which you will be prompted on every vault access:" wrapText="true">
                            <font>
                               <Font size="12.0" />
                            </font>
                         </Label>
-                        <PasswordField fx:id="passwordField" focusTraversable="false" layoutX="102.0" layoutY="193.0" prefHeight="26.0" prefWidth="230.0" promptText="Passphrase">
+                        <PasswordField fx:id="passwordField" layoutX="102.0" layoutY="193.0" prefHeight="26.0" prefWidth="230.0" promptText="Passphrase">
                            <tooltip>
                               <Tooltip fx:id="passwordFieldTooltip" text="Enter the passphrase to use" />
                            </tooltip></PasswordField>
-                        <PasswordField fx:id="passwordConfirmationField" focusTraversable="false" layoutX="102.0" layoutY="225.0" prefHeight="26.0" prefWidth="230.0" promptText="Confirm Passphrase">
+                        <PasswordField fx:id="passwordConfirmationField" layoutX="102.0" layoutY="225.0" prefHeight="26.0" prefWidth="230.0" promptText="Confirm Passphrase">
                            <tooltip>
                               <Tooltip fx:id="passwordConfirmationFieldTooltip" text="Confirm the passphrase to use" />
                            </tooltip></PasswordField>

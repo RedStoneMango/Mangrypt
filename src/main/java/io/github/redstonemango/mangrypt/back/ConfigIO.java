@@ -1,13 +1,13 @@
 package io.github.redstonemango.mangrypt.back;
 
-import com.google.gson.GsonBuilder;
 import io.github.redstonemango.mangoutils.OperatingSystem;
 import io.github.redstonemango.mangrypt.Mangrypt;
-import io.github.redstonemango.mangrypt.front.controller.AuthController;
+import io.github.redstonemango.mangrypt.back.encryption.VersionedEncryptionHandler;
+import io.github.redstonemango.mangrypt.front.controller.AuthenticationController;
+import io.github.redstonemango.mangrypt.front.controller.FileSystemController;
 import io.github.redstonemango.mangrypt.front.controller.SecuritySetupController;
 import javafx.fxml.FXMLLoader;
 
-import javax.crypto.SecretKey;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -16,15 +16,16 @@ import java.nio.file.Files;
 public class ConfigIO {
 
     private static final File VAULT_DIRECTORY = OperatingSystem.loadCurrentOS().createAppConfigDir("mangrypt");
-    private static final int VERSION = 1;
+    public static final int VERSION = 1;
 
     private static File vaultFile;
+    public static int vaultVersionOnLoad = -1;
 
     private static Configuration config;
     private static boolean shouldSave = false;
 
     public static void cleanup() {
-        Utilities.ensureAuthorizedAccess(Mangrypt.class, SecuritySetupController.class, AuthController.class, Utilities.class);
+        Utilities.ensureAuthorizedAccess(Mangrypt.class, SecuritySetupController.class, AuthenticationController.class, FileSystemController.class);
 
         if (config != null) config.cleanup();
         config = null;
@@ -39,27 +40,29 @@ public class ConfigIO {
         shouldSave = true;
     }
 
-    public static void save() {
+    public static boolean save() {
         Mangrypt.getBase().storeShowingData();
 
         if (!vaultFile.exists()) {
             try {
-                vaultFile.getParentFile().mkdirs();
-                vaultFile.createNewFile();
+                Files.createDirectories(vaultFile.getParentFile().toPath());
+                Files.createFile(vaultFile.toPath());
             }
             catch (IOException e) {
                 Mangrypt.getBase().showErrorAlert(String.valueOf(e));
-                throw new RuntimeException("Error creating vault file", e);
+                throw new RuntimeException("Error creating vault", e);
             }
         }
 
         byte[] encrypted;
         try {
-            String json = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create().toJson(config);
-            encrypted = CypherEncryption.encrypt(json, config.passphrase(), config.passphraseSalt());
+            encrypted = VersionedEncryptionHandler.encrypt(VERSION, config);
         } catch (Exception e) {
             Mangrypt.getBase().showErrorAlert(String.valueOf(e));
-            throw new RuntimeException(e);
+            throw new RuntimeException("Error encrypting vault", e);
+        }
+        if (encrypted == null) {
+            return false; // Version is unsupported. Error handling happens in VersionedEncryptionHandler
         }
         encrypted = addVersioning(encrypted, VERSION);
 
@@ -68,39 +71,47 @@ public class ConfigIO {
         }
         catch (IOException e) {
             Mangrypt.getBase().showErrorAlert(String.valueOf(e));
-            throw new RuntimeException("Error writing to vault file", e);
+            throw new RuntimeException("Error writing to vault", e);
         }
+        return true;
     }
 
-    public static boolean decryptConfig(char[] passphrase) throws Exception {
+    public static boolean decryptConfig(char[] passphrase, char[] password) throws Exception {
         if (!vaultFile.exists()) {
             Mangrypt.getBase().showErrorAlert("Vault file does not exist");
-            throw new RuntimeException("Vault file does not exist");
+            return false;
         }
 
         byte[] encrypted = Files.readAllBytes(vaultFile.toPath());
 
         int[] versionWrapper = new int[1];
-        encrypted = extractVersioning(encrypted, versionWrapper);
-        if (versionWrapper[0] != VERSION) {
-            encrypted = VaultUpdater.updateVault(encrypted, versionWrapper[0]); // Update if the vault has an outdated version
-        }
+        encrypted = extractVersioning(encrypted, versionWrapper); // Move versioning from byte header to versionWrapper[0]
 
-        SecretKey key = CypherEncryption.extractAndDeriveKey(encrypted, passphrase);
-        String json = CypherEncryption.decrypt(encrypted, key); // Don't extractPayload
-        if (json == null) {
-            return false;
+        config = VersionedEncryptionHandler.decrypt(versionWrapper[0], encrypted, passphrase, password);
+        if (config == null) {
+            return false; // Version is unsupported. Error handling happens in VersionedEncryptionHandler
         }
-        config = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create().fromJson(json, Configuration.class);
         config.ensureFields();
-        config.updatePassphrase(passphrase);
         return true;
     }
 
-    public static void authenticateUserAndLoadConfig() {
+    public static void setPasswords(char[] passphrase, char[] password) throws Exception {
+        Utilities.ensureAuthorizedAccess(SecuritySetupController.class);
+        if (config == null) {
+            throw new IllegalStateException("No configs exist to edit");
+        }
+
+        String hash = VersionedEncryptionHandler.hash(VERSION, password);
+        if (hash == null) return;
+
+        VersionedEncryptionHandler.setPasswords(VERSION, passphrase, password, config);
+        config.definePassword(hash);
+    }
+
+    public static void authenticateUser() {
         if (vaultFile.exists()) {
             try {
-                FXMLLoader loader = new FXMLLoader(ConfigIO.class.getResource("/io/github/redstonemango/mangrypt/fxml/passphrase-input.fxml"));
+                FXMLLoader loader = new FXMLLoader(ConfigIO.class.getResource("/io/github/redstonemango/mangrypt/fxml/authentication.fxml"));
                 Mangrypt.getBase().setSecondLayerRoot(loader.load());
                 return;
             }
