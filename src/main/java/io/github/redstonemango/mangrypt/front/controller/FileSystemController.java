@@ -86,10 +86,10 @@ public class FileSystemController {
     }
 
     private void onDelete(FileSystemElement element) {
-        Mangrypt.getBase().showConfirmationDialog("Delete '" + element.getName() + "'", "Do you really want to delete '" + element + "'" + (element instanceof FolderElement ? " and all data it contains" : "") + "?", () -> {
+        Mangrypt.getBase().showConfirmationDialog("Delete '" + element.getName() + "'", "Do you really want to delete '" + element.getName() + "'" + (element instanceof FolderElement ? " and all data it contains" : "") + "?", () -> {
             currentFolder.getContent().remove(element);
             element.zeroOut();
-            contentView.refresh();
+            updateContentView(null);
         });
     }
 
