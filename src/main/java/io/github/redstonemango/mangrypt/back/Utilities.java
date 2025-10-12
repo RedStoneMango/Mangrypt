@@ -56,11 +56,12 @@ public class Utilities {
         ensureAuthorizedAccess(2, authorizedClasses); // Skip 2 layers: this method and this method's caller
     }
 
-    public static <T> void applyCustomNodeCellFactory(ListView<T> listView, Function<T, Node> nodeFunction) {
-        applyCustomNodeCellFactory(listView, nodeFunction, _ -> {});
+    public static <T> void applyCustomNodeCellFactory(ListView<T> listView, Function<T, Node> nodeFunction, Insets padding) {
+        applyCustomNodeCellFactory(listView, nodeFunction, _ -> {}, padding);
     }
 
-    public static <T> void applyCustomNodeCellFactory(ListView<T> listView, Function<T, Node> nodeFunction, Consumer<T> onDoubleClick) {
+    public static <T> void applyCustomNodeCellFactory(ListView<T> listView, Function<T, Node> nodeFunction,
+                                                      Consumer<T> onDoubleClick, Insets padding) {
         listView.setCellFactory(new Callback<>() {
             @Override
             public ListCell<T> call(ListView<T> lv) {
@@ -76,7 +77,7 @@ public class Utilities {
                             setText(null);
                         } else {
                             setGraphic(nodeFunction.apply(item));
-                            setPadding(new Insets(0));
+                            setPadding(padding);
                             setOnMouseClicked(_ -> {
                                 if (System.currentTimeMillis() - lastClick <= 250) onDoubleClick.accept(getItem());
                                 lastClick = System.currentTimeMillis();

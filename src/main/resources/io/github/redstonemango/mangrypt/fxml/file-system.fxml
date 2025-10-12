@@ -16,7 +16,7 @@
 
 <BorderPane prefHeight="477.0" prefWidth="688.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.github.redstonemango.mangrypt.front.controller.FileSystemController">
    <center>
-      <ListView fx:id="contentView" fixedCellSize="60.0" prefHeight="508.0" prefWidth="688.0" />
+      <ListView fx:id="contentView" fixedCellSize="0.0" prefHeight="508.0" prefWidth="688.0" />
    </center>
    <top>
       <VBox BorderPane.alignment="CENTER">

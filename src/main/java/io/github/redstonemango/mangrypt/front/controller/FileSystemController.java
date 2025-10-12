@@ -12,6 +12,7 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Insets;
 import javafx.geometry.Point2D;
 import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
@@ -49,7 +50,8 @@ public class FileSystemController {
                         () -> onFolderExport(element),
                         element.runIconImageBuild(),
                         element instanceof FolderElement,
-                        contentView));
+                        contentView),
+                new Insets(0, 0, 1, 0));
 
         updateContentView(null);
 

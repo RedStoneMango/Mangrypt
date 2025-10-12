@@ -46,7 +46,7 @@ public class VaultSelectionController {
         }, file -> {
             vaultList.getSelectionModel().select(file);
             onOpen();
-        });
+        }, new Insets(0));
 
         updateVaultList();
         vaultList.getSelectionModel().selectedItemProperty().addListener((_, _, f) -> {

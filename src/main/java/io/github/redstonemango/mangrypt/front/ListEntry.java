@@ -2,6 +2,7 @@ package io.github.redstonemango.mangrypt.front;
 
 import io.github.redstonemango.mangrypt.front.elementBase.ListEntryBase;
 import javafx.application.Platform;
+import javafx.css.PseudoClass;
 import javafx.event.ActionEvent;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.ListView;
@@ -27,11 +28,13 @@ public class ListEntry extends ListEntryBase {
         descriptionLabel.setText(description);
         this.onSelect = onSelect;
         this.onDelete = onDelete;
-        prefWidthProperty().bind(view.widthProperty().subtract(16));
+        prefWidthProperty().bind(view.widthProperty().subtract(30));
         if (description == null || description.isBlank()) {
             nameLabel.setTranslateY(7); // If there is no description, shift the name label down
             descriptionLabel.setVisible(false);
         }
+        getStyleClass().add("element-list-entry");
+        if (folder) getStyleClass().add("folder");
 
         if (icon == null) {
             setLeft(null);

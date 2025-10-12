@@ -144,6 +144,16 @@
     -fx-text-fill: white;
 }
 
+.element-list-entry {
+    -fx-border-color: green;
+    -fx-border-radius: 15;
+    -fx-border-width: 2;
+}
+.element-list-entry.folder {
+    -fx-background-color: rgba(0, 0, 0, 0.1);
+    -fx-border-color: rgb(0, 175, 0);
+}
+
 .popup-list .list-cell:hover,
 .popup-list .list-cell:selected,
 .menu-item:hover,
