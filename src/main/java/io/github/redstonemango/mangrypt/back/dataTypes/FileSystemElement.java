@@ -53,7 +53,7 @@ public abstract class FileSystemElement {
     }
 
     public void zeroOut() {
-        Utilities.ensureAuthorizedAccess(Configuration.class, DataView.class);
+        Utilities.ensureAuthorizedAccess(Configuration.class, FileSystemController.class);
         name = null;
         description = null;
     }
