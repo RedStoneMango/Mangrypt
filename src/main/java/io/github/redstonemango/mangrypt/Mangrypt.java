@@ -46,7 +46,7 @@ public class Mangrypt extends Application {
                     ex.printStackTrace(System.err);
                 }
                 Platform.exit();
-            });
+            }, true);
         });
 
         if (!ConfigIO.getVaultDirectory().exists()) ConfigIO.getVaultDirectory().mkdirs();

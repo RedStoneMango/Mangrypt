@@ -24,6 +24,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
@@ -297,16 +298,16 @@ public class BaseView extends StackPane {
     }
 
     public void savingRoutine() {
-        savingRoutine(true, () -> {});
+        savingRoutine(true, () -> {}, false);
     }
 
-    public synchronized void savingRoutine(boolean closeVaultUi, Runnable afterSave) {
+    public synchronized void savingRoutine(boolean closeVaultUi, Runnable afterSave, boolean beforeExit) {
         Utilities.ensureAuthorizedAccess(FileSystemController.class, OverlayController.class, Mangrypt.class);
 
         if (isSaving.get()) return; // If we are already saving, do not run again
         isSaving.set(true);
 
-        encryptionWaitController.init(true);
+        encryptionWaitController.init(true, beforeExit);
         encryptionWaitLayer.setVisible(true);
 
         CompletableFuture<Boolean> saveFuture = CompletableFuture.supplyAsync(() -> {
@@ -350,7 +351,7 @@ public class BaseView extends StackPane {
 
     public void decryptionWaitingScreen(boolean show) {
         Utilities.ensureAuthorizedAccess(AuthenticationController.class);
-        encryptionWaitController.init(false);
+        encryptionWaitController.init(false, false);
         encryptionWaitLayer.setVisible(show);
     }
 
