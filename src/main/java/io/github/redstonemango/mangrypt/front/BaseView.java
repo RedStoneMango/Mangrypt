@@ -325,7 +325,7 @@ public class BaseView extends StackPane {
                 encryptionWaitLayer.setVisible(false);
                 isSaving.set(false);
 
-                if (!success || ex != null) {
+                if (ex != null || !success) {
                     Mangrypt.getBase().showAlert(
                             Alert.AlertType.ERROR,
                             "Save Error",

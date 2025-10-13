@@ -71,8 +71,7 @@ public class AuthenticationController {
             }
             catch (Exception e) {
                 passwordField.setText("");
-                Mangrypt.getBase().showErrorAlert(String.valueOf(e));
-                throw new RuntimeException("Error decrypting config", e);
+                success = false;
             }
             finally {
                 Arrays.fill(passphrase, '\0');
@@ -83,7 +82,12 @@ public class AuthenticationController {
 
         saveFuture.whenComplete((success, ex) -> Platform.runLater(() -> {
 
-            if (!success || ex != null) {
+            if (ex != null || !success) {
+                if (ex != null) {
+                    Mangrypt.getBase().showErrorAlert(String.valueOf(ex));
+                    System.err.print("Error decrypting config: ");
+                    ex.printStackTrace(System.err);
+                }
                 Mangrypt.getBase().decryptionWaitingScreen(false);
                 decreaseTries();
                 return;
