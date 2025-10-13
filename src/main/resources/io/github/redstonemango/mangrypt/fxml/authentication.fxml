@@ -38,8 +38,8 @@
                            </font>
                         </Label>
                         <Button layoutX="400.0" layoutY="256.0" mnemonicParsing="false" onAction="#onDecrypt" prefHeight="26.0" prefWidth="89.0" text="Decrypt..." />
-                        <Button focusTraversable="false" layoutX="506.0" layoutY="186.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="26.0" />
-                        <Button focusTraversable="false" layoutX="506.0" layoutY="219.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="26.0" />
+                        <Button focusTraversable="false" layoutX="506.0" layoutY="186.0" mnemonicParsing="false" onAction="#onQuestionPassphrase" prefHeight="26.0" prefWidth="26.0" text="?" />
+                        <Button focusTraversable="false" layoutX="506.0" layoutY="219.0" mnemonicParsing="false" onAction="#onQuestionPassword" prefHeight="26.0" prefWidth="26.0" text="?" />
                      </children>
                   </AnchorPane>
                </children>

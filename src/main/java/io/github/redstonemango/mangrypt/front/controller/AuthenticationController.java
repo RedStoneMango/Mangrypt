@@ -4,6 +4,8 @@ import io.github.redstonemango.mangrypt.back.Utilities;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.input.KeyCode;
@@ -117,5 +119,34 @@ public class AuthenticationController {
                 passphraseField.requestFocus(); // Automatically selects text
             }
         }
+    }
+
+    @FXML
+    private void onQuestionPassphrase() {
+        Mangrypt.getBase().showAlert(
+                Alert.AlertType.INFORMATION,
+                "Information: Data Passphrase",
+                """
+                        This data passphrase is used to encrypt your vault.
+                        You will be prompted for this every time a vault is opened.
+                         !!! Make it as strong as possible !!!""",
+                true,
+                _ -> {},
+                ButtonType.CLOSE);
+    }
+
+    @FXML
+    private void onQuestionPassword() {
+        Mangrypt.getBase().showAlert(
+                Alert.AlertType.INFORMATION,
+                "Information: Access Password",
+                """
+                        This access password is used to encrypt and obscure your vault.
+                        You will be prompted for this every time a vault is opened and when the vault is obscured on \
+                        focus-loss.
+                        """,
+                true,
+                _ -> {},
+                ButtonType.CLOSE);
     }
 }
