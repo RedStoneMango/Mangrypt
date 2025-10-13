@@ -26,25 +26,25 @@
                   </ImageView>
                   <AnchorPane prefHeight="200.0" prefWidth="607.0">
                      <children>
-                        <Label fx:id="headerLabel" layoutX="142.0" layoutY="96.0" styleClass="uncolored-label" text="Passphrase Setup" underline="true">
+                        <Label fx:id="headerLabel" layoutX="146.0" layoutY="95.0" styleClass="uncolored-label" text="Passphrase Setup" underline="true">
                            <font>
-                              <Font size="20.0" />
+                              <Font size="19.0" />
                            </font>
                         </Label>
-                        <Label fx:id="contentLabel" layoutX="102.0" layoutY="125.0" maxWidth="230.0" prefHeight="60.0" prefWidth="230.0" styleClass="uncolored-label" text="Please setup a &quot;Data passphrase&quot; for which you will be prompted on every vault access:" wrapText="true">
+                        <Label fx:id="contentLabel" layoutX="102.0" layoutY="121.0" maxWidth="230.0" prefHeight="71.0" prefWidth="230.0" styleClass="uncolored-label" text="Please setup a &quot;Data passphrase&quot; for which you will be prompted every time the vault is opened. Make it as strong as possible:" wrapText="true">
                            <font>
                               <Font size="12.0" />
                            </font>
                         </Label>
-                        <PasswordField fx:id="passwordField" layoutX="102.0" layoutY="193.0" prefHeight="26.0" prefWidth="230.0" promptText="Passphrase">
+                        <PasswordField fx:id="passwordField" layoutX="102.0" layoutY="197.0" prefHeight="26.0" prefWidth="230.0" promptText="Passphrase">
                            <tooltip>
                               <Tooltip fx:id="passwordFieldTooltip" text="Enter the passphrase to use" />
                            </tooltip></PasswordField>
-                        <PasswordField fx:id="passwordConfirmationField" layoutX="102.0" layoutY="225.0" prefHeight="26.0" prefWidth="230.0" promptText="Confirm Passphrase">
+                        <PasswordField fx:id="passwordConfirmationField" layoutX="102.0" layoutY="229.0" prefHeight="26.0" prefWidth="230.0" promptText="Confirm Passphrase">
                            <tooltip>
                               <Tooltip fx:id="passwordConfirmationFieldTooltip" text="Confirm the passphrase to use" />
                            </tooltip></PasswordField>
-                        <Button fx:id="setupButton" layoutX="136.0" layoutY="261.0" mnemonicParsing="false" onAction="#onSetup" prefHeight="26.0" prefWidth="162.0" text="Setup passphrase..." />
+                        <Button fx:id="setupButton" layoutX="136.0" layoutY="264.0" mnemonicParsing="false" onAction="#onSetup" prefHeight="26.0" prefWidth="162.0" text="Setup passphrase..." />
                      </children>
                   </AnchorPane>
                </children>

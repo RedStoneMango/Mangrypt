@@ -142,7 +142,7 @@ public class SecuritySetupController {
         outTransition.setOnFinished(_ -> {
             setupPassphrase = false;
             headerLabel.setText("Password Setup");
-            contentLabel.setText("Please setup an \"Access password\" for which you will be prompted every time this application is re-visited:");
+            contentLabel.setText("Please setup an \"Access password\" for which you will be prompted when decrypting the vault and when the vault was obscured because it lost focus:");
             passwordField.setPromptText("Password");
             passwordFieldTooltip.setText("Enter the password to use");
             passwordConfirmationField.setPromptText("Confirm Password");
