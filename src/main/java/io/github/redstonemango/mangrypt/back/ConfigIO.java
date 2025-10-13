@@ -42,6 +42,8 @@ public class ConfigIO {
     }
 
     public static boolean save() {
+        if (vaultFile == null || config == null) return true; // Exit safely if there is no open vault
+
         Mangrypt.getBase().storeShowingData();
 
         if (!vaultFile.exists()) {
