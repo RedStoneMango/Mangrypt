@@ -20,6 +20,7 @@ import io.github.redstonemango.mangrypt.back.ConfigIO;
 import javax.crypto.AEADBadTagException;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.concurrent.CompletableFuture;
 
 public class AuthenticationController {
 
@@ -57,53 +58,65 @@ public class AuthenticationController {
     private void onDecrypt() {
         char[] passphrase = passphraseField.getText().toCharArray();
         char[] password = passwordField.getText().toCharArray();
-        boolean decryptionSuccess;
-        try {
-            decryptionSuccess = ConfigIO.decryptConfig(passphrase, password);
-            if (decryptionSuccess) {
-                decryptionSuccess = ConfigIO.getConfig().verifyPassword(password); // Check for password hash too, to minimize collision risk
-            }
-        }
-        catch (AEADBadTagException _) {
-            decryptionSuccess = false; // GCM tag mismatch: Wrong password
-        }
-        catch (Exception e) {
-            passwordField.setText("");
-            Mangrypt.getBase().showErrorAlert(String.valueOf(e));
-            throw new RuntimeException("Error decrypting config", e);
-        }
-        finally {
-            Arrays.fill(password, '\0');
-        }
-        if (!decryptionSuccess) {
-            decreaseTries();
-            return;
-        }
 
-        // If we reach this, decryption was successful
+        Mangrypt.getBase().decryptionWaitingScreen(true);
 
-        passphraseField.setText("");
-        passwordField.setText("");
-
-        allowCancelInternal = false;
-        Mangrypt.getBase().playTransition(() -> {
-            ConfigIO.markShouldSave();
-            Mangrypt.getBase().setSecondLayerRoot(null);
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/io/github/redstonemango/mangrypt/fxml/file-system.fxml"));
+        CompletableFuture<Boolean> saveFuture = CompletableFuture.supplyAsync(() -> {
+            boolean success;
             try {
-                Mangrypt.getBase().setSceneRoot(loader.load());
-            } catch (IOException e) {
-                throw new RuntimeException(e); // We can throw here without an error screen; If this is ever caught, the app was compiled incorrectly, and we're cooked wither way
+                success = ConfigIO.decryptConfig(passphrase, password);
+                if (success) {
+                    success = ConfigIO.getConfig().verifyPassword(password); // Check for password hash too, to minimize collision risk
+                }
             }
+            catch (AEADBadTagException _) {
+                success = false; // GCM tag mismatch: Wrong password
+            }
+            catch (Exception e) {
+                passwordField.setText("");
+                Mangrypt.getBase().showErrorAlert(String.valueOf(e));
+                throw new RuntimeException("Error decrypting config", e);
+            }
+            finally {
+                Arrays.fill(passphrase, '\0');
+                Arrays.fill(password, '\0');
+            }
+            return success;
         });
+
+        saveFuture.whenComplete((success, ex) -> Platform.runLater(() -> {
+
+            if (!success || ex != null) {
+                Mangrypt.getBase().decryptionWaitingScreen(false);
+                decreaseTries();
+                return;
+            }
+
+            // If we reach this, decryption was successful
+            passphraseField.setText("");
+            passwordField.setText("");
+
+            allowCancelInternal = false;
+            Mangrypt.getBase().playTransition(() -> {
+                Mangrypt.getBase().decryptionWaitingScreen(false);
+                ConfigIO.markShouldSave();
+                Mangrypt.getBase().setSecondLayerRoot(null);
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/io/github/redstonemango/mangrypt/fxml/file-system.fxml"));
+                try {
+                    Mangrypt.getBase().setSceneRoot(loader.load());
+                } catch (IOException e) {
+                    throw new RuntimeException(e); // We can throw here without an error screen; If this is ever caught, the app was compiled incorrectly, and we're cooked wither way
+                }
+            });
+        }));
     }
 
     private void decreaseTries() {
         tries --;
         triesLeftLabel.setText((tries > 1 ? tries + " tries" : (tries == 1 ? "1 try" : "No tries")) + " left");
-        ShakeTransition transition = new ShakeTransition(Duration.seconds(1), triesLeftLabel);
+        ShakeTransition transition = new ShakeTransition(Duration.seconds(2), triesLeftLabel);
         transition.setShakeX(-2);
-        transition.setCycles(5);
+        transition.setCycles(10);
         transition.play();
         if (tries == 0) {
             passwordField.setText("");
