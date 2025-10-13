@@ -8,11 +8,14 @@ public class EncryptionWaitController {
     @FXML private Label title;
     @FXML private Label content;
 
-    private void init(boolean isSaving) {
+    public void init(boolean isSaving) {
         if (isSaving) {
             title.setText(" Saving Vault..."); // 1 Space at the beginning for alignment
             content.setText("Mangrypt is currently in the process of securely saving your vault data to the .mgvault file.");
         }
-        // Loading text is written by default: No need to set it manually
+        else {
+            title.setText("Opening vault...");
+            content.setText("Mangrypt is trying to decrypt your vault using the given password and passphrase.");
+        }
     }
 }
