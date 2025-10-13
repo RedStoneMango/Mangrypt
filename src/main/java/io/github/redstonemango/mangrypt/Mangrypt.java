@@ -28,7 +28,7 @@ public class Mangrypt extends Application {
 
         stage.setOnCloseRequest(e -> {
             e.consume();
-            base.savingRoutine(false, () -> {
+            Runnable afterSave = () -> {
                 try {
                     ConfigIO.cleanup();
                 }
@@ -46,7 +46,10 @@ public class Mangrypt extends Application {
                     ex.printStackTrace(System.err);
                 }
                 Platform.exit();
-            }, true);
+            };
+
+            if (ConfigIO.shouldSave()) base.savingRoutine(false, afterSave, true);
+            else afterSave.run();
         });
 
         if (!ConfigIO.getVaultDirectory().exists()) ConfigIO.getVaultDirectory().mkdirs();
