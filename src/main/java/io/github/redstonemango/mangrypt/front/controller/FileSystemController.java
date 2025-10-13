@@ -174,39 +174,7 @@ public class FileSystemController {
             }
         });
 
-        backMenuItem.setOnAction(_ -> Mangrypt.getBase().playTransition(() -> {
-            boolean saveSuccess;
-            try {
-                saveSuccess = ConfigIO.save();
-            } catch (Exception e) {
-                e.printStackTrace(System.err);
-                saveSuccess = false;
-            }
-
-            if (saveSuccess) {
-                close();
-            }
-            else {
-                Mangrypt.getBase().showAlert(Alert.AlertType.ERROR, "Save Error", "Mangrypt was unable to save your vault. Do you still want to close the it (data may be lost)", true, btn -> {
-                    if (btn == ButtonType.YES) {
-                        close();
-                    }
-                }, ButtonType.YES, ButtonType.NO);
-            }
-        }));
-    }
-
-    private void close() {
-        Utilities.ensureAuthorizedAccess(FileSystemController.class);
-        ConfigIO.cleanup();
-
-        try {
-            FXMLLoader loader = new FXMLLoader(Utilities.class.getResource("/io/github/redstonemango/mangrypt/fxml/vault-selection.fxml"));
-            Mangrypt.getBase().setSceneRoot(loader.load());
-        }
-        catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        backMenuItem.setOnAction(_ -> Mangrypt.getBase().playTransition(() -> Mangrypt.getBase().vaultClosingRoutine()));
     }
 
     private void updateContentView(@Nullable FileSystemElement selectElement) {

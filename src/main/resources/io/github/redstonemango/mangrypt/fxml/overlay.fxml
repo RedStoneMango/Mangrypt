@@ -11,7 +11,7 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.text.Font?>
 
-<StackPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="634.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1">
+<StackPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="634.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.github.redstonemango.mangrypt.front.controller.OverlayController">
    <children>
       <Pane prefHeight="200.0" prefWidth="200.0" />
       <FlowPane alignment="CENTER" prefHeight="200.0" prefWidth="200.0">
@@ -25,14 +25,14 @@
                   </ImageView>
                   <AnchorPane prefHeight="200.0" prefWidth="607.0">
                      <children>
-                        <Label layoutX="108.0" layoutY="286.0" text="3 tries left" textFill="RED">
+                        <Label fx:id="triesLeftLabel" layoutX="108.0" layoutY="286.0" text="3 tries left" textFill="RED">
                            <font>
                               <Font name="System Bold" size="18.0" />
                            </font>
                         </Label>
-                        <PasswordField layoutX="364.0" layoutY="231.0" prefHeight="28.0" prefWidth="160.0" />
-                        <Button layoutX="400.0" layoutY="264.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="89.0" text="Decrypt..." />
-                        <Label layoutX="237.0" layoutY="80.0" styleClass="uncolored-label" text="Password required" underline="true">
+                        <PasswordField fx:id="passwordField" layoutX="364.0" layoutY="231.0" prefHeight="28.0" prefWidth="160.0" />
+                        <Button layoutX="400.0" layoutY="264.0" mnemonicParsing="false" onAction="#onAccess" prefHeight="26.0" prefWidth="89.0" text="Access" />
+                        <Label layoutX="205.0" layoutY="79.0" styleClass="uncolored-label" text="Access Password Required" underline="true">
                            <font>
                               <Font size="18.0" />
                            </font>

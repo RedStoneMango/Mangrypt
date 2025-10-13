@@ -4,6 +4,7 @@ import io.github.redstonemango.mangrypt.back.dataTypes.FileSystemElement;
 import io.github.redstonemango.mangrypt.back.dataTypes.FolderElement;
 import io.github.redstonemango.mangrypt.back.encryption.VersionedEncryptionHandler;
 import io.github.redstonemango.mangrypt.front.controller.AuthenticationController;
+import io.github.redstonemango.mangrypt.front.controller.OverlayController;
 
 import javax.crypto.SecretKey;
 
@@ -40,7 +41,7 @@ public class Configuration {
     }
 
     public boolean verifyPassword(char[] password) {
-        Utilities.ensureAuthorizedAccess(AuthenticationController.class);
+        Utilities.ensureAuthorizedAccess(AuthenticationController.class, OverlayController.class);
 
         return VersionedEncryptionHandler.verifyHash(ConfigIO.VERSION, hash, password);
     }

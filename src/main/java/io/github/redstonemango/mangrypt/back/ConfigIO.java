@@ -3,6 +3,7 @@ package io.github.redstonemango.mangrypt.back;
 import io.github.redstonemango.mangoutils.OperatingSystem;
 import io.github.redstonemango.mangrypt.Mangrypt;
 import io.github.redstonemango.mangrypt.back.encryption.VersionedEncryptionHandler;
+import io.github.redstonemango.mangrypt.front.BaseView;
 import io.github.redstonemango.mangrypt.front.controller.AuthenticationController;
 import io.github.redstonemango.mangrypt.front.controller.FileSystemController;
 import io.github.redstonemango.mangrypt.front.controller.SecuritySetupController;
@@ -25,7 +26,7 @@ public class ConfigIO {
     private static boolean shouldSave = false;
 
     public static void cleanup() {
-        Utilities.ensureAuthorizedAccess(Mangrypt.class, SecuritySetupController.class, AuthenticationController.class, FileSystemController.class);
+        Utilities.ensureAuthorizedAccess(Mangrypt.class, SecuritySetupController.class, AuthenticationController.class, BaseView.class);
 
         if (config != null) config.cleanup();
         config = null;

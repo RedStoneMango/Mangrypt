@@ -235,10 +235,10 @@ public class BaseView extends StackPane {
         return !sceneRoot.isVisible(); // SceneRoot will always be visible, except if it is obscured
     }
 
-    public void obscureData() {
+    private void obscureData() {
+        Utilities.ensureAuthorizedAccess(BaseView.class);
+
         if (passwordOverlayLayer.isVisible()) return;
-        showInfoAlert("Obscuring not yet implemented...");
-        if (true) return;
 
         isObscuringDialog = dialogLayer.isVisible();
         isObscuring2ndLayer = secondLayerRoot.isVisible();
@@ -249,13 +249,14 @@ public class BaseView extends StackPane {
         secondLayerRoot.setVisible(false);
         dataViewLayer.setVisible(false);
         baseImageBackground.setVisible(false);
+
         passwordOverlayLayer.setVisible(true);
     }
 
-    public void hidePasswordDialog() {
-        Utilities.ensureAuthorizedAccess(AuthenticationController.class);
+    public void stopObscuring() {
+        Utilities.ensureAuthorizedAccess(OverlayController.class);
 
-        if (isObscuringDialog) dialogLayer.setVisible(true); // If the layer was not visible when obscuring, don't show it
+        if (isObscuringDialog) dialogLayer.setVisible(true); // If the layer was not visible before obscuring, don't show it
         if (isObscuring2ndLayer) secondLayerRoot.setVisible(true);
         if (isObscuringDataLayer) dataViewLayer.setVisible(true);
         sceneRoot.setVisible(true);
@@ -263,6 +264,44 @@ public class BaseView extends StackPane {
         passwordOverlayLayer.setVisible(false);
         if (obscuredFocusOwner != null) obscuredFocusOwner.requestFocus();
         obscuredFocusOwner = null;
+    }
+
+    public void vaultClosingRoutine() {
+        Utilities.ensureAuthorizedAccess(FileSystemController.class, OverlayController.class);
+
+        boolean saveSuccess;
+        try {
+            saveSuccess = ConfigIO.save();
+        } catch (Exception e) {
+            e.printStackTrace(System.err);
+            saveSuccess = false;
+        }
+
+        if (saveSuccess) {
+            closeVaultUi();
+        }
+        else {
+            Mangrypt.getBase().showAlert(Alert.AlertType.ERROR, "Save Error", "Mangrypt was unable to save your vault. Do you still want to close the it (data may be lost)", true, btn -> {
+                if (btn == ButtonType.YES) {
+                    closeVaultUi();
+                }
+            }, ButtonType.YES, ButtonType.NO);
+        }
+    }
+
+    private void closeVaultUi() {
+        Utilities.ensureAuthorizedAccess(BaseView.class);
+
+        ConfigIO.cleanup();
+
+        try {
+            FXMLLoader loader = new FXMLLoader(Utilities.class.getResource("/io/github/redstonemango/mangrypt/fxml/vault-selection.fxml"));
+            Mangrypt.getBase().setSceneRoot(loader.load());
+            passwordOverlayLayer.setVisible(false); // After loader.load() to ensure it does not run if loading fails
+        }
+        catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public void playTransition(Runnable transitionAction) {
