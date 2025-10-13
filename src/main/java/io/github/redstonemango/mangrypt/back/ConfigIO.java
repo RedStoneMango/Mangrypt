@@ -20,7 +20,6 @@ public class ConfigIO {
     public static final int VERSION = 1;
 
     private static File vaultFile;
-    public static int vaultVersionOnLoad = -1;
 
     private static Configuration config;
     private static boolean shouldSave = false;

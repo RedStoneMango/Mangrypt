@@ -12,7 +12,7 @@ public class Configuration {
 
     private transient SecretKey masterKey;
     private transient byte[] masterSalt;
-    private String hash;
+    private transient String hash;
     private FolderElement rootFolder;
 
     public SecretKey masterKey() {

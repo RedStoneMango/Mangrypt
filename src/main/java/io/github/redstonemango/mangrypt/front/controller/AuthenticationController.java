@@ -65,9 +65,6 @@ public class AuthenticationController {
             boolean success;
             try {
                 success = ConfigIO.decryptConfig(passphrase, password);
-                if (success) {
-                    success = ConfigIO.getConfig().verifyPassword(password); // Check for password hash too, to minimize collision risk
-                }
             }
             catch (AEADBadTagException _) {
                 success = false; // GCM tag mismatch: Wrong password

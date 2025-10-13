@@ -27,6 +27,7 @@ public class VersionedEncryptionHandler {
 
                 Configuration config = v1_KRYO.deserialize(decrypted, Configuration.class);
                 config.updateMasterKey(master.masterKey(), master.masterSalt());
+                config.definePassword(hash(1, password));
                 return config;
             }
             default -> {
