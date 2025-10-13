@@ -26,33 +26,37 @@ public class Mangrypt extends Application {
         stage.setMinWidth(780 + xDecoration);
         stage.setMinHeight(480 + yDecoration);
 
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> Platform.runLater(stage::close)));
         stage.setOnCloseRequest(e -> {
-            if (!e.isConsumed()) {
-
-                base.savingRoutine(false, () -> {
-                    try {
-                        ConfigIO.cleanup();
-                    }
-                    catch (Exception ex) {
-                        System.err.print("Error running cleanup: ");
-                        ex.printStackTrace(System.err);
-                    }
-                    try {
-                        base.shutdownMediaServer();
-                    }
-                    catch (Exception ex) {
-                        System.err.print("Error shutting down media server: ");
-                        ex.printStackTrace(System.err);
-                    }
-                });
-            }
+            e.consume();
+            base.savingRoutine(false, () -> {
+                try {
+                    ConfigIO.cleanup();
+                }
+                catch (Exception ex) {
+                    // Fail silently
+                    System.err.print("Error running cleanup: ");
+                    ex.printStackTrace(System.err);
+                }
+                try {
+                    base.shutdownMediaServer();
+                }
+                catch (Exception ex) {
+                    // Fail silently
+                    System.err.print("Error shutting down media server: ");
+                    ex.printStackTrace(System.err);
+                }
+                Platform.exit();
+            });
         });
 
         if (!ConfigIO.getVaultDirectory().exists()) ConfigIO.getVaultDirectory().mkdirs();
 
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/io/github/redstonemango/mangrypt/fxml/vault-selection.fxml"));
         base.setSceneRoot(loader.load());
+    }
+
+    @Override
+    public void stop() {
     }
 
     public static BaseView getBase() {

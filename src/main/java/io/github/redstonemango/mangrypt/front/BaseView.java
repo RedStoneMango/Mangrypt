@@ -20,6 +20,8 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -46,10 +48,12 @@ public class BaseView extends StackPane {
     private final DefaultPaneBackground defaultPaneBackground;
     private final MatrixBackground matrixBackground;
 
-    private final Set<Node> focusForbiddenNodes = new HashSet<>();
-
     private Pane sceneRoot;
     private Pane secondLayerRoot;
+
+    private final Set<Node> focusForbiddenNodes = new HashSet<>();
+    private final AtomicBoolean isSaving = new AtomicBoolean(false);
+
 
     public BaseView() {
         getStylesheets().add(getClass().getResource("/io/github/redstonemango/mangrypt/style/application.css").toExternalForm());
@@ -76,7 +80,8 @@ public class BaseView extends StackPane {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/io/github/redstonemango/mangrypt/fxml/overlay.fxml"));
             passwordOverlayLayer = loader.load();
             passwordOverlayLayer.setVisible(false);
-            passwordOverlayLayer.visibleProperty().addListener((_, _, _) -> checkAllowSceneRootFocus());
+            passwordOverlayLayer.visibleProperty().addListener((_, _, _) ->
+                    checkAllowSceneRootFocus());
         }
         catch (IOException e) {
             throw new RuntimeException(e);
@@ -86,7 +91,8 @@ public class BaseView extends StackPane {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/io/github/redstonemango/mangrypt/fxml/encryption-wait.fxml"));
             encryptionWaitLayer = loader.load();
             encryptionWaitLayer.setVisible(false);
-            encryptionWaitLayer.visibleProperty().addListener((_, _, _) -> checkAllowSceneRootFocus());
+            encryptionWaitLayer.visibleProperty().addListener((_, _, _) ->
+                    checkAllowSceneRootFocus());
             encryptionWaitController = loader.getController();
         }
         catch (IOException e) {
@@ -96,36 +102,42 @@ public class BaseView extends StackPane {
         dialogLayer = new FlowPane();
         dialogLayer.setAlignment(Pos.CENTER);
         dialogLayer.setVisible(false);
-        dialogLayer.visibleProperty().addListener((_, _, _) -> checkAllowSceneRootFocus());
+        dialogLayer.visibleProperty().addListener((_, _, _) ->
+                checkAllowSceneRootFocus());
 
         widthProperty().addListener((_, _, width) -> {
             matrixBackground.update();
             defaultPaneBackground.update();
             updateDimensions();
-            if (!dialogLayer.getChildren().isEmpty()) ((Region) dialogLayer.getChildren().getFirst()).setPrefWidth(width.doubleValue());
+            if (!dialogLayer.getChildren().isEmpty())
+                ((Region) dialogLayer.getChildren().getFirst()).setPrefWidth(width.doubleValue());
         });
         heightProperty().addListener((_, _, height) -> {
             matrixBackground.update();
             defaultPaneBackground.update();
             updateDimensions();
-            if (!dialogLayer.getChildren().isEmpty()) ((Region) dialogLayer.getChildren().getFirst()).setPrefHeight(height.doubleValue());
+            if (!dialogLayer.getChildren().isEmpty())
+                ((Region) dialogLayer.getChildren().getFirst()).setPrefHeight(height.doubleValue());
         });
 
         transitionLayer = new Pane();
         transitionLayer.setStyle("-fx-background-color: black;");
         transitionLayer.setVisible(false);
-        transitionLayer.visibleProperty().addListener((_, _, _) -> checkAllowSceneRootFocus());
+        transitionLayer.visibleProperty().addListener((_, _, _) ->
+                checkAllowSceneRootFocus());
 
         sceneRoot = new Pane();
         StackPane.setAlignment(sceneRoot, Pos.TOP_LEFT);
 
         secondLayerRoot = new Pane();
         secondLayerRoot.setVisible(false);
-        secondLayerRoot.visibleProperty().addListener((_, _, _) -> checkAllowSceneRootFocus());
+        secondLayerRoot.visibleProperty().addListener((_, _, _) ->
+                checkAllowSceneRootFocus());
 
         dataViewLayer = new DataView();
         dataViewLayer.setVisible(false);
-        dataViewLayer.visibleProperty().addListener((_, _, _) -> checkAllowSceneRootFocus());
+        dataViewLayer.visibleProperty().addListener((_, _, _) ->
+                checkAllowSceneRootFocus());
 
         getChildren().add(matrixContainer);
         getChildren().add(baseImageBackground);
@@ -149,6 +161,8 @@ public class BaseView extends StackPane {
         passwordOverlayLayer.setPrefHeight(getHeight());
         dataViewLayer.setPrefWidth(getWidth());
         dataViewLayer.setPrefHeight(getHeight());
+        encryptionWaitLayer.setPrefWidth(getWidth());
+        encryptionWaitLayer.setPrefHeight(getHeight());
         if (!dialogLayer.getChildren().isEmpty() && dialogLayer.getChildren().getFirst() instanceof Region region) {
             region.setPrefWidth(getWidth());
             region.setPrefHeight(getHeight());
@@ -286,30 +300,58 @@ public class BaseView extends StackPane {
         savingRoutine(true, () -> {});
     }
 
-    public void savingRoutine(boolean closeVaultUi, Runnable afterSave) {
+    public synchronized void savingRoutine(boolean closeVaultUi, Runnable afterSave) {
         Utilities.ensureAuthorizedAccess(FileSystemController.class, OverlayController.class, Mangrypt.class);
 
-        boolean saveSuccess;
-        try {
-            saveSuccess = ConfigIO.save();
-        } catch (Exception e) {
-            System.err.print("Error saving: ");
-            e.printStackTrace(System.err);
-            saveSuccess = false;
-        }
+        if (isSaving.get()) return; // If we are already saving, do not run again
+        isSaving.set(true);
 
-        if (saveSuccess) {
-            if (closeVaultUi) closeVaultUi();
-            afterSave.run();
-        }
-        else {
-            Mangrypt.getBase().showAlert(Alert.AlertType.ERROR, "Save Error", "Mangrypt was unable to save your vault. Do you still want to close the it (data may be lost)", true, btn -> {
-                if (btn == ButtonType.YES) {
+        encryptionWaitController.init(true);
+        encryptionWaitLayer.setVisible(true);
+
+        CompletableFuture<Boolean> saveFuture = CompletableFuture.supplyAsync(() -> {
+            try {
+                ConfigIO.save();
+                return true;
+            } catch (Exception e) {
+                System.err.print("Error saving: ");
+                e.printStackTrace(System.err);
+                return false;
+            }
+        });
+
+        saveFuture.whenComplete((success, ex) -> {
+            Platform.runLater(() -> {
+                encryptionWaitLayer.setVisible(false);
+                isSaving.set(false);
+
+                if (!success || ex != null) {
+                    Mangrypt.getBase().showAlert(
+                            Alert.AlertType.ERROR,
+                            "Save Error",
+                            "Mangrypt was unable to save your vault. Do you still want to close the it (data may be lost)",
+                            true,
+                            btn -> {
+                                if (btn == ButtonType.YES) {
+                                    if (closeVaultUi) closeVaultUi();
+                                    afterSave.run();
+                                }
+                            },
+                            ButtonType.YES, ButtonType.NO
+                    );
+                }
+                else {
                     if (closeVaultUi) closeVaultUi();
                     afterSave.run();
                 }
-            }, ButtonType.YES, ButtonType.NO);
-        }
+            });
+        });
+    }
+
+    public void decryptionWaitingScreen(boolean show) {
+        Utilities.ensureAuthorizedAccess(AuthenticationController.class);
+        encryptionWaitController.init(false);
+        encryptionWaitLayer.setVisible(show);
     }
 
     private void closeVaultUi() {
