@@ -61,7 +61,7 @@ public class OverlayController {
         transition.play();
         if (tries == 0) {
             passwordField.setText("");
-            transition.setOnFinished(_ -> Mangrypt.getBase().vaultClosingRoutine());
+            transition.setOnFinished(_ -> Mangrypt.getBase().savingRoutine());
         }
         else {
             passwordField.requestFocus();

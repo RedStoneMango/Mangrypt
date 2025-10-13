@@ -39,7 +39,7 @@ public class BaseView extends StackPane {
     private final Pane baseImageBackground;
     private final Pane transitionLayer;
     private final DataView dataViewLayer;
-    private final DataView encryptionWaitLayer;
+    private final StackPane encryptionWaitLayer;
 
     private final EncryptionWaitController encryptionWaitController;
 
@@ -135,6 +135,7 @@ public class BaseView extends StackPane {
         getChildren().add(passwordOverlayLayer);
         getChildren().add(dialogLayer);
         getChildren().add(transitionLayer);
+        getChildren().add(encryptionWaitLayer);
     }
 
     private void updateDimensions() {
@@ -187,6 +188,7 @@ public class BaseView extends StackPane {
         if (dialogLayer.isVisible()) count++;
         if (passwordOverlayLayer.isVisible()) count++;
         if (secondLayerRoot.isVisible()) count++;
+        if (encryptionWaitLayer.isVisible()) count++;
         return count;
     }
 
@@ -280,8 +282,12 @@ public class BaseView extends StackPane {
         obscuredFocusOwner = null;
     }
 
-    public void vaultClosingRoutine() {
-        Utilities.ensureAuthorizedAccess(FileSystemController.class, OverlayController.class);
+    public void savingRoutine() {
+        savingRoutine(true, () -> {});
+    }
+
+    public void savingRoutine(boolean closeVaultUi, Runnable afterSave) {
+        Utilities.ensureAuthorizedAccess(FileSystemController.class, OverlayController.class, Mangrypt.class);
 
         boolean saveSuccess;
         try {
@@ -293,12 +299,14 @@ public class BaseView extends StackPane {
         }
 
         if (saveSuccess) {
-            closeVaultUi();
+            if (closeVaultUi) closeVaultUi();
+            afterSave.run();
         }
         else {
             Mangrypt.getBase().showAlert(Alert.AlertType.ERROR, "Save Error", "Mangrypt was unable to save your vault. Do you still want to close the it (data may be lost)", true, btn -> {
                 if (btn == ButtonType.YES) {
-                    closeVaultUi();
+                    if (closeVaultUi) closeVaultUi();
+                    afterSave.run();
                 }
             }, ButtonType.YES, ButtonType.NO);
         }

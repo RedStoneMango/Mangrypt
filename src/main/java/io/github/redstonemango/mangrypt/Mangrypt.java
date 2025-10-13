@@ -29,27 +29,23 @@ public class Mangrypt extends Application {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> Platform.runLater(stage::close)));
         stage.setOnCloseRequest(e -> {
             if (!e.isConsumed()) {
-                try {
-                    if (ConfigIO.shouldSave()) ConfigIO.save();
-                }
-                catch (Exception ex) {
-                    System.err.print("Error saving: ");
-                    ex.printStackTrace(System.err);
-                }
-                try {
-                    ConfigIO.cleanup();
-                }
-                catch (Exception ex) {
-                    System.err.print("Error running cleanup: ");
-                    ex.printStackTrace(System.err);
-                }
-                try {
-                    base.shutdownMediaServer();
-                }
-                catch (Exception ex) {
-                    System.err.print("Error shutting down media server: ");
-                    ex.printStackTrace(System.err);
-                }
+
+                base.savingRoutine(false, () -> {
+                    try {
+                        ConfigIO.cleanup();
+                    }
+                    catch (Exception ex) {
+                        System.err.print("Error running cleanup: ");
+                        ex.printStackTrace(System.err);
+                    }
+                    try {
+                        base.shutdownMediaServer();
+                    }
+                    catch (Exception ex) {
+                        System.err.print("Error shutting down media server: ");
+                        ex.printStackTrace(System.err);
+                    }
+                });
             }
         });
 

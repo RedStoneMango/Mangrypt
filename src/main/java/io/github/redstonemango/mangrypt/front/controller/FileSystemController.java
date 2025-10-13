@@ -174,7 +174,7 @@ public class FileSystemController {
             }
         });
 
-        backMenuItem.setOnAction(_ -> Mangrypt.getBase().playTransition(() -> Mangrypt.getBase().vaultClosingRoutine()));
+        backMenuItem.setOnAction(_ -> Mangrypt.getBase().playTransition(() -> Mangrypt.getBase().savingRoutine()));
     }
 
     private void updateContentView(@Nullable FileSystemElement selectElement) {
