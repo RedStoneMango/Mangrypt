@@ -1,6 +1,7 @@
 package io.github.redstonemango.mangrypt.front.controller;
 
 import io.github.redstonemango.mangrypt.back.Utilities;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.*;
@@ -64,6 +65,13 @@ public class AlertController {
             if (buttonType == ButtonType.OK || buttonType == ButtonType.YES) defaultButton = button;
         }
 
+        Platform.runLater(() -> {
+            Node node = buttonBar.getButtons().getFirst();
+            if (node != null) {
+                node.requestFocus();
+            }
+        });
+
         if (cancelable) {
             Button finalDefaultButton = defaultButton;
 
@@ -75,7 +83,7 @@ public class AlertController {
             Utilities.registerClosableOverlay(root, () -> {
                 root.getParent().setVisible(false);
                 oldFocusOwner.requestFocus();
-            }, (Region) headerLabel.getParent());
+            }, headerLabel.getParent());
         }
     }
 
