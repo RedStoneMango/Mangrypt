@@ -1,6 +1,7 @@
 package io.github.redstonemango.mangrypt.back.dataTypes;
 
 import io.github.redstonemango.mangrypt.back.Utilities;
+import io.github.redstonemango.mangrypt.front.DataView;
 import javafx.scene.image.Image;
 
 import java.util.Objects;
@@ -8,7 +9,7 @@ import java.util.Objects;
 public class MediaDataElement extends DataElement {
 
     public String mimeType() {
-        Utilities.ensureAuthorizedAccess();
+        Utilities.ensureAuthorizedAccess(DataView.class);
         return Utilities.getSupportedMimeType(fileExtension);
     }
 
