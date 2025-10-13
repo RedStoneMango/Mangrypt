@@ -9,6 +9,7 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontPosture;
@@ -16,6 +17,8 @@ import javafx.scene.text.FontWeight;
 import org.jetbrains.annotations.Nullable;
 
 public class ListEntry extends ListEntryBase {
+
+    public static final Image ARROW_IMAGE = new Image(ListEntry.class.getResource("/io/github/redstonemango/mangrypt/image/arrow.png").toExternalForm());
 
     private final Runnable onSelect;
     private final Runnable onDelete;
@@ -33,8 +36,12 @@ public class ListEntry extends ListEntryBase {
             nameLabel.setTranslateY(7); // If there is no description, shift the name label down
             descriptionLabel.setVisible(false);
         }
+
         getStyleClass().add("element-list-entry");
-        if (folder) getStyleClass().add("folder");
+        if (folder) {
+            getStyleClass().add("folder");
+            ((ImageView) selectButton.getGraphic()).setImage(ARROW_IMAGE);
+        }
 
         if (icon == null) {
             setLeft(null);
