@@ -33,19 +33,22 @@ public class Mangrypt extends Application {
                     if (ConfigIO.shouldSave()) ConfigIO.save();
                 }
                 catch (Exception ex) {
-                    ex.printStackTrace();
+                    System.err.print("Error saving: ");
+                    ex.printStackTrace(System.err);
                 }
                 try {
                     ConfigIO.cleanup();
                 }
                 catch (Exception ex) {
-                    ex.printStackTrace();
+                    System.err.print("Error running cleanup: ");
+                    ex.printStackTrace(System.err);
                 }
                 try {
                     base.shutdownMediaServer();
                 }
                 catch (Exception ex) {
-                    ex.printStackTrace();
+                    System.err.print("Error shutting down media server: ");
+                    ex.printStackTrace(System.err);
                 }
             }
         });

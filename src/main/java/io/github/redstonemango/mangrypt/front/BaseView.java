@@ -273,6 +273,7 @@ public class BaseView extends StackPane {
         try {
             saveSuccess = ConfigIO.save();
         } catch (Exception e) {
+            System.err.print("Error saving: ");
             e.printStackTrace(System.err);
             saveSuccess = false;
         }
