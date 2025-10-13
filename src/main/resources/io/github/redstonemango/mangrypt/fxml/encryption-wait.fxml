@@ -35,7 +35,7 @@
                         <Font size="15.0" />
                      </font>
                   </Label>
-                  <ProgressIndicator layoutX="217.0" layoutY="141.0" prefHeight="43.0" prefWidth="53.0" />
+                  <ProgressIndicator fx:id="spinner" layoutX="217.0" layoutY="141.0" prefHeight="43.0" prefWidth="53.0" />
                </children>
                 </AnchorPane>
             </children>
