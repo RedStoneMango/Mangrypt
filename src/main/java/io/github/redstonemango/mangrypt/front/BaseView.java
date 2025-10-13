@@ -312,8 +312,7 @@ public class BaseView extends StackPane {
 
         CompletableFuture<Boolean> saveFuture = CompletableFuture.supplyAsync(() -> {
             try {
-                ConfigIO.save();
-                return true;
+                return ConfigIO.save();
             } catch (Exception e) {
                 System.err.print("Error saving: ");
                 e.printStackTrace(System.err);
