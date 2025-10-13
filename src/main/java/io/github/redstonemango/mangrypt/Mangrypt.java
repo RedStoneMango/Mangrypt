@@ -63,10 +63,6 @@ public class Mangrypt extends Application {
         return base;
     }
 
-    public static void safetyShutdown() {
-        base.getScene().getWindow().hide();
-    }
-
     public static void main(String[] args) {
         launch();
     }
