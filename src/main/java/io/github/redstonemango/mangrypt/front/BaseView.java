@@ -39,6 +39,9 @@ public class BaseView extends StackPane {
     private final Pane baseImageBackground;
     private final Pane transitionLayer;
     private final DataView dataViewLayer;
+    private final DataView encryptionWaitLayer;
+
+    private final EncryptionWaitController encryptionWaitController;
 
     private final DefaultPaneBackground defaultPaneBackground;
     private final MatrixBackground matrixBackground;
@@ -74,6 +77,17 @@ public class BaseView extends StackPane {
             passwordOverlayLayer = loader.load();
             passwordOverlayLayer.setVisible(false);
             passwordOverlayLayer.visibleProperty().addListener((_, _, _) -> checkAllowSceneRootFocus());
+        }
+        catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/io/github/redstonemango/mangrypt/fxml/encryption-wait.fxml"));
+            encryptionWaitLayer = loader.load();
+            encryptionWaitLayer.setVisible(false);
+            encryptionWaitLayer.visibleProperty().addListener((_, _, _) -> checkAllowSceneRootFocus());
+            encryptionWaitController = loader.getController();
         }
         catch (IOException e) {
             throw new RuntimeException(e);
