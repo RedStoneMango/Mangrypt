@@ -49,7 +49,6 @@ public class AuthenticationController {
 
     private void cancelAuth() {
         if (!allowCancelInternal) return; // If this is called during the baseView transition, cancel the cleanup to avoid empty configs while the encrypted view is shown.
-        Mangrypt.getBase().hidePasswordDialog();
         Mangrypt.getBase().setSecondLayerRoot(null);
         ConfigIO.cleanup();
     }
