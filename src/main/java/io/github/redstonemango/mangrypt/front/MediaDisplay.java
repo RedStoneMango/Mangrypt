@@ -119,7 +119,7 @@ public class MediaDisplay extends VBox {
             stopButton.setDisable(true);
             forwardButton.setDisable(true);
             backardButton.setDisable(true);
-            timeLabel.setText("--:-- / --:--");
+            timeLabel.setText("00:00 / " + maxTime);
             pauseButton.setText(">");
             durationSlider.setDisable(true);
         });
