@@ -2,12 +2,15 @@ package io.github.redstonemango.mangrypt.back;
 
 import com.sun.net.httpserver.HttpServer;
 
+import java.io.BufferedOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.util.Base64;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Because {@link javafx.scene.media.MediaPlayer} and {@link javafx.scene.media.Media} require a URL, we have to stream
@@ -15,6 +18,8 @@ import java.util.Base64;
  * playback.
  */
 public class SecureInMemoryMediaServer {
+
+    private static final int CHUNK_SIZE = 8192; // 8 KB chunks
 
     private final byte[] mediaBytes;
     private final String mimeType;
@@ -115,12 +120,24 @@ public class SecureInMemoryMediaServer {
                 exchange.sendResponseHeaders(200, totalLength);
             }
 
-            try (OutputStream os = exchange.getResponseBody()) {
-                os.write(mediaBytes, start, contentLength);
+            try (BufferedOutputStream os = new BufferedOutputStream(exchange.getResponseBody())) {
+                int offset = start;
+                while (offset <= end) {
+                    int bytesToWrite = Math.min(CHUNK_SIZE, end - offset + 1);
+                    os.write(mediaBytes, offset, bytesToWrite);
+                    offset += bytesToWrite;
+                }
             }
         });
 
-        server.setExecutor(null);
+        server.setExecutor(new ThreadPoolExecutor(
+                4, 20, 60L, TimeUnit.SECONDS, new SynchronousQueue<>(),
+                runnable -> {
+                    Thread t = new Thread(runnable);
+                    t.setDaemon(true); // Don't block JVM shutdown
+                    return t;
+                }
+        ));
         server.start();
     }
 
