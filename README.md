@@ -39,7 +39,7 @@ The following references illustrate the application UI's appearance:
 Mangrypt uses a layered and secure encryption model built on modern cryptographic standards to encrypt the `.mgvault` files on your disk:
 
 1. **Master Key Derivation**  
-   Two passwords are securely combined, hashed individually using SHA-256, and concatenated. This combined secret is then used with **Argon2id** to derive a 256-bit master key.
+   Two passwords are securely combined, and concatenated. This combined secret is then used with **Argon2id** to derive a 256-bit master key.
 
    > ℹ️ Mangrypt uses two separate passwords and the Argon2id algorithm (winner of the Password Hashing Competition) to securely derive your master key. Argon2id is widely regarded as one of the safest password hashing algorithms available today.
 
