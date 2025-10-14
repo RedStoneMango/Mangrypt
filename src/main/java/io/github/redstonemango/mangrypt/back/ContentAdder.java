@@ -116,8 +116,8 @@ public class ContentAdder {
                     return !existingNames.contains(name);
                 },
                 name -> {
-                    if (name.startsWith(".")) return "Elements starting with . are hidden";
                     if (existingNames.contains(name)) return "Such an element already exists";
+                    if (name.startsWith(".")) return "Elements starting with . are hidden";
                     return null;
                 },
                 action
