@@ -22,6 +22,17 @@ public class InputDialogController {
     @FXML private Label infoLabel;
 
     public void init(String header, String hint, String defaultText, boolean cancelable, Function<String, Boolean> allowFunction, Function<String, String> infoFunction, Consumer<String> onAction) {
+        inputField.textProperty().addListener((_, _, text) -> {
+            String info = infoFunction.apply(text);
+            if (info == null) {
+                infoLabel.setVisible(false);
+            }
+            else {
+                infoLabel.setVisible(true);
+                infoLabel.setText("> " + info);
+            }
+        });
+
         headerLabel.setText(header);
         contentLabel.setText(hint + ":");
         inputField.setText(defaultText);
@@ -43,16 +54,6 @@ public class InputDialogController {
         });
 
         okButton.disableProperty().bind(Bindings.createBooleanBinding(() -> !allowFunction.apply(inputField.getText()), inputField.textProperty()));
-        inputField.textProperty().addListener((_, _, text) -> {
-            String info = infoFunction.apply(text);
-            if (info == null) {
-                infoLabel.setVisible(false);
-            }
-            else {
-                infoLabel.setVisible(true);
-                infoLabel.setText("> " + info);
-            }
-        });
 
         if (cancelable) {
             Button cancel = new Button(ButtonType.CANCEL.getText());
