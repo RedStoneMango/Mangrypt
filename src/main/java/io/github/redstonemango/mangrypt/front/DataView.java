@@ -195,7 +195,10 @@ public class DataView extends BorderPane {
                 textArea.setText(new String(textData.bytes(), StandardCharsets.UTF_8));
                 textArea.setWrapText(true);
                 textArea.textProperty().addListener((_, _, text) -> {
-                    if (isShowingData) textData.bytes(text.getBytes(StandardCharsets.UTF_8));
+                    if (isShowingData) {
+                        textData.bytes(text.getBytes(StandardCharsets.UTF_8));
+                        ConfigIO.markShouldSave();
+                    }
                 });
                 yield textArea;
             }

@@ -71,7 +71,7 @@ public class BaseView extends StackPane {
             defaultPaneBackground.update();
             updateDimensions();
             getScene().getWindow().focusedProperty().addListener((_, _, isFocused) -> {
-                if (!isFocused && ConfigIO.shouldSave() /* Is a vault open? */) {
+                if (!isFocused && ConfigIO.isVaultOpen()) {
                     obscureData();
                 }
             });
@@ -298,11 +298,16 @@ public class BaseView extends StackPane {
     }
 
     public void savingRoutine() {
-        savingRoutine(true, () -> {}, false);
+        savingRoutine(this::closeVaultUi, false);
     }
 
-    public synchronized void savingRoutine(boolean closeVaultUi, Runnable afterSave, boolean beforeExit) {
+    public synchronized void savingRoutine(Runnable postSaveAction, boolean beforeExit) {
         Utilities.ensureAuthorizedAccess(FileSystemController.class, OverlayController.class, Mangrypt.class);
+
+        if (!ConfigIO.shouldSave()) {
+            postSaveAction.run();
+            return;
+        }
 
         if (isSaving.get()) return; // If we are already saving, do not run again
         isSaving.set(true);
@@ -333,16 +338,14 @@ public class BaseView extends StackPane {
                             true,
                             btn -> {
                                 if (btn == ButtonType.YES) {
-                                    if (closeVaultUi) closeVaultUi();
-                                    afterSave.run();
+                                    postSaveAction.run();
                                 }
                             },
                             ButtonType.YES, ButtonType.NO
                     );
                 }
                 else {
-                    if (closeVaultUi) closeVaultUi();
-                    afterSave.run();
+                    postSaveAction.run();
                 }
             });
         });

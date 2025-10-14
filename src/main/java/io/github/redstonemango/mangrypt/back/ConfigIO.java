@@ -36,6 +36,9 @@ public class ConfigIO {
     public static boolean shouldSave() {
         return shouldSave;
     }
+    public static boolean isVaultOpen() {
+        return config != null && vaultFile != null;
+    }
     public static void markShouldSave() {
         shouldSave = true;
     }

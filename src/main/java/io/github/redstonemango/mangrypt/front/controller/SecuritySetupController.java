@@ -34,7 +34,7 @@ public class SecuritySetupController {
 
     @FXML
     private void initialize() {
-        isSetup = !ConfigIO.shouldSave();
+        isSetup = !ConfigIO.isVaultOpen();
         Utilities.registerClosableOverlay(root, () -> {
             root.setVisible(false);
         }, headerLabel.getParent());
@@ -117,7 +117,7 @@ public class SecuritySetupController {
             if (isSetup) {
                 disallowCancel = true; // Do not allow cancel while transition is playing
                 Mangrypt.getBase().playTransition(() -> {
-                    ConfigIO.markShouldSave();
+                    ConfigIO.markShouldSave(); // Save is required. Otherwise, vault file will be empty after closing app
                     Mangrypt.getBase().setSecondLayerRoot(null);
                     FXMLLoader loader = new FXMLLoader(getClass().getResource("/io/github/redstonemango/mangrypt/fxml/file-system.fxml"));
                     try {

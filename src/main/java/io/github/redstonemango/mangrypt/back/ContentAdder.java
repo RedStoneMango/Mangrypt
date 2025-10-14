@@ -20,6 +20,7 @@ public class ContentAdder {
             newFolder.ensureFields();
             parentFolder.getContent().add(newFolder);
             callback.accept(newFolder);
+            ConfigIO.markShouldSave();
         }, existingNames);
     }
 
@@ -30,6 +31,7 @@ public class ContentAdder {
             element.ensureFields();
             parentFolder.getContent().add(element);
             callback.accept(element);
+            ConfigIO.markShouldSave();
         }, existingNames);
     }
 
@@ -56,6 +58,7 @@ public class ContentAdder {
                         element.ensureFields();
                         parentFolder.getContent().add(element);
                         callback.accept(element);
+                        ConfigIO.markShouldSave();
                     },
                     () -> Mangrypt.getBase().setSecondLayerRoot(null), "jpeg", "jpg", "png", "bmp", "gif");
             StackPane background = new StackPane();
@@ -90,6 +93,7 @@ public class ContentAdder {
                         element.ensureFields();
                         parentFolder.getContent().add(element);
                         callback.accept(element);
+                        ConfigIO.markShouldSave();
                     },
                     () -> Mangrypt.getBase().setSecondLayerRoot(null), "mp4", "mp3", "aac", "wav");
             StackPane background = new StackPane();

@@ -92,6 +92,7 @@ public class FileSystemController {
             currentFolder.getContent().remove(element);
             element.zeroOut();
             updateContentView(null);
+            ConfigIO.markShouldSave();
         });
     }
 
@@ -99,6 +100,7 @@ public class FileSystemController {
         Mangrypt.getBase().showInputDialog("Please set a new name for the element", "Element name", element.getName(), true, name -> !name.isBlank() && !name.equals("."), name -> name.startsWith(".") ? "Elements starting with . are hidden" : null, name -> {
             element.setName(name);
             updateContentView(null);
+            ConfigIO.markShouldSave();
         });
     }
 
@@ -106,6 +108,7 @@ public class FileSystemController {
         Mangrypt.getBase().showInputDialog("Please set a new description for the element", "Description", element.getDescription(), true, description -> {
             element.setDescription(description);
             contentView.refresh();
+            ConfigIO.markShouldSave();
         });
     }
 

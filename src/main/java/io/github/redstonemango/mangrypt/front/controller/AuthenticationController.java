@@ -100,7 +100,6 @@ public class AuthenticationController {
             allowCancelInternal = false;
             Mangrypt.getBase().playTransition(() -> {
                 Mangrypt.getBase().decryptionWaitingScreen(false);
-                ConfigIO.markShouldSave();
                 Mangrypt.getBase().setSecondLayerRoot(null);
                 FXMLLoader loader = new FXMLLoader(getClass().getResource("/io/github/redstonemango/mangrypt/fxml/file-system.fxml"));
                 try {
