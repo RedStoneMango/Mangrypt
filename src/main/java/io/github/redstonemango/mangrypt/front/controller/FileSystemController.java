@@ -126,11 +126,16 @@ public class FileSystemController {
     }
 
     private void onChangeDescription(FileSystemElement element) {
-        Mangrypt.getBase().showInputDialog("Please set a new description for the element", "Description", element.getDescription(), true, description -> {
-            element.setDescription(description);
-            contentView.refresh();
-            ConfigIO.markShouldSave();
-        });
+        Mangrypt.getBase().showInputDialog("Please set a new description for the element",
+                "Description",
+                element.getDescription(),
+                true,
+                description -> {
+                    element.setDescription(description);
+                    contentView.refresh();
+                    ConfigIO.markShouldSave();
+                }
+        );
     }
 
     private void onFolderExport(FileSystemElement element) {
@@ -186,7 +191,8 @@ public class FileSystemController {
         menu.setX(imagePos.getX() - menu.getWidth());
 
         showHiddenFoldersItem.setSelected(showHiddenContentProperty.get());
-        showHiddenFoldersItem.selectedProperty().addListener((_, _, b) -> showHiddenContentProperty.set(b));
+        showHiddenFoldersItem.selectedProperty().addListener((_, _, b) ->
+                showHiddenContentProperty.set(b));
 
         passwordChangeItem.setOnAction(_ -> {
             try {
