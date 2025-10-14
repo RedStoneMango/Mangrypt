@@ -17,8 +17,8 @@ public class ContentAdder {
         nameInputDialog(name -> {
             FolderElement newFolder = new FolderElement();
             newFolder.setName(name);
-            newFolder.ensureFields();
             parentFolder.getContent().put(name, newFolder);
+            newFolder.ensureFields();
             callback.accept(newFolder);
             ConfigIO.markShouldSave();
         }, existingNames);
@@ -28,8 +28,8 @@ public class ContentAdder {
         nameInputDialog(name -> {
             TextDataElement element = new TextDataElement();
             element.setName(name);
-            element.ensureFields();
             parentFolder.getContent().put(name, element);
+            element.ensureFields();
             callback.accept(element);
             ConfigIO.markShouldSave();
         }, existingNames);
@@ -55,8 +55,8 @@ public class ContentAdder {
                         element.setName(name);
                         element.bytes(bytes);
                         element.fileExtension(fileExtension);
-                        element.ensureFields();
                         parentFolder.getContent().put(name, element);
+                        element.ensureFields();
                         callback.accept(element);
                         ConfigIO.markShouldSave();
                     },
@@ -90,8 +90,8 @@ public class ContentAdder {
                         element.setName(name);
                         element.bytes(bytes);
                         element.fileExtension(fileExtension);
-                        element.ensureFields();
                         parentFolder.getContent().put(name, element);
+                        element.ensureFields();
                         callback.accept(element);
                         ConfigIO.markShouldSave();
                     },
