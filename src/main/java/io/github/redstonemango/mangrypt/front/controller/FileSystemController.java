@@ -97,11 +97,32 @@ public class FileSystemController {
     }
 
     private void onRename(FileSystemElement element) {
-        Mangrypt.getBase().showInputDialog("Please set a new name for the element", "Element name", element.getName(), true, name -> !name.isBlank() && !name.equals("."), name -> name.startsWith(".") ? "Elements starting with . are hidden" : null, name -> {
-            element.setName(name);
-            updateContentView(null);
-            ConfigIO.markShouldSave();
-        });
+        Set<String> existingNames = contentView.getItems().stream()
+                .map(FileSystemElement::getName)
+                .collect(Collectors.toSet());
+        String oldName = element.getName();
+
+        Mangrypt.getBase().showInputDialog(
+                "Please set a new name for the element",
+                "Element name",
+                element.getName(),
+                true,
+                name -> {
+                    if (existingNames.contains(name) && !name.equals(oldName)) return false;
+                    if (name.isBlank()) return false;
+                    return !name.equals(".");
+                },
+                name -> {
+                    if (existingNames.contains(name) && !name.equals(oldName)) return "Such an element already exists";
+                    else if (name.startsWith(".")) return "Elements starting with . are hidden";
+                    return null;
+                },
+                name -> {
+                    element.setName(name);
+                    updateContentView(null);
+                    ConfigIO.markShouldSave();
+                }
+        );
     }
 
     private void onChangeDescription(FileSystemElement element) {
