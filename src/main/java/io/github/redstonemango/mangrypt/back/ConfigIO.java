@@ -20,9 +20,9 @@ public class ConfigIO {
     public static final int VERSION = 1;
 
     private static File vaultFile;
-
     private static Configuration config;
     private static boolean shouldSave = false;
+    private static boolean vaultOpen = false;
 
     public static void cleanup() {
         Utilities.ensureAuthorizedAccess(Mangrypt.class, SecuritySetupController.class, AuthenticationController.class, BaseView.class);
@@ -31,16 +31,21 @@ public class ConfigIO {
         config = null;
         vaultFile = null;
         shouldSave = false;
+        vaultOpen = false;
     }
 
     public static boolean shouldSave() {
         return shouldSave;
     }
     public static boolean isVaultOpen() {
-        return config != null && vaultFile != null;
+        return vaultOpen;
     }
     public static void markShouldSave() {
         shouldSave = true;
+    }
+    public static void markVaultOpen() {
+
+        vaultOpen = true;
     }
 
     public static synchronized boolean save() {

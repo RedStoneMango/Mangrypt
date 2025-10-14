@@ -117,11 +117,12 @@ public class SecuritySetupController {
             if (isSetup) {
                 disallowCancel = true; // Do not allow cancel while transition is playing
                 Mangrypt.getBase().playTransition(() -> {
-                    ConfigIO.markShouldSave(); // Save is required. Otherwise, vault file will be empty after closing app
                     Mangrypt.getBase().setSecondLayerRoot(null);
                     FXMLLoader loader = new FXMLLoader(getClass().getResource("/io/github/redstonemango/mangrypt/fxml/file-system.fxml"));
                     try {
                         Mangrypt.getBase().setSceneRoot(loader.load());
+                        ConfigIO.markVaultOpen();
+                        ConfigIO.markShouldSave(); // Save is required. Otherwise, vault file will be empty after exit
                     }
                     catch (Exception e) {
                         throw new RuntimeException(e);
@@ -131,6 +132,7 @@ public class SecuritySetupController {
             else {
                 Mangrypt.getBase().setSecondLayerRoot(null);
                 Mangrypt.getBase().showInfoAlert("Successfully updated password and passphrase");
+                ConfigIO.markShouldSave();
             }
         }
     }
