@@ -10,6 +10,8 @@ import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.CharacterCodingException;
@@ -19,27 +21,29 @@ import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.Objects;
 
 public class MangryptV1Encryption {
 
-    // Parameters for AES-GCM
+    // AES-GCM Parameters
     private static final int MASTER_KEY_LENGTH = 32; // 256 bits
-    private static final int AES_GCM_SALT_LENGTH = 16;       // bytes
-    private static final int AES_GCM_IV_LENGTH = 12;         // bytes for AES-GCM
-    private static final int AES_GCM_TAG_LENGTH = 128;       // bits
-    // Argon2id parameters for key hashing
+    private static final int AES_GCM_SALT_LENGTH = 16;
+    private static final int AES_GCM_IV_LENGTH = 12;
+    private static final int AES_GCM_TAG_LENGTH = 128;
+
+    // Argon2 parameters for keys
     private static final int ARGON2_KEY_ITERATIONS = 3;
     private static final int ARGON2_KEY_MEMORY_KB = 65536;  // 64MB
     private static final int ARGON2_KEY_PARALLELISM = 2;
 
-    // Argon2id parameters for hassword hashing
-    private static final int ARGON2_PASSWORD_SALT_LENGTH = 16;  // 128-bit salt
-    private static final int ARGON2_PASSWORD_HASH_LENGTH = 32;  // 256-bit hash
+    // Argon2 parameters for password hashing
+    private static final int ARGON2_PASSWORD_SALT_LENGTH = 16;
+    private static final int ARGON2_PASSWORD_HASH_LENGTH = 32;
     private static final int ARGON2_PASSWORD_ITERATIONS = 3;
     private static final int ARGON2_PASSWORD_MEMORY = 65536; // 64MB
     private static final int ARGON2_PASSWORD_PARALLELISM = 1;
 
-    public static final String DOMAIN_SEPARATOR = "mangrypt-vault-v1";
+    public static final String DOMAIN_SEPARATOR = "mangrypt-vault-v2";
 
     public static byte[] generateRandomSalt() {
         byte[] salt = new byte[AES_GCM_SALT_LENGTH];
@@ -47,31 +51,23 @@ public class MangryptV1Encryption {
         return salt;
     }
 
-    private static byte[] combinePasswords(char[] passwordA, char[] passwordB) throws Exception {
-        byte[] bytesA = new byte[0];
-        byte[] bytesB = new byte[0];
-        byte[] hashA = new byte[0];
-        byte[] hashB = new byte[0];
+    private static byte[] combinePasswords(char[] passwordA, char[] passwordB) throws IOException {
+        byte[] bytesA = null;
+        byte[] bytesB = null;
         try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-
             bytesA = charsToBytes(passwordA);
             bytesB = charsToBytes(passwordB);
-
-            hashA = digest.digest(bytesA);
-            hashB = digest.digest(bytesB);
-
-            return concat(hashA, hashB);
-        }
-        finally {
-            Arrays.fill(bytesA, (byte) 0);
-            Arrays.fill(bytesB, (byte) 0);
-            Arrays.fill(hashA, (byte) 0);
-            Arrays.fill(hashB, (byte) 0);
+            return concat(bytesA, bytesB);
+        } finally {
+            if (bytesA != null) Arrays.fill(bytesA, (byte) 0);
+            if (bytesB != null) Arrays.fill(bytesB, (byte) 0);
         }
     }
 
     public static MasterData setupMasterKey(char[] passwordA, char[] passwordB) throws Exception {
+        Objects.requireNonNull(passwordA);
+        Objects.requireNonNull(passwordB);
+
         byte[] masterSalt = generateRandomSalt();
         SecretKey masterKey = deriveMasterKey(passwordA, passwordB, masterSalt);
         return new MasterData(masterKey, masterSalt);
@@ -80,22 +76,12 @@ public class MangryptV1Encryption {
     private static SecretKey deriveMasterKey(char[] passwordA, char[] passwordB, byte[] masterSalt) throws Exception {
         byte[] combined = null;
         byte[] outputKey = new byte[MASTER_KEY_LENGTH];
-
         try {
             combined = combinePasswords(passwordA, passwordB);
-
-            Argon2Parameters.Builder builder = new Argon2Parameters.Builder(Argon2Parameters.ARGON2_id)
-                    .withSalt(masterSalt)
-                    .withParallelism(ARGON2_KEY_PARALLELISM)
-                    .withMemoryAsKB(ARGON2_KEY_MEMORY_KB)
-                    .withIterations(ARGON2_KEY_ITERATIONS);
-
             Argon2BytesGenerator generator = new Argon2BytesGenerator();
-            generator.init(builder.build());
+            generator.init(argon2Params(masterSalt, true));
             generator.generateBytes(combined, outputKey);
-
             return new SecretKeySpec(Arrays.copyOf(outputKey, outputKey.length), "AES");
-
         } finally {
             if (combined != null) Arrays.fill(combined, (byte) 0);
             Arrays.fill(outputKey, (byte) 0);
@@ -104,15 +90,16 @@ public class MangryptV1Encryption {
 
     private static SecretKey deriveEncryptionKey(SecretKey masterKey, byte[] perEncryptSalt) {
         HKDFBytesGenerator hkdf = new HKDFBytesGenerator(new SHA256Digest());
-
         hkdf.init(new HKDFParameters(masterKey.getEncoded(), perEncryptSalt, null));
         byte[] okm = new byte[MASTER_KEY_LENGTH];
         hkdf.generateBytes(okm, 0, okm.length);
         return new SecretKeySpec(okm, "AES");
     }
 
-    // masterSalt (16) | perEncryptSalt (16) | IV (12) | ciphertext + tag
     public static byte[] encrypt(MasterData masterData, byte[] plaintext) throws Exception {
+        Objects.requireNonNull(masterData);
+        Objects.requireNonNull(plaintext);
+
         if (masterData.masterSalt.length != AES_GCM_SALT_LENGTH) {
             throw new IllegalArgumentException("Invalid master salt length");
         }
@@ -126,16 +113,17 @@ public class MangryptV1Encryption {
         Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
         GCMParameterSpec spec = new GCMParameterSpec(AES_GCM_TAG_LENGTH, iv);
         cipher.init(Cipher.ENCRYPT_MODE, encryptionKey, spec);
-
-        // AAD: include salts and IV to prevent tampering
         cipher.updateAAD(concat(DOMAIN_SEPARATOR.getBytes(StandardCharsets.UTF_8), masterData.masterSalt, perEncryptSalt, iv));
 
         byte[] ciphertext = cipher.doFinal(plaintext);
-
         return concat(masterData.masterSalt, perEncryptSalt, iv, ciphertext);
     }
 
     public static BiResult<byte[], MasterData> decrypt(char[] passwordA, char[] passwordB, byte[] encrypted) throws Exception {
+        Objects.requireNonNull(passwordA);
+        Objects.requireNonNull(passwordB);
+        Objects.requireNonNull(encrypted);
+
         if (encrypted.length < AES_GCM_SALT_LENGTH * 2 + AES_GCM_IV_LENGTH + 1) {
             throw new IllegalArgumentException("Invalid encrypted data length");
         }
@@ -151,51 +139,53 @@ public class MangryptV1Encryption {
         Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
         GCMParameterSpec spec = new GCMParameterSpec(AES_GCM_TAG_LENGTH, iv);
         cipher.init(Cipher.DECRYPT_MODE, encryptionKey, spec);
-
-        cipher.updateAAD(concat(DOMAIN_SEPARATOR.getBytes(StandardCharsets.UTF_8), masterSalt, perEncryptSalt, iv)); // Must match AAD from encryption
+        cipher.updateAAD(concat(DOMAIN_SEPARATOR.getBytes(StandardCharsets.UTF_8), masterSalt, perEncryptSalt, iv));
 
         byte[] decrypted = cipher.doFinal(ciphertext);
         return new BiResult<>(decrypted, new MasterData(masterKey, masterSalt));
     }
 
-    private static byte[] concat(byte[]... arrays) {
-        int total = Arrays.stream(arrays).mapToInt(a -> a.length).sum();
-        byte[] result = new byte[total];
-        int pos = 0;
-        for (byte[] arr : arrays) {
-            System.arraycopy(arr, 0, result, pos, arr.length);
-            pos += arr.length;
+    private static Argon2Parameters argon2Params(byte[] salt, boolean forMasterKey) {
+        Argon2Parameters.Builder builder = new Argon2Parameters.Builder(Argon2Parameters.ARGON2_id)
+                .withSalt(salt);
+
+        if (forMasterKey) {
+            builder.withParallelism(ARGON2_KEY_PARALLELISM)
+                    .withMemoryAsKB(ARGON2_KEY_MEMORY_KB)
+                    .withIterations(ARGON2_KEY_ITERATIONS);
+        } else {
+            builder.withParallelism(ARGON2_PASSWORD_PARALLELISM)
+                    .withMemoryAsKB(ARGON2_PASSWORD_MEMORY)
+                    .withIterations(ARGON2_PASSWORD_ITERATIONS);
         }
-        return result;
+
+        return builder.build();
     }
 
-    private static byte[] charsToBytes(char[] chars) throws CharacterCodingException {
-        ByteBuffer byteBuffer = null;
-        try {
-            CharsetEncoder encoder = StandardCharsets.UTF_8.newEncoder();
-            byteBuffer = encoder.encode(CharBuffer.wrap(chars));
-            return Arrays.copyOfRange(byteBuffer.array(), byteBuffer.position(), byteBuffer.limit());
-        }
-        finally {
-            if (byteBuffer != null && byteBuffer.hasArray()) {
-                Arrays.fill(byteBuffer.array(), (byte) 0);
+    private static byte[] concat(byte[]... arrays) throws IOException {
+        try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            for (byte[] arr : arrays) {
+                out.write(arr);
             }
+            return out.toByteArray();
         }
     }
 
-    // $argon2id$<salt>$<hash>
-    public static String hash(char[] password) throws CharacterCodingException {
+    private static byte[] charsToBytes(char[] chars) {
+        ByteBuffer byteBuffer = StandardCharsets.UTF_8.encode(CharBuffer.wrap(chars));
+        byte[] bytes = Arrays.copyOfRange(byteBuffer.array(), byteBuffer.position(), byteBuffer.limit());
+        Arrays.fill(byteBuffer.array(), (byte) 0);
+        return bytes;
+    }
+
+    public static String hash(char[] password) {
+        Objects.requireNonNull(password);
+
         byte[] salt = new byte[ARGON2_PASSWORD_SALT_LENGTH];
         new SecureRandom().nextBytes(salt);
 
-        Argon2Parameters.Builder builder = new Argon2Parameters.Builder(Argon2Parameters.ARGON2_id)
-                .withSalt(salt)
-                .withParallelism(ARGON2_PASSWORD_PARALLELISM)
-                .withMemoryAsKB(ARGON2_PASSWORD_MEMORY)
-                .withIterations(ARGON2_PASSWORD_ITERATIONS);
-
         Argon2BytesGenerator generator = new Argon2BytesGenerator();
-        generator.init(builder.build());
+        generator.init(argon2Params(salt, false));
 
         byte[] hash = new byte[ARGON2_PASSWORD_HASH_LENGTH];
         byte[] passwordBytes = charsToBytes(password);
@@ -205,11 +195,12 @@ public class MangryptV1Encryption {
         String encodedHash = Base64.getEncoder().encodeToString(hash);
 
         return String.format("$argon2id$%s$%s", encodedSalt, encodedHash);
-
     }
 
-    // $argon2id$<salt>$<hash>
     public static boolean verifyHash(String hash, char[] password) {
+        Objects.requireNonNull(hash);
+        Objects.requireNonNull(password);
+
         try {
             String[] parts = hash.split("\\$");
             if (parts.length != 4) return false;
@@ -217,14 +208,8 @@ public class MangryptV1Encryption {
             byte[] salt = Base64.getDecoder().decode(parts[2]);
             byte[] expectedHash = Base64.getDecoder().decode(parts[3]);
 
-            Argon2Parameters.Builder builder = new Argon2Parameters.Builder(Argon2Parameters.ARGON2_id)
-                    .withSalt(salt)
-                    .withParallelism(ARGON2_PASSWORD_PARALLELISM)
-                    .withMemoryAsKB(ARGON2_PASSWORD_MEMORY)
-                    .withIterations(ARGON2_PASSWORD_ITERATIONS);
-
             Argon2BytesGenerator generator = new Argon2BytesGenerator();
-            generator.init(builder.build());
+            generator.init(argon2Params(salt, false));
 
             byte[] passwordBytes = charsToBytes(password);
             byte[] computedHash = new byte[expectedHash.length];
@@ -236,7 +221,6 @@ public class MangryptV1Encryption {
         }
     }
 
-    // Prevent timing attacks
     private static boolean constantTimeArrayEquals(byte[] a, byte[] b) {
         if (a.length != b.length) return false;
         int result = 0;
