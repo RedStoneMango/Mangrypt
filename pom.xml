@@ -86,6 +86,13 @@
             <version>1.82</version>
         </dependency>
 
+        <!-- Faster AES provider dependency -->
+        <dependency>
+            <groupId>org.conscrypt</groupId>
+            <artifactId>conscrypt-openjdk</artifactId>
+            <version>2.5.2</version>
+            <classifier>${os.detected.classifier}</classifier>
+        </dependency>
     </dependencies>
 
     <build>
@@ -128,5 +135,12 @@
                 </configuration>
             </plugin>
         </plugins>
+        <extensions>
+            <extension>
+                <groupId>kr.motd.maven</groupId>
+                <artifactId>os-maven-plugin</artifactId>
+                <version>1.7.1</version>
+            </extension>
+        </extensions>
     </build>
 </project>

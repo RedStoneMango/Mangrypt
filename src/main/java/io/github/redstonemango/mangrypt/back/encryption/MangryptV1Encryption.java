@@ -5,6 +5,7 @@ import org.bouncycastle.crypto.generators.Argon2BytesGenerator;
 import org.bouncycastle.crypto.generators.HKDFBytesGenerator;
 import org.bouncycastle.crypto.params.Argon2Parameters;
 import org.bouncycastle.crypto.params.HKDFParameters;
+import org.conscrypt.Conscrypt;
 
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
@@ -16,6 +17,7 @@ import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
+import java.security.Security;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Objects;
@@ -41,6 +43,10 @@ public class MangryptV1Encryption {
     private static final int ARGON2_PASSWORD_PARALLELISM = 1;
 
     public static final String DOMAIN_SEPARATOR = "mangrypt-vault-v1";
+
+    static {
+        Security.insertProviderAt(Conscrypt.newProvider(), 1);
+    }
 
     public static byte[] generateRandomSalt() {
         byte[] salt = new byte[AES_GCM_SALT_LENGTH];

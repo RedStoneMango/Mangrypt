@@ -133,6 +133,7 @@ Mangrypt is written using:
 - **UI Framework:** [`JavaFX`](https://openjfx.io) 23
 - **Object Serialisation:** [`Kryo`](https://github.com/EsotericSoftware/kryo) 5.6.2
 - **Cryptographic Algorithms:** [`Bouncy Castle`](https://www.bouncycastle.org/) 1.82 (jdk18on)
+- **Cryptographic Acceleration:** [`Google Conscrypt`](https://conscrypt.org/) 2.5.2
 - **Utility Dependencies:** [`Mango-Utils`](https://github.com/RedStoneMango/Mango-Utils) 2.1.0
 - **Automated Unit Tests:** [`JUnit`](https://junit.org/) 5.10.2
 - **Native Packaging:** [`javapackager`](https://github.com/javapackager/JavaPackager) 1.7.6
