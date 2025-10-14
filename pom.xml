@@ -79,7 +79,7 @@
             <version>5.5.0</version>
         </dependency>
 
-        <!-- HKDF algorithm dependency -->
+        <!-- Argon2 algorithm dependency -->
         <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcprov-jdk18on</artifactId>
