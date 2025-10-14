@@ -31,8 +31,8 @@ public abstract class DataElement extends FileSystemElement {
     }
 
     @Override
-    public void ensureFields() {
-        super.ensureFields();
+    public void ensureFields(FolderElement parent) {
+        super.ensureFields(parent);
         if (bytes == null) {
             bytes = new byte[0]; // Dummy init
         }

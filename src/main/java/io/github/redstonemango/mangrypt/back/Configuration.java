@@ -47,7 +47,7 @@ public class Configuration {
     }
 
     public FolderElement getRootFolder() {
-        Utilities.ensureAuthorizedAccess(FileSystemController.class);
+        Utilities.ensureAuthorizedAccess(FileSystemController.class, FolderElement.class);
         return rootFolder;
     }
 
@@ -58,7 +58,7 @@ public class Configuration {
         if (rootFolder == null) {
             rootFolder = new FolderElement();
         }
-        rootFolder.ensureFields();
+        rootFolder.ensureFields(null);
 
         // Master key & salt have to be set separately
     }

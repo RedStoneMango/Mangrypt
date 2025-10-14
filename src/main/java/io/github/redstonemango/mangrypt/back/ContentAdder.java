@@ -18,8 +18,7 @@ public class ContentAdder {
             FolderElement newFolder = new FolderElement();
             newFolder.setName(name);
             parentFolder.getContent().put(name, newFolder);
-            newFolder.ensureFields();
-            newFolder.registerParent(parentFolder);
+            newFolder.ensureFields(parentFolder);
             callback.accept(newFolder);
             ConfigIO.markShouldSave();
         }, existingNames);
@@ -30,7 +29,7 @@ public class ContentAdder {
             TextDataElement element = new TextDataElement();
             element.setName(name);
             parentFolder.getContent().put(name, element);
-            element.ensureFields();
+            element.ensureFields(parentFolder);
             callback.accept(element);
             ConfigIO.markShouldSave();
         }, existingNames);
@@ -57,7 +56,7 @@ public class ContentAdder {
                         element.bytes(bytes);
                         element.fileExtension(fileExtension);
                         parentFolder.getContent().put(name, element);
-                        element.ensureFields();
+                        element.ensureFields(parentFolder);
                         callback.accept(element);
                         ConfigIO.markShouldSave();
                     },
@@ -92,7 +91,7 @@ public class ContentAdder {
                         element.bytes(bytes);
                         element.fileExtension(fileExtension);
                         parentFolder.getContent().put(name, element);
-                        element.ensureFields();
+                        element.ensureFields(parentFolder);
                         callback.accept(element);
                         ConfigIO.markShouldSave();
                     },

@@ -231,21 +231,6 @@ public class FileSystemController {
         currentFolder = folder;
         updateContentView(null);
         parentDirButton.setDisable(folder == ConfigIO.getConfig().getRootFolder());
-        pathField.setText(buildFolderPath(folder));
-    }
-
-    private String buildFolderPath(FolderElement folder) {
-        FolderElement root = ConfigIO.getConfig().getRootFolder();
-        if (folder == root) return "/";
-
-        LinkedList<String> pathParts = new LinkedList<>();
-
-        FolderElement current = folder;
-        while (current != null && current != root) {
-            pathParts.addFirst(current.getName());
-            current = current.getParent();
-        }
-
-        return "/" + String.join("/", pathParts);
+        pathField.setText(folder.buildPath());
     }
 }
