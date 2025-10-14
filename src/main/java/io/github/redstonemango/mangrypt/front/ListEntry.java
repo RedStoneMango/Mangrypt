@@ -48,13 +48,7 @@ public class ListEntry extends ListEntryBase {
         }
         else {
             iconView.setImage(icon);
-            Platform.runLater(() -> {
-                double target = nameLabel.localToScene(0, 0).getY();
-                double element = iconView.localToScene(0, 0).getY();
-                double difference = target - element;
-                iconView.setTranslateY(difference - 5);
-                iconView.setTranslateX(5);
-            });
+            Platform.runLater(() -> iconView.setTranslateX(5));
         }
 
         MenuItem openItem = new MenuItem("Open");
