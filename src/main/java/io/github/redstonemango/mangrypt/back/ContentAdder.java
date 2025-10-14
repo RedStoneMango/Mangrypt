@@ -19,6 +19,7 @@ public class ContentAdder {
             newFolder.setName(name);
             parentFolder.getContent().put(name, newFolder);
             newFolder.ensureFields();
+            newFolder.registerParent(parentFolder);
             callback.accept(newFolder);
             ConfigIO.markShouldSave();
         }, existingNames);

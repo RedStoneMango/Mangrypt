@@ -4,6 +4,7 @@ import io.github.redstonemango.mangoutils.NameConverter;
 import io.github.redstonemango.mangrypt.Mangrypt;
 import io.github.redstonemango.mangrypt.back.ContentAdder;
 import io.github.redstonemango.mangrypt.back.dataTypes.*;
+import io.github.redstonemango.mangrypt.front.BaseView;
 import io.github.redstonemango.mangrypt.front.ListEntry;
 import io.github.redstonemango.mangrypt.back.ConfigIO;
 import io.github.redstonemango.mangrypt.back.Utilities;
@@ -20,9 +21,9 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public class FileSystemController {
 
@@ -69,7 +70,7 @@ public class FileSystemController {
 
     private void onOpen(FileSystemElement element) {
         if (element instanceof FolderElement folder) {
-            Mangrypt.getBase().showInfoAlert("Sorry, but this feature is not yet implemented");
+            openFolder(folder);
         }
         else if (element instanceof DataElement data) {
             List<DataElement> availableData = new ArrayList<>();
@@ -203,6 +204,16 @@ public class FileSystemController {
         backMenuItem.setOnAction(_ -> Mangrypt.getBase().playTransition(() -> Mangrypt.getBase().savingRoutine()));
     }
 
+    @FXML
+    private void onParentDir() {
+        FolderElement parent = currentFolder.getParent();
+        if (parent == null) {
+            Mangrypt.getBase().showWarningAlert("Your current folder does not have a parent registered");
+            return;
+        }
+        openFolder(parent);
+    }
+
     private void updateContentView(@Nullable FileSystemElement selectElement) {
         contentView.getItems().clear();
         contentView.getItems().addAll(
@@ -214,5 +225,27 @@ public class FileSystemController {
             contentView.scrollTo(selectElement);
             contentView.getSelectionModel().select(selectElement);
         }
+    }
+
+    private void openFolder(FolderElement folder) {
+        currentFolder = folder;
+        updateContentView(null);
+        parentDirButton.setDisable(folder == ConfigIO.getConfig().getRootFolder());
+        pathField.setText(buildFolderPath(folder));
+    }
+
+    private String buildFolderPath(FolderElement folder) {
+        FolderElement root = ConfigIO.getConfig().getRootFolder();
+        if (folder == root) return "/";
+
+        LinkedList<String> pathParts = new LinkedList<>();
+
+        FolderElement current = folder;
+        while (current != null && current != root) {
+            pathParts.addFirst(current.getName());
+            current = current.getParent();
+        }
+
+        return "/" + String.join("/", pathParts);
     }
 }

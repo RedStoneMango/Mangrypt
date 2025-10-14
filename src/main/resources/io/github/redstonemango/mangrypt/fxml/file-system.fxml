@@ -73,7 +73,7 @@
             <HBox>
                <children>
                   <TextField fx:id="pathField" text="/" HBox.hgrow="ALWAYS" />
-                  <Button fx:id="parentDirButton" contentDisplay="GRAPHIC_ONLY" disable="true" focusTraversable="false" mnemonicParsing="false" prefHeight="25.0" prefWidth="25.0">
+                  <Button fx:id="parentDirButton" contentDisplay="GRAPHIC_ONLY" disable="true" focusTraversable="false" mnemonicParsing="false" onAction="#onParentDir" prefHeight="25.0" prefWidth="25.0">
                      <HBox.margin>
                         <Insets left="5.0" right="5.0" />
                      </HBox.margin>
