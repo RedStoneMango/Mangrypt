@@ -110,6 +110,20 @@ For information on feedback or contributions, see [here](#-feedback--contributio
 
 ---
 
+## 🧪 Automated Testing with JUnit
+
+**JUnit 5** is used for comprehensive automated testing of the encryption, decryption and hashing logic. These tests help ensure the **correctness**, **integrity**, and **security** of the cryptographic operations. By simulating various input scenarios — including tampered data, incorrect passwords, edge cases, and concurrency — these tests aim to proactively identify potential **weaknesses or vulnerabilities** in the encryption and decryption processes.
+
+If you want to run the tests yourself, clone the repository and run them via maven:
+
+```bash
+git clone https://github.com/RedStoneMango/Mangrypt.git
+cd Mangrypt/
+./mvnw test
+```
+
+---
+
 ## 🛠️ Build, Frameworks and Dependencies
 
 Mangrypt is written using:
@@ -118,8 +132,9 @@ Mangrypt is written using:
 - **Build Tool:** [`Apache Maven`](https://maven.apache.org/) 3.8.5
 - **UI Framework:** [`JavaFX`](https://openjfx.io) 23
 - **Object Serialisation:** [`Kryo`](https://github.com/EsotericSoftware/kryo) 5.6.2
-- **Cryptographic algorithms:** [`Bouncy Castle`](https://www.bouncycastle.org/) 1.82 (jdk18on)
-- **Utility dependencies:** [`Mango-Utils`](https://github.com/RedStoneMango/Mango-Utils) 2.1.0
+- **Cryptographic Algorithms:** [`Bouncy Castle`](https://www.bouncycastle.org/) 1.82 (jdk18on)
+- **Utility Dependencies:** [`Mango-Utils`](https://github.com/RedStoneMango/Mango-Utils) 2.1.0
+- **Automated Unit Tests:** [`JUnit`](https://junit.org/) 5.10.2
 - **Native Packaging:** [`javapackager`](https://github.com/javapackager/JavaPackager) 1.7.6
 
 ---
@@ -134,6 +149,7 @@ Mangrypt offers a robust and secure encryption experience with several technical
 - **Memory Safety:** Implements secure memory handling and zeroization of sensitive variables after use.
 - **File Management:** Stores vaults in individually encrypted `.mgvault` files, providing easy backup and export capabilities.
 - **Cross-Platform:** Works on Windows, macOS, and Linux.
+- **Automated Testing:** Encryption mechanics are tested using 50+ automated procedures to identify potential weaknesses.
 - **Open Source:** Transparent development with opportunities for community contributions.
 
 ---
