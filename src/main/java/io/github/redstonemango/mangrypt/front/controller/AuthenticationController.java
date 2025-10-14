@@ -89,6 +89,7 @@ public class AuthenticationController {
                     Mangrypt.getBase().showErrorAlert(String.valueOf(ex));
                     System.err.print("Error decrypting config: ");
                     ex.printStackTrace(System.err);
+                    cancelAuth();
                 }
                 Mangrypt.getBase().decryptionWaitingScreen(false);
                 decreaseTries();
