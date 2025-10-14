@@ -14,10 +14,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
-import java.nio.charset.CharacterCodingException;
-import java.nio.charset.CharsetEncoder;
 import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Base64;
@@ -43,7 +40,7 @@ public class MangryptV1Encryption {
     private static final int ARGON2_PASSWORD_MEMORY = 65536; // 64MB
     private static final int ARGON2_PASSWORD_PARALLELISM = 1;
 
-    public static final String DOMAIN_SEPARATOR = "mangrypt-vault-v2";
+    public static final String DOMAIN_SEPARATOR = "mangrypt-vault-v1";
 
     public static byte[] generateRandomSalt() {
         byte[] salt = new byte[AES_GCM_SALT_LENGTH];
