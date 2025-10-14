@@ -112,7 +112,19 @@ public class MangryptV1Encryption {
         cipher.init(Cipher.ENCRYPT_MODE, encryptionKey, spec);
         cipher.updateAAD(concat(DOMAIN_SEPARATOR.getBytes(StandardCharsets.UTF_8), masterData.masterSalt, perEncryptSalt, iv));
 
-        byte[] ciphertext = cipher.doFinal(plaintext);
+        byte[] encryptedOutput = new byte[plaintext.length + 16]; // 16 bytes for GCM tag
+        int offset = 0;
+        int chunkSize = 64 * 1024;
+
+        for (int i = 0; i < plaintext.length; i += chunkSize) {
+            int len = Math.min(chunkSize, plaintext.length - i);
+            int outLen = cipher.update(plaintext, i, len, encryptedOutput, offset);
+            offset += outLen;
+        }
+        int finalLen = cipher.doFinal(encryptedOutput, offset);
+
+        byte[] ciphertext = Arrays.copyOf(encryptedOutput, offset + finalLen);
+
         return concat(masterData.masterSalt, perEncryptSalt, iv, ciphertext);
     }
 
@@ -138,8 +150,19 @@ public class MangryptV1Encryption {
         cipher.init(Cipher.DECRYPT_MODE, encryptionKey, spec);
         cipher.updateAAD(concat(DOMAIN_SEPARATOR.getBytes(StandardCharsets.UTF_8), masterSalt, perEncryptSalt, iv));
 
-        byte[] decrypted = cipher.doFinal(ciphertext);
-        return new BiResult<>(decrypted, new MasterData(masterKey, masterSalt));
+        byte[] decryptedOutput = new byte[ciphertext.length]; // plaintext will be <= ciphertext
+        int offset = 0;
+        int chunkSize = 64 * 1024;
+
+        for (int i = 0; i < ciphertext.length; i += chunkSize) {
+            int len = Math.min(chunkSize, ciphertext.length - i);
+            int outLen = cipher.update(ciphertext, i, len, decryptedOutput, offset);
+            offset += outLen;
+        }
+        int finalLen = cipher.doFinal(decryptedOutput, offset);
+        byte[] plaintext = Arrays.copyOf(decryptedOutput, offset + finalLen);
+
+        return new BiResult<>(plaintext, new MasterData(masterKey, masterSalt));
     }
 
     private static Argon2Parameters argon2Params(byte[] salt, boolean forMasterKey) {
