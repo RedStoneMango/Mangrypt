@@ -19,6 +19,8 @@ public class OverlayController {
 
     private int tries = 3;
 
+    private boolean allowAccess = true;
+
     @FXML
     private void initialize() {
         passwordField.setOnKeyPressed(e -> {
@@ -30,6 +32,8 @@ public class OverlayController {
 
     @FXML
     private void onAccess() {
+        if (!allowAccess) return;
+
         char[] password = passwordField.getText().toCharArray();
         boolean authSuccess;
         try {
@@ -60,6 +64,7 @@ public class OverlayController {
         transition.setCycles(5);
         transition.play();
         if (tries == 0) {
+            allowAccess = false;
             passwordField.setText("");
             transition.setOnFinished(_ -> Mangrypt.getBase().savingRoutine());
         }

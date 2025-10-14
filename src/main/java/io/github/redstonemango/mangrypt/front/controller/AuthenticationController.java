@@ -4,10 +4,8 @@ import io.github.redstonemango.mangrypt.back.Utilities;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.control.Alert;
-import javafx.scene.control.ButtonType;
+import javafx.scene.control.*;
 import javafx.scene.control.Label;
-import javafx.scene.control.PasswordField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
@@ -18,6 +16,7 @@ import io.github.redstonemango.mangrypt.front.ShakeTransition;
 import io.github.redstonemango.mangrypt.back.ConfigIO;
 
 import javax.crypto.AEADBadTagException;
+import java.awt.*;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.concurrent.CompletableFuture;
@@ -34,6 +33,7 @@ public class AuthenticationController {
     private int tries = 3;
 
     private boolean allowCancelInternal = true;
+    private boolean allowDecrypt = true;
 
     @FXML
     private void initialize() {
@@ -56,6 +56,8 @@ public class AuthenticationController {
 
     @FXML
     private void onDecrypt() {
+        if (!allowDecrypt) return;
+
         char[] passphrase = passphraseField.getText().toCharArray();
         char[] password = passwordField.getText().toCharArray();
 
@@ -120,6 +122,7 @@ public class AuthenticationController {
         transition.setCycles(10);
         transition.play();
         if (tries == 0) {
+            allowDecrypt = false;
             passwordField.setText("");
             passphraseField.setText("");
             transition.setOnFinished(_ -> cancelAuth());
