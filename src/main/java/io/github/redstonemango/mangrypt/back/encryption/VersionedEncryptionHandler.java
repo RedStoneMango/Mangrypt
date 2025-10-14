@@ -8,14 +8,15 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.crypto.SecretKey;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 public class VersionedEncryptionHandler {
 
     public static final SimplifiedKryo v1_KRYO = new SimplifiedKryo(
-            Configuration.class, SecretKey.class, byte[].class, String.class, FolderElement.class, List.class,
+            Configuration.class, SecretKey.class, byte[].class, String.class, FolderElement.class, Map.class,
             FileSystemElement.class, TextDataElement.class, ImageDataElement.class, MediaDataElement.class,
-            ArrayList.class);
+            HashMap.class);
 
     public static @Nullable Configuration decrypt(int version, byte[] encrypted, char[] passphrase, char[] password) throws Exception {
         switch (version) {

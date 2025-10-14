@@ -36,7 +36,7 @@ public class Configuration {
         Utilities.ensureAuthorizedAccess(ConfigIO.class);
 
         masterKey = null;
-        if (rootFolder != null) rootFolder.getContent().forEach(FileSystemElement::zeroOut);
+        if (rootFolder != null) rootFolder.zeroOut();
         rootFolder = null;
     }
 

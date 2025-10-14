@@ -6,19 +6,17 @@ import io.github.redstonemango.mangrypt.back.Utilities;
 import io.github.redstonemango.mangrypt.front.controller.FileSystemController;
 import javafx.scene.image.Image;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 public class FolderElement extends FileSystemElement {
 
-    private List<FileSystemElement> content;
+    private Map<String, FileSystemElement> content;
 
     public static Image buildIconImage() {
         return new Image(Objects.requireNonNull(FolderElement.class.getResourceAsStream("/io/github/redstonemango/mangrypt/image/data-type-icon/folder.png"))); // Dummy value for now
     }
 
-    public List<FileSystemElement> getContent() {
+    public Map<String, FileSystemElement> getContent() {
         Utilities.ensureAuthorizedAccess(FileSystemController.class, Configuration.class, ContentAdder.class);
         return content;
     }
@@ -27,15 +25,15 @@ public class FolderElement extends FileSystemElement {
     public void ensureFields() {
         super.ensureFields();
         if (content == null) {
-            content = new ArrayList<>();
+            content = new HashMap<>();
         }
-        content.forEach(FileSystemElement::ensureFields);
+        content.values().forEach(FileSystemElement::ensureFields);
     }
 
     @Override
     public void zeroOut() {
         super.zeroOut();
-        content.forEach(FileSystemElement::zeroOut);
+        content.values().forEach(FileSystemElement::zeroOut);
         content.clear();
         content = null;
     }

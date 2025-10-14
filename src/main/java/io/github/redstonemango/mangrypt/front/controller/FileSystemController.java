@@ -89,7 +89,7 @@ public class FileSystemController {
 
     private void onDelete(FileSystemElement element) {
         Mangrypt.getBase().showConfirmationDialog("Delete '" + element.getName() + "'", "Do you really want to delete '" + element.getName() + "'" + (element instanceof FolderElement ? " and all data it contains" : "") + "?", () -> {
-            currentFolder.getContent().remove(element);
+            currentFolder.getContent().remove(element.getName());
             element.zeroOut();
             updateContentView(null);
             ConfigIO.markShouldSave();
@@ -97,9 +97,7 @@ public class FileSystemController {
     }
 
     private void onRename(FileSystemElement element) {
-        Set<String> existingNames = contentView.getItems().stream()
-                .map(FileSystemElement::getName)
-                .collect(Collectors.toSet());
+        Set<String> existingNames = currentFolder.getContent().keySet();
         String oldName = element.getName();
 
         Mangrypt.getBase().showInputDialog(
@@ -144,9 +142,7 @@ public class FileSystemController {
 
     @FXML
     private void onAdd() {
-        Set<String> existingNames = contentView.getItems().stream()
-                .map(FileSystemElement::getName)
-                .collect(Collectors.toSet());
+        Set<String> existingNames = currentFolder.getContent().keySet();
 
         MenuItem folderItem = new MenuItem("Folder");
         ImageView folderIcon = new ImageView(FolderElement.buildIconImage());
@@ -210,7 +206,7 @@ public class FileSystemController {
     private void updateContentView(@Nullable FileSystemElement selectElement) {
         contentView.getItems().clear();
         contentView.getItems().addAll(
-                currentFolder.getContent().stream()
+                currentFolder.getContent().values().stream()
                         .filter(object -> (showHiddenContentProperty.get() || !object.getName().startsWith(".")))
                         .toList());
 

@@ -1,5 +1,6 @@
 package io.github.redstonemango.mangrypt.front;
 
+import com.sun.javafx.tk.Toolkit;
 import io.github.redstonemango.mangrypt.Mangrypt;
 import io.github.redstonemango.mangrypt.front.controller.*;
 import io.github.redstonemango.mangrypt.back.ConfigIO;
@@ -407,16 +408,20 @@ public class BaseView extends StackPane {
     }
 
     public void showAlert(Alert.AlertType type, String header, String content, boolean cancelable, Consumer<ButtonType> onAction, ButtonType... buttons) {
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/io/github/redstonemango/mangrypt/fxml/alert.fxml"));
-        dialogLayer.getChildren().clear();
-        try {
-            dialogLayer.getChildren().add(loader.load());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        ((AlertController) loader.getController()).init(type, header, content, cancelable, onAction, buttons);
-        dialogLayer.setVisible(true);
-        updateDimensions();
+        Runnable action = () -> {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/io/github/redstonemango/mangrypt/fxml/alert.fxml"));
+            dialogLayer.getChildren().clear();
+            try {
+                dialogLayer.getChildren().add(loader.load());
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            ((AlertController) loader.getController()).init(type, header, content, cancelable, onAction, buttons);
+            dialogLayer.setVisible(true);
+            updateDimensions();
+        };
+        if (Platform.isFxApplicationThread()) action.run();
+        else Platform.runLater(action);
     }
 
     public void showInputDialog(String header, String hint, String defaultText, boolean cancelable, Consumer<String> onAction) {
@@ -427,15 +432,19 @@ public class BaseView extends StackPane {
     }
 
     public void showInputDialog(String header, String hint, String defaultText, boolean cancelable, Function<String, Boolean> allowFunction, Function<String, String> infoFunction, Consumer<String> onAction) {
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/io/github/redstonemango/mangrypt/fxml/input-dialog.fxml"));
-        dialogLayer.getChildren().clear();
-        try {
-            dialogLayer.getChildren().add(loader.load());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        ((InputDialogController) loader.getController()).init(header, hint, defaultText, cancelable, allowFunction, infoFunction, onAction);
-        dialogLayer.setVisible(true);
-        updateDimensions();
+        Runnable action = () -> {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/io/github/redstonemango/mangrypt/fxml/input-dialog.fxml"));
+            dialogLayer.getChildren().clear();
+            try {
+                dialogLayer.getChildren().add(loader.load());
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            ((InputDialogController) loader.getController()).init(header, hint, defaultText, cancelable, allowFunction, infoFunction, onAction);
+            dialogLayer.setVisible(true);
+            updateDimensions();
+        };
+        if (Platform.isFxApplicationThread()) action.run();
+        else Platform.runLater(action);
     }
 }
