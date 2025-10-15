@@ -57,7 +57,12 @@ public class FileSystemController {
         updateContentView(null);
 
         String name = ConfigIO.getVaultFile().getName().substring(0, ConfigIO.getVaultFile().getName().length() - ".mgvault".length());
-        name = NameConverter.convert(name, NameConverter.NamingConvention.MIXED_CASE_TYPES, NameConverter.NamingConvention.PLAIN_TEXT, true);
+        name = NameConverter.convert(
+                name,
+                NameConverter.NamingConvention.MIXED_CASE_TYPES,
+                NameConverter.NamingConvention.PLAIN_TEXT,
+                true);
+
         nameLabel.setText(name);
 
         showHiddenContentProperty.addListener((_, _, _) -> updateContentView(null));
@@ -84,17 +89,24 @@ public class FileSystemController {
         }
         else {
             Mangrypt.getBase().showErrorAlert("The specified FileSystemElement is neither a FolderElement nor a DataElement");
-            throw new RuntimeException("element has to be an instance of " + FolderElement.class.getName() + " or " + DataElement.class.getName() + ". Found" + element.getClass().getName() + "instead");
+
+            throw new RuntimeException("element has to be an instance of " + FolderElement.class.getName() + " or " +
+                    DataElement.class.getName() + ". Found" + element.getClass().getName() + "instead");
         }
     }
 
     private void onDelete(FileSystemElement element) {
-        Mangrypt.getBase().showConfirmationDialog("Delete '" + element.getName() + "'", "Do you really want to delete '" + element.getName() + "'" + (element instanceof FolderElement ? " and all data it contains" : "") + "?", () -> {
-            currentFolder.getContent().remove(element.getName());
-            element.zeroOut();
-            updateContentView(null);
-            ConfigIO.markShouldSave();
-        });
+        Mangrypt.getBase().showConfirmationDialog(
+                "Delete '" + element.getName() + "'",
+                "Do you really want to delete '" + element.getName() + "'" +
+                        (element instanceof FolderElement ? " and all data it contains" : "") + "?",
+                () -> {
+                    currentFolder.getContent().remove(element.getName());
+                    element.zeroOut();
+                    updateContentView(null);
+                    ConfigIO.markShouldSave();
+                }
+        );
     }
 
     private void onRename(FileSystemElement element) {

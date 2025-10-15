@@ -1,21 +1,16 @@
 package io.github.redstonemango.mangrypt.back;
 
-import io.github.redstonemango.mangrypt.Mangrypt;
 import javafx.animation.FadeTransition;
-import javafx.beans.property.BooleanProperty;
-import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
 import javafx.geometry.Point2D;
 import javafx.scene.Node;
 import javafx.scene.control.*;
-import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Pane;
 import javafx.util.Callback;
 import javafx.util.Duration;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
