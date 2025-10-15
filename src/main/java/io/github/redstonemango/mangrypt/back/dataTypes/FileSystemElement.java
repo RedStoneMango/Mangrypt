@@ -49,7 +49,7 @@ public abstract class FileSystemElement {
 
         LinkedList<String> pathParts = new LinkedList<>();
 
-        FolderElement current = this instanceof FolderElement folder ? folder : parent;
+        FileSystemElement current = this;
         while (current != null && current != root) {
             pathParts.addFirst(current.getName());
             current = current.getParent();
@@ -87,8 +87,6 @@ public abstract class FileSystemElement {
     public static @NotNull FileSystemElement fromPath(String path) {
         FolderElement root = ConfigIO.getConfig().getRootFolder();
         path = path.trim().replaceAll("/{2,}", "/");
-
-        if (!path.startsWith("/")) return root; // Fallback for malformed path
 
         FolderElement current = root;
 
