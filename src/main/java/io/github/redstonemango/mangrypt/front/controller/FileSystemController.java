@@ -48,19 +48,23 @@ public class FileSystemController {
 
     @FXML
     private void initialize() {
-        Utilities.applyCustomNodeCellFactory(contentView, element ->
-                new ListEntry(
-                        element.getName(),
-                        element.getDescription(),
-                        () -> onOpen(element),
-                        () -> onDelete(element),
-                        () -> onRename(element),
-                        () -> onChangeDescription(element),
-                        () -> onExport(element),
-                        element.runIconImageBuild(),
-                        element instanceof FolderElement,
-                        contentView),
-                new Insets(0, 0, 1, 0));
+        Utilities.applyCustomNodeCellFactory(contentView, element -> {
+            FolderElement parent = element.getParent();
+            assert parent != null : "Only null when referencing root's parent, which should never happen";
+            return new ListEntry(
+                    element.getName(),
+                    element.getDescription(),
+                    () -> onOpen(element),
+                    () -> onDelete(element),
+                    () -> onRename(element),
+                    () -> onChangeDescription(element),
+                    () -> onExport(element),
+                    () -> onExport(parent),
+                    element.runIconImageBuild(),
+                    element instanceof FolderElement,
+                    contentView);
+            },
+            new Insets(0, 0, 1, 0));
 
         updateContentView(null);
         preparePathPopup();

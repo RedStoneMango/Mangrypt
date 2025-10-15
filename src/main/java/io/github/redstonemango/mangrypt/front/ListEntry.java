@@ -2,7 +2,6 @@ package io.github.redstonemango.mangrypt.front;
 
 import io.github.redstonemango.mangrypt.front.elementBase.ListEntryBase;
 import javafx.application.Platform;
-import javafx.css.PseudoClass;
 import javafx.event.ActionEvent;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.ListView;
@@ -24,8 +23,8 @@ public class ListEntry extends ListEntryBase {
     private final Runnable onDelete;
 
     public ListEntry(String name, String description, Runnable onSelect, Runnable onDelete, Runnable onSetName,
-                     Runnable onSetDescription, Runnable onExport, @Nullable Image icon, boolean folder,
-                     ListView<?> view) {
+                     Runnable onSetDescription, Runnable onExport, Runnable onExportParent, @Nullable Image icon,
+                     boolean folder, ListView<?> view) {
         nameLabel.setText(name);
         if (name.startsWith(".")) nameLabel.setFont(Font.font("", FontWeight.NORMAL, FontPosture.ITALIC, 17));
         descriptionLabel.setText(description);
@@ -59,9 +58,11 @@ public class ListEntry extends ListEntryBase {
         nameItem.setOnAction(_ -> onSetName.run());
         MenuItem descriptionItem = new MenuItem("Change Description");
         descriptionItem.setOnAction(_ -> onSetDescription.run());
-        MenuItem exportItem = new MenuItem("Export");
+        MenuItem exportItem = new MenuItem("Export this element");
         exportItem.setOnAction(_ -> onExport.run());
-        ContextMenu menu = new ContextMenu(openItem, deleteItem, new SeparatorMenuItem(), nameItem, descriptionItem, new SeparatorMenuItem(), exportItem);
+        MenuItem exportParentItem = new MenuItem("Export current folder");
+        exportParentItem.setOnAction(_ -> onExportParent.run());
+        ContextMenu menu = new ContextMenu(openItem, deleteItem, new SeparatorMenuItem(), nameItem, descriptionItem, new SeparatorMenuItem(), exportItem, exportParentItem);
         setOnMouseClicked(e -> {
             if (menu.isShowing()) menu.hide();
             if (e.getButton() == MouseButton.SECONDARY) {
