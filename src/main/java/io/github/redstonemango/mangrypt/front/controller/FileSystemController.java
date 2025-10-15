@@ -195,38 +195,51 @@ public class FileSystemController {
                 element.getName() + extension,
                 file -> {
 
-                    boolean success = element.exportTo(file, true);
-                    ButtonType browseButton = new ButtonType("Browse File");
+                    Runnable exportAction = () -> {
+                        boolean success = element.exportTo(file, true);
+                        ButtonType browseButton = new ButtonType("Browse File");
 
-                    if (success) {
-                        Mangrypt.getBase().showAlert(
-                                Alert.AlertType.INFORMATION,
-                                "Exported data",
-                                """
-                                        Successfully exported your data.
-                                        Do you want to browse browse the file?""",
-                                true,
-                                btn -> {
-                                    if (btn == browseButton) {
-                                        OperatingSystem.loadCurrentOS().browse(file);
-                                    }
-                                }, browseButton, new ButtonType("Stay in Application"));
+                        if (success) {
+                            Mangrypt.getBase().showAlert(
+                                    Alert.AlertType.INFORMATION,
+                                    "Exported data",
+                                    """
+                                            Successfully exported your data.
+                                            Do you want to browse browse the file?""",
+                                    true,
+                                    btn -> {
+                                        if (btn == browseButton) {
+                                            OperatingSystem.loadCurrentOS().browse(file);
+                                        }
+                                    }, browseButton, new ButtonType("Stay in Application"));
+                        }
+
+                        else {
+                            Mangrypt.getBase().showAlert(
+                                    Alert.AlertType.WARNING,
+                                    "Export failure",
+                                    """
+                                            The export was not successful.
+                                            Still, some data might have been exported correctly.
+                                            Do you want to try browsing the file?""",
+                                    true,
+                                    btn -> {
+                                        if (btn == browseButton) {
+                                            OperatingSystem.loadCurrentOS().browse(file);
+                                        }
+                                    }, browseButton, ButtonType.CLOSE);
+                        }
+                    };
+
+                    if (file.exists()) {
+                        Mangrypt.getBase().showConfirmationDialog(
+                                "File already exist",
+                                "Do you want to overwrite '" + file.getName() + "'?",
+                                exportAction
+                        );
                     }
-
                     else {
-                        Mangrypt.getBase().showAlert(
-                                Alert.AlertType.WARNING,
-                                "Export failure",
-                                """
-                                        The export was not successful.
-                                        Still, some data might have been exported correctly.
-                                        Do you want to try browsing the file?""",
-                                true,
-                                btn -> {
-                                    if (btn == browseButton) {
-                                        OperatingSystem.loadCurrentOS().browse(file);
-                                    }
-                                }, browseButton, ButtonType.CLOSE);
+                        exportAction.run();
                     }
                 },
                 extension);
