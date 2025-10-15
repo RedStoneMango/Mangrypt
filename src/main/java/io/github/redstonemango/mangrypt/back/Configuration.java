@@ -59,6 +59,7 @@ public class Configuration {
             rootFolder = new FolderElement();
         }
         rootFolder.ensureFields(null);
+        rootFolder.setName("Root");
 
         // Master key & salt have to be set separately
     }
