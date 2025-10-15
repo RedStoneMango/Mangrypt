@@ -172,9 +172,9 @@ public class FileChooserNode extends VBox {
         setPadding(new Insets(10, 0, 10, 0));
 
         // Select initial dir
+        select(initialDirectory.getAbsolutePath(), true);
         ignorePathChange = true;
         pathField.setText(initialDirectory.getAbsolutePath());
-        select(initialDirectory.getAbsolutePath(), true);
     }
 
     /**

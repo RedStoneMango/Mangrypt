@@ -192,6 +192,7 @@ public class FileSystemController {
 
         Utilities.showSavingFileChooser(
                 "Export '" + element.getName() + "' as " + extension,
+                element.getName() + extension,
                 file -> {
 
                     boolean success = element.exportTo(file, true);

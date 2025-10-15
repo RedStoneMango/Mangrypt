@@ -167,8 +167,8 @@ public class Utilities {
         };
     }
 
-    public static void showSavingFileChooser(String title, Consumer<File> onSelected, String... extensions) {
-        File userHome = new File(System.getProperty("user.home"));
+    public static void showSavingFileChooser(String title, String defaultName, Consumer<File> onSelected, String... extensions) {
+        File userHome = new File(System.getProperty("user.home"), defaultName);
         FileChooserNode chooser = new FileChooserNode(title, true, userHome,
                 selectedFile -> {
                     Mangrypt.getBase().setSecondLayerRoot(null);
