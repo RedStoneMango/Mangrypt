@@ -58,9 +58,9 @@ public class AlertController {
             ButtonBar.setButtonData(button, buttonType.getButtonData());
             buttonBar.getButtons().add(button);
             button.setOnAction(_ -> {
-                onAction.accept(buttonType);
                 root.getParent().setVisible(false);
                 oldFocusOwner.requestFocus();
+                onAction.accept(buttonType);
             });
             if (buttonType == ButtonType.OK || buttonType == ButtonType.YES) defaultButton = button;
         }
