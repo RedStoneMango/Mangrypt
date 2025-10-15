@@ -30,6 +30,7 @@ public class ContentAdder {
             element.setName(name);
             parentFolder.getContent().put(name, element);
             element.ensureFields(parentFolder);
+            element.fileExtension(".txt");
             callback.accept(element);
             ConfigIO.markShouldSave();
         }, existingNames);

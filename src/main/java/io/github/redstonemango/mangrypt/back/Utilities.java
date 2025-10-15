@@ -1,6 +1,10 @@
 package io.github.redstonemango.mangrypt.back;
 
+import io.github.redstonemango.mangrypt.Mangrypt;
+import io.github.redstonemango.mangrypt.back.dataTypes.MediaDataElement;
+import io.github.redstonemango.mangrypt.front.FileChooserNode;
 import javafx.animation.FadeTransition;
+import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Point2D;
 import javafx.scene.Node;
@@ -8,9 +12,12 @@ import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.StackPane;
 import javafx.util.Callback;
 import javafx.util.Duration;
 
+import java.io.File;
+import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
@@ -158,5 +165,21 @@ public class Utilities {
             case "mp4", ".mp4" -> "video/mp4";
             default -> throw new IllegalArgumentException("Extension not supported: " + ext);
         };
+    }
+
+    public static void showSavingFileChooser(String title, Consumer<File> onSelected, String... extensions) {
+        File userHome = new File(System.getProperty("user.home"));
+        FileChooserNode chooser = new FileChooserNode(title, true, userHome,
+                selectedFile -> {
+                    Mangrypt.getBase().setSecondLayerRoot(null);
+                    onSelected.accept(selectedFile);
+                },
+                () -> Mangrypt.getBase().setSecondLayerRoot(null), extensions);
+        StackPane background = new StackPane();
+        StackPane root = new StackPane();
+        chooser.prepareMangryptLayout(root, background);
+        Utilities.registerClosableOverlay(root, () -> Mangrypt.getBase().setSecondLayerRoot(null), background);
+        Mangrypt.getBase().setSecondLayerRoot(root);
+        Platform.runLater(chooser::requestFocus);
     }
 }

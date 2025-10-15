@@ -10,6 +10,7 @@ import javafx.scene.image.Image;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.File;
 import java.util.LinkedList;
 
 public abstract class FileSystemElement {
@@ -17,6 +18,8 @@ public abstract class FileSystemElement {
     private String name;
     private @Nullable String description;
     private transient @Nullable FolderElement parent;
+
+    public abstract boolean exportTo(File file, boolean isRoot);
 
     public @Nullable String getDescription() {
         Utilities.ensureAuthorizedAccess(FileSystemController.class);

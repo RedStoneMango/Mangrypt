@@ -4,6 +4,11 @@ import io.github.redstonemango.mangrypt.back.ContentAdder;
 import io.github.redstonemango.mangrypt.back.Utilities;
 import io.github.redstonemango.mangrypt.front.DataView;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 
 public abstract class DataElement extends FileSystemElement {
@@ -21,13 +26,33 @@ public abstract class DataElement extends FileSystemElement {
         this.bytes = bytes;
     }
 
-    public String fileExtensions() {
+    public String fileExtension() {
         return fileExtension;
     }
 
     public void fileExtension(String fileExtension) {
         Utilities.ensureAuthorizedAccess(ContentAdder.class);
         this.fileExtension = fileExtension;
+    }
+
+    @Override
+    public boolean exportTo(File file, boolean isRoot) {
+        if (file.exists()) {
+            try {
+                if (!file.createNewFile()) {
+                    return false;
+                }
+            } catch (IOException _) {
+                return false;
+            }
+        }
+
+        try {
+            Files.write(file.toPath(), bytes);
+        } catch (IOException _) {
+            return false;
+        }
+        return true;
     }
 
     @Override

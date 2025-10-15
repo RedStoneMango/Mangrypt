@@ -1,6 +1,7 @@
 package io.github.redstonemango.mangrypt.front.controller;
 
 import io.github.redstonemango.mangoutils.NameConverter;
+import io.github.redstonemango.mangoutils.OperatingSystem;
 import io.github.redstonemango.mangrypt.Mangrypt;
 import io.github.redstonemango.mangrypt.back.ContentAdder;
 import io.github.redstonemango.mangrypt.back.dataTypes.*;
@@ -55,7 +56,7 @@ public class FileSystemController {
                         () -> onDelete(element),
                         () -> onRename(element),
                         () -> onChangeDescription(element),
-                        () -> onFolderExport(element),
+                        () -> onExport(element),
                         element.runIconImageBuild(),
                         element instanceof FolderElement,
                         contentView),
@@ -186,8 +187,48 @@ public class FileSystemController {
         );
     }
 
-    private void onFolderExport(FileSystemElement element) {
-        Mangrypt.getBase().showInfoAlert("Sorry, but this feature is not yet implemented");
+    private void onExport(FileSystemElement element) {
+        String extension = element instanceof DataElement data ? data.fileExtension() : ".zip";
+
+        Utilities.showSavingFileChooser(
+                "Export '" + element.getName() + "' as " + extension,
+                file -> {
+
+                    boolean success = element.exportTo(file, true);
+                    ButtonType browseButton = new ButtonType("Browse File");
+
+                    if (success) {
+                        Mangrypt.getBase().showAlert(
+                                Alert.AlertType.INFORMATION,
+                                "Exported data",
+                                """
+                                        Successfully exported your data.
+                                        Do you want to browse browse the file?""",
+                                true,
+                                btn -> {
+                                    if (btn == browseButton) {
+                                        OperatingSystem.loadCurrentOS().browse(file);
+                                    }
+                                }, browseButton, new ButtonType("Stay in Application"));
+                    }
+
+                    else {
+                        Mangrypt.getBase().showAlert(
+                                Alert.AlertType.WARNING,
+                                "Export failure",
+                                """
+                                        The export was not successful.
+                                        Still, some data might have been exported correctly.
+                                        Do you want to try browsing the file?""",
+                                true,
+                                btn -> {
+                                    if (btn == browseButton) {
+                                        OperatingSystem.loadCurrentOS().browse(file);
+                                    }
+                                }, browseButton, ButtonType.CLOSE);
+                    }
+                },
+                extension);
     }
 
     @FXML
