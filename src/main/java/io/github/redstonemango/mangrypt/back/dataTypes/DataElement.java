@@ -1,5 +1,6 @@
 package io.github.redstonemango.mangrypt.back.dataTypes;
 
+import io.github.redstonemango.mangoutils.MangoIO;
 import io.github.redstonemango.mangrypt.back.ContentAdder;
 import io.github.redstonemango.mangrypt.back.Utilities;
 import io.github.redstonemango.mangrypt.front.DataView;
@@ -39,12 +40,18 @@ public abstract class DataElement extends FileSystemElement {
     public boolean exportTo(File file, boolean isRoot) {
         if (file.exists()) {
             try {
-                if (!file.createNewFile()) {
-                    return false;
-                }
+                MangoIO.deleteDirectoryRecursively(file);
             } catch (IOException _) {
                 return false;
             }
+        }
+
+        try {
+            if (!file.createNewFile()) {
+                return false;
+            }
+        } catch (IOException _) {
+            return false;
         }
 
         try {
