@@ -37,7 +37,7 @@ public abstract class FileSystemElement {
     }
 
     public void setName(String name) {
-        Utilities.ensureAuthorizedAccess(FileSystemController.class, ContentAdder.class);
+        Utilities.ensureAuthorizedAccess(FileSystemController.class, ContentAdder.class, Configuration.class);
         this.name = name;
     }
 

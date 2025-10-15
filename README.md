@@ -145,7 +145,7 @@ Mangrypt is written using:
 Mangrypt offers a robust and secure encryption experience with several technical advantages:
 
 - **Strong Encryption Architecture:** Combines **Argon2id**, **HKDF**, and **AES-GCM** to ensure both confidentiality and authenticity of user data.
-- **Multi-Media Support:** Encrypts text _(including formatting)_, images, audio, and video files.
+- **Multi-Media Support:** Encrypts text, images, audio, and video files.
 - **Auto-Lock on Focus Loss:** Automatically obscures sensitive content when the app loses focus.
 - **Memory Safety:** Implements secure memory handling and zeroization of sensitive variables after use.
 - **File Management:** Stores vaults in individually encrypted `.mgvault` files, providing easy backup and export capabilities.
