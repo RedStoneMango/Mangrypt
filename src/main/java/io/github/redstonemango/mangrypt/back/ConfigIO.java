@@ -5,7 +5,6 @@ import io.github.redstonemango.mangrypt.Mangrypt;
 import io.github.redstonemango.mangrypt.back.encryption.VersionedEncryptionHandler;
 import io.github.redstonemango.mangrypt.front.BaseView;
 import io.github.redstonemango.mangrypt.front.controller.AuthenticationController;
-import io.github.redstonemango.mangrypt.front.controller.FileSystemController;
 import io.github.redstonemango.mangrypt.front.controller.SecuritySetupController;
 import javafx.fxml.FXMLLoader;
 
