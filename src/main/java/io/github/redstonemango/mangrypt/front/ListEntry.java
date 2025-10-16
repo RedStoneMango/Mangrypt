@@ -95,6 +95,7 @@ public class ListEntry extends ListEntryBase {
                 pasteItem.setDisable(clipboard.isEmpty());
                 pasteIntoItem.setDisable(clipboard.isEmpty());
                 openItem.setDisable(selectedElements.size() > 1);
+                exportItem.setText("Export Item" + (selectedElements.size() > 1 ? "s" : ""));
                 menu.show(this, e.getScreenX(), e.getScreenY());
             }
         });
