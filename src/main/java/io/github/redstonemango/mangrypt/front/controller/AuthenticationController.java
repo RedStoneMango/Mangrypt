@@ -72,6 +72,7 @@ public class AuthenticationController {
                 success = false; // GCM tag mismatch: Wrong password
             }
             catch (Exception e) {
+                Mangrypt.getBase().showErrorAlert(String.valueOf(e));
                 System.err.print("Error decrypting config: ");
                 e.printStackTrace(System.err);
                 passwordField.setText("");
