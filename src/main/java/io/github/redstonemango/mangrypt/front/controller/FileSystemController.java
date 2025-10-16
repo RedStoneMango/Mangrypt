@@ -349,7 +349,8 @@ public class FileSystemController {
 
     private void updatedPathFieldTarget(@Nullable FileSystemElement element) {
         ignorePathChange = true;
-        String text = element != null ? element.buildPath() : currentFolder.buildPath();
+        String text = element != null && (showHiddenContentProperty.get() || !element.getName().startsWith("."))
+                ? element.buildPath() : currentFolder.buildPath();
         if (element == currentFolder) text = text + "/"; // If we are IN the folder, add '/'. Do not add if folder's just selected
         text = text.replaceAll("/{2,}", "/"); // Normalize
         pathField.setText(text);
@@ -457,6 +458,7 @@ public class FileSystemController {
 
         String filter = path.substring(path.lastIndexOf("/") + 1);
         Set<FileSystemElement> options = currentPos.getContent().values().stream()
+                .filter(object -> (showHiddenContentProperty.get() || !object.getName().startsWith(".")))
                 .filter(element -> element.getName().contains(filter))
                 .collect(Collectors.toSet());
 
