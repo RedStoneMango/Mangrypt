@@ -17,10 +17,13 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
 import javafx.geometry.Point2D;
+import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import org.jetbrains.annotations.Nullable;
@@ -50,6 +53,7 @@ public class FileSystemController {
 
     private ListView<String> pathCompletionList;
     private ContextMenu pathCompletionMenu;
+    private ContextMenu contentViewMenu;
 
     @FXML
     private void initialize() {
@@ -84,6 +88,7 @@ public class FileSystemController {
             else if (l.getList().size() == 1) updatedPathFieldTarget(l.getList().getFirst());
             else updatedPathFieldTargetToMultiple(l.getList().size());
         });
+        prepareContentViewMenu();
 
         String name = ConfigIO.getVaultFile().getName().substring(0, ConfigIO.getVaultFile().getName().length() - ".mgvault".length());
         name = NameConverter.convert(
@@ -123,6 +128,32 @@ public class FileSystemController {
             Utilities.registerHoverAnimation(configureImage);
             Utilities.registerHoverAnimation(addImage);
         });
+    }
+
+    private void prepareContentViewMenu() {
+        MenuItem exportItem = new MenuItem("Export Current Folder");
+        exportItem.setOnAction(_ -> export(currentFolder));
+        contentViewMenu = new ContextMenu(exportItem);
+        contentView.setOnMouseClicked(e -> {
+            if (contentViewMenu.isShowing()) contentViewMenu.hide();
+            if (e.getButton() == MouseButton.SECONDARY && isNotFilledCell(e)) {
+                contentViewMenu.show(contentView, e.getScreenX(), e.getScreenY());
+            }
+        });
+    }
+
+    private boolean isNotFilledCell(MouseEvent event) {
+        Node target = (Node) event.getTarget();
+
+        while (target != null && !(target instanceof ListCell)) {
+            target = target.getParent();
+        }
+
+        if (target instanceof ListCell<?> cell) {
+            return cell.isEmpty();
+        } else {
+            return false;
+        }
     }
 
     private void onOpen(FileSystemElement element) {
@@ -202,23 +233,26 @@ public class FileSystemController {
                 },
                 baseName -> {
 
-                    AtomicInteger number = new AtomicInteger(1);
-
                     selectedElements.forEach(element -> {
-                        String finalName = baseName + " (" + number.getAndIncrement() + ")";
-                        while (currentFolder.getContent().containsKey(finalName)) {
-                            finalName = baseName + " (" + number.getAndIncrement() + ")";
-                        }
-
+                        String name = nextFreeName(baseName);
                         currentFolder.getContent().remove(element.getName()); // Remove old
-                        element.setName(finalName);
-                        currentFolder.getContent().put(finalName, element); // Add new
+                        element.setName(name);
+                        currentFolder.getContent().put(name, element); // Add new
                     });
 
                     updateContentView(null);
                     ConfigIO.markShouldSave();
                 }
         );
+    }
+
+    private String nextFreeName(String baseName) {
+        AtomicInteger number = new AtomicInteger(1);
+        String finalName = baseName + " (" + number.getAndIncrement() + ")";
+        while (currentFolder.getContent().containsKey(finalName)) {
+            finalName = baseName + " (" + number.getAndIncrement() + ")";
+        }
+        return finalName;
     }
 
     private void renameSingle(FileSystemElement element) {
