@@ -9,7 +9,6 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 
@@ -54,7 +53,9 @@ public class AlertController {
 
         for (ButtonType buttonType : buttons) {
             Button button = new Button(buttonType.getText());
-            button.setStyle(createButtonStyle(type));
+            if (type == Alert.AlertType.ERROR || type == Alert.AlertType.WARNING) {
+                button.getStyleClass().add(type == Alert.AlertType.ERROR ? "error-button" : "warning-button");
+            }
             ButtonBar.setButtonData(button, buttonType.getButtonData());
             buttonBar.getButtons().add(button);
             button.setOnAction(_ -> {
@@ -85,14 +86,6 @@ public class AlertController {
                 oldFocusOwner.requestFocus();
             }, headerLabel.getParent());
         }
-    }
-
-    private static String createButtonStyle(Alert.AlertType type) {
-        return switch (type) {
-            case ERROR -> "-fx-background-color: linear-gradient(red, darkred); -fx-border-color: red; -fx-border-radius: 5;";
-            case WARNING -> "-fx-background-color: linear-gradient(yellow, orange); -fx-border-color: yellow; -fx-border-radius: 5;";
-            default -> "-fx-background-color: linear-gradient(lightgreen, green); -fx-border-color: lightgreen; -fx-border-radius: 5;";
-        };
     }
 
 }

@@ -21,8 +21,20 @@
 .button {
     -fx-background-color: linear-gradient(lightgreen, green);
 }
+.error-button {
+    -fx-background-color: linear-gradient(red, darkred);
+}
+.warning-button {
+    -fx-background-color: linear-gradient(#ffcc33, #cc9900);
+}
 .button:hover {
     -fx-background-color: linear-gradient(#66cc66, #006600);
+}
+.error-button:hover {
+    -fx-background-color: linear-gradient(#cc0000, #660000);
+}
+.warning-button:hover {
+    -fx-background-color: linear-gradient(#cc9900, #996600);
 }
 
 .text-area {
