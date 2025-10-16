@@ -11,6 +11,7 @@ import io.github.redstonemango.mangrypt.back.Utilities;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.collections.ListChangeListener;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
@@ -71,10 +72,11 @@ public class FileSystemController {
 
 
         contentView.getStyleClass().add("file-system-list");
-        contentView.getSelectionModel().selectedItemProperty().addListener(
-                (_, _, item) -> {
-                    if (item == null) return;
-                    updatedPathFieldTarget(item);
+        contentView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+        contentView.getSelectionModel().getSelectedItems().addListener((ListChangeListener<? super FileSystemElement>) l -> {
+            if (l.getList().isEmpty()) updatedPathFieldTarget(null);
+            else if (l.getList().size() == 1) updatedPathFieldTarget(l.getList().getFirst());
+            else updatedPathFieldTargetToMultiple(l.getList().size());
         });
 
         String name = ConfigIO.getVaultFile().getName().substring(0, ConfigIO.getVaultFile().getName().length() - ".mgvault".length());
@@ -344,10 +346,18 @@ public class FileSystemController {
         updatedPathFieldTarget(folder);
     }
 
-    private void updatedPathFieldTarget(FileSystemElement element) {
+    private void updatedPathFieldTarget(@Nullable FileSystemElement element) {
         ignorePathChange = true;
-        String text = element.buildPath();
+        String text = element != null ? element.buildPath() : currentFolder.buildPath();
         if (element == currentFolder) text = text + "/"; // If we are IN the folder, add '/'. Do not add if folder's just selected
+        text = text.replaceAll("/{2,}", "/"); // Normalize
+        pathField.setText(text);
+        pathField.positionCaret(text.length());
+    }
+
+    private void updatedPathFieldTargetToMultiple(int selectedCount) {
+        ignorePathChange = true;
+        String text = currentFolder.buildPath() + "/... [" + selectedCount + "]";
         text = text.replaceAll("/{2,}", "/"); // Normalize
         pathField.setText(text);
         pathField.positionCaret(text.length());
