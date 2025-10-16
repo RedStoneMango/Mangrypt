@@ -69,6 +69,8 @@ public class FileSystemController {
         updateContentView(null);
         preparePathPopup();
 
+
+        contentView.getStyleClass().add("file-system-list");
         contentView.getSelectionModel().selectedItemProperty().addListener(
                 (_, _, item) -> {
                     if (item == null) return;

@@ -36,9 +36,7 @@ public class ListEntry extends ListEntryBase {
             descriptionLabel.setVisible(false);
         }
 
-        getStyleClass().add("element-list-entry");
         if (folder) {
-            getStyleClass().add("folder");
             ((ImageView) selectButton.getGraphic()).setImage(ARROW_IMAGE);
         }
 
@@ -47,7 +45,6 @@ public class ListEntry extends ListEntryBase {
         }
         else {
             iconView.setImage(icon);
-            Platform.runLater(() -> iconView.setTranslateX(5));
         }
 
         MenuItem openItem = new MenuItem("Open");

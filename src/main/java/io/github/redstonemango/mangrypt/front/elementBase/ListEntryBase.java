@@ -47,7 +47,7 @@ public abstract class ListEntryBase extends BorderPane {
         selectButton.setContentDisplay(javafx.scene.control.ContentDisplay.GRAPHIC_ONLY);
         selectButton.setFocusTraversable(false);
         selectButton.setLayoutX(61.0);
-        selectButton.setLayoutY(6.0);
+        selectButton.setLayoutY(8.0);
         selectButton.setMnemonicParsing(false);
         selectButton.setOnAction(this::onSelect);
         selectButton.setPrefHeight(40.0);
@@ -63,7 +63,7 @@ public abstract class ListEntryBase extends BorderPane {
         deleteButton.setContentDisplay(javafx.scene.control.ContentDisplay.GRAPHIC_ONLY);
         deleteButton.setFocusTraversable(false);
         deleteButton.setLayoutX(3.0);
-        deleteButton.setLayoutY(6.0);
+        deleteButton.setLayoutY(8.0);
         deleteButton.setMnemonicParsing(false);
         deleteButton.setOnAction(this::onDelete);
         deleteButton.setPrefHeight(40.0);
@@ -96,6 +96,7 @@ public abstract class ListEntryBase extends BorderPane {
         iconView.setFitWidth(32.0);
         iconView.setPickOnBounds(true);
         iconView.setPreserveRatio(true);
+        iconView.setTranslateX(5);
         setLeft(iconView);
 
         anchorPane.getChildren().add(selectButton);
