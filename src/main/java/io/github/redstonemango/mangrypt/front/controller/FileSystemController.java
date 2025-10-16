@@ -331,6 +331,7 @@ public class FileSystemController {
         contentView.getItems().addAll(
                 currentFolder.getContent().values().stream()
                         .filter(object -> (showHiddenContentProperty.get() || !object.getName().startsWith(".")))
+                        .sorted(Comparator.comparing(FileSystemElement::getName))
                         .toList());
 
         if (selectElement != null) {
