@@ -22,9 +22,9 @@ public class ListEntry extends ListEntryBase {
     private final Runnable onSelect;
     private final Runnable onDelete;
 
-    public ListEntry(String name, String description, Runnable onSelect, Runnable onDelete, Runnable onSetName,
-                     Runnable onSetDescription, Runnable onExport, Runnable onExportParent, @Nullable Image icon,
-                     boolean folder, ListView<?> view) {
+    public ListEntry(String name, String description, Runnable onSelect, Runnable onDelete, Runnable onDeleteSelection,
+                     Runnable onSetName, Runnable onSetDescription, Runnable onExport, Runnable onExportParent,
+                     @Nullable Image icon, boolean folder, ListView<?> view) {
         nameLabel.setText(name);
         if (name.startsWith(".")) nameLabel.setFont(Font.font("", FontWeight.NORMAL, FontPosture.ITALIC, 17));
         descriptionLabel.setText(description);
@@ -50,14 +50,14 @@ public class ListEntry extends ListEntryBase {
         MenuItem openItem = new MenuItem("Open");
         openItem.setOnAction(_ -> onSelect.run());
         MenuItem deleteItem = new MenuItem("Delete");
-        deleteItem.setOnAction(_ -> onDelete.run());
+        deleteItem.setOnAction(_ -> onDeleteSelection.run());
         MenuItem nameItem = new MenuItem("Change Name");
         nameItem.setOnAction(_ -> onSetName.run());
         MenuItem descriptionItem = new MenuItem("Change Description");
         descriptionItem.setOnAction(_ -> onSetDescription.run());
-        MenuItem exportItem = new MenuItem("Export this element");
+        MenuItem exportItem = new MenuItem("Export");
         exportItem.setOnAction(_ -> onExport.run());
-        MenuItem exportParentItem = new MenuItem("Export current folder");
+        MenuItem exportParentItem = new MenuItem("Export Current Folder");
         exportParentItem.setOnAction(_ -> onExportParent.run());
         ContextMenu menu = new ContextMenu(openItem, deleteItem, new SeparatorMenuItem(), nameItem, descriptionItem, new SeparatorMenuItem(), exportItem, exportParentItem);
         setOnMouseClicked(e -> {

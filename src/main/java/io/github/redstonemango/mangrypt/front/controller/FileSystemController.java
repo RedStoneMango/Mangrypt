@@ -12,6 +12,7 @@ import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
@@ -26,8 +27,10 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 public class FileSystemController {
@@ -35,6 +38,7 @@ public class FileSystemController {
     private final BooleanProperty showHiddenContentProperty = new SimpleBooleanProperty(false);
     private FolderElement currentFolder = ConfigIO.getConfig().getRootFolder(); // In the beginning, we are in the root folder
     private boolean ignorePathChange = false;
+    private ObservableList<FileSystemElement> selectedElements;
 
 
     @FXML ListView<FileSystemElement> contentView;
@@ -56,11 +60,12 @@ public class FileSystemController {
                     element.getName(),
                     element.getDescription(),
                     () -> onOpen(element),
-                    () -> onDelete(element),
-                    () -> onRename(element),
-                    () -> onChangeDescription(element),
-                    () -> onExport(element),
-                    () -> onExport(parent),
+                    () -> delete(element),
+                    this::onDeleteSelection,
+                    this::onRename,
+                    this::onChangeDescription,
+                    this::onExport,
+                    () -> export(parent),
                     element.runIconImageBuild(),
                     element instanceof FolderElement,
                     contentView);
@@ -73,7 +78,8 @@ public class FileSystemController {
 
         contentView.getStyleClass().add("file-system-list");
         contentView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-        contentView.getSelectionModel().getSelectedItems().addListener((ListChangeListener<? super FileSystemElement>) l -> {
+        selectedElements = contentView.getSelectionModel().getSelectedItems();
+        selectedElements.addListener((ListChangeListener<? super FileSystemElement>) l -> {
             if (l.getList().isEmpty()) updatedPathFieldTarget(null);
             else if (l.getList().size() == 1) updatedPathFieldTarget(l.getList().getFirst());
             else updatedPathFieldTargetToMultiple(l.getList().size());
@@ -141,7 +147,27 @@ public class FileSystemController {
         }
     }
 
-    private void onDelete(FileSystemElement element) {
+    private void onDeleteSelection() {
+        if (selectedElements.size() == 1) {
+            delete(selectedElements.getFirst());
+            return;
+        }
+
+        Mangrypt.getBase().showConfirmationDialog(
+                "Delete " + selectedElements.size() + " elements",
+                "Do you really want to delete " + selectedElements.size() + " elements and all data they " +
+                        "might contain?",
+                () -> {
+                    selectedElements.forEach(element -> {
+                        currentFolder.getContent().remove(element.getName());
+                        element.zeroOut();
+                    });
+                    updateContentView(null);
+                    ConfigIO.markShouldSave();
+                }
+        );
+    }
+    private void delete(FileSystemElement element) {
         Mangrypt.getBase().showConfirmationDialog(
                 "Delete '" + element.getName() + "'",
                 "Do you really want to delete '" + element.getName() + "'" +
@@ -155,7 +181,47 @@ public class FileSystemController {
         );
     }
 
-    private void onRename(FileSystemElement element) {
+    private void onRename() {
+        if (selectedElements.size() == 1) {
+            renameSingle(selectedElements.getFirst());
+            return;
+        }
+
+        Mangrypt.getBase().showInputDialog(
+                "Please set a new base name for the elements",
+                "Base name",
+                "",
+                true,
+                name -> {
+                    if (name.isBlank()) return false;
+                    return !name.equals(".");
+                },
+                name -> {
+                    if (name.startsWith(".")) return "Elements starting with . are hidden";
+                    return null;
+                },
+                baseName -> {
+
+                    AtomicInteger number = new AtomicInteger(1);
+
+                    selectedElements.forEach(element -> {
+                        String finalName = baseName + " (" + number.getAndIncrement() + ")";
+                        while (currentFolder.getContent().containsKey(finalName)) {
+                            finalName = baseName + " (" + number.getAndIncrement() + ")";
+                        }
+
+                        currentFolder.getContent().remove(element.getName()); // Remove old
+                        element.setName(finalName);
+                        currentFolder.getContent().put(finalName, element); // Add new
+                    });
+
+                    updateContentView(null);
+                    ConfigIO.markShouldSave();
+                }
+        );
+    }
+
+    private void renameSingle(FileSystemElement element) {
         Set<String> existingNames = currentFolder.getContent().keySet();
         String oldName = element.getName();
 
@@ -175,27 +241,42 @@ public class FileSystemController {
                     return null;
                 },
                 name -> {
+                    currentFolder.getContent().remove(element.getName()); // Remove old
                     element.setName(name);
+                    currentFolder.getContent().put(name, element); // Add new
                     updateContentView(null);
                     ConfigIO.markShouldSave();
                 }
         );
     }
 
-    private void onChangeDescription(FileSystemElement element) {
-        Mangrypt.getBase().showInputDialog("Please set a new description for the element",
+    private void onChangeDescription() {
+        Mangrypt.getBase().showInputDialog("Please set a new description for the element" +
+                        (selectedElements.size() == 1 ? "" : "s"),
                 "Description",
-                element.getDescription(),
+                selectedElements.size() == 1 ? selectedElements.getFirst().getDescription() : "",
                 true,
                 description -> {
-                    element.setDescription(description);
+                    selectedElements.forEach(element -> element.setDescription(description));
                     contentView.refresh();
                     ConfigIO.markShouldSave();
                 }
         );
     }
 
-    private void onExport(FileSystemElement element) {
+    private void onExport() {
+        if (selectedElements.size() == 1) export(selectedElements.getFirst());
+        else {
+            // Create temporary pseudo-folder to wrap all elements in one
+            FolderElement tempFolder = new FolderElement();
+            tempFolder.setName("Elements");
+            tempFolder.ensureFields(null);
+            selectedElements.forEach(element -> tempFolder.getContent().put(element.getName(), element));
+            export(tempFolder);
+        }
+    }
+
+    private void export(FileSystemElement element) {
         String extension = element instanceof DataElement data ? data.fileExtension() : ".zip";
 
         Utilities.showSavingFileChooser(
