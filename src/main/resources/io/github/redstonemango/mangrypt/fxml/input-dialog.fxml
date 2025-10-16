@@ -27,13 +27,13 @@
                           </font>
                       </Label>
                       <ButtonBar fx:id="buttonBar" layoutX="81.0" layoutY="218.0" prefHeight="29.0" prefWidth="322.0" />
-                      <Label fx:id="contentLabel" alignment="CENTER_RIGHT" layoutX="68.0" layoutY="170.0" maxWidth="-Infinity" prefHeight="29.0" prefWidth="118.0" styleClass="uncolored-label" text="Short text:">
+                      <Label fx:id="contentLabel" alignment="CENTER_RIGHT" layoutX="68.0" layoutY="170.0" maxWidth="-Infinity" prefHeight="29.0" prefWidth="104.0" styleClass="uncolored-label" text="Short text:">
                           <font>
                               <Font size="16.0" />
                           </font>
                       </Label>
-                  <TextField fx:id="inputField" layoutX="199.0" layoutY="172.0" prefHeight="26.0" prefWidth="216.0" />
-                  <Label fx:id="infoLabel" alignment="TOP_LEFT" layoutX="199.0" layoutY="200.0" prefHeight="18.0" prefWidth="216.0" text="&gt; " textFill="#ffaf00" visible="false" />
+                  <TextField fx:id="inputField" layoutX="177.0" layoutY="172.0" prefHeight="26.0" prefWidth="238.0" />
+                  <Label fx:id="infoLabel" alignment="TOP_LEFT" layoutX="177.0" layoutY="200.0" prefHeight="20.0" prefWidth="238.0" text="&gt;" textFill="#ffaf00" visible="false" />
                   </children>
               </AnchorPane>
          </children>
