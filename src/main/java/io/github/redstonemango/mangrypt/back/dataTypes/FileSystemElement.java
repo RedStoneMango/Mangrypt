@@ -15,9 +15,9 @@ import java.util.LinkedList;
 
 public abstract class FileSystemElement {
 
-    private String name;
-    private @Nullable String description;
-    private transient @Nullable FolderElement parent;
+    String name;
+    @Nullable String description;
+    transient @Nullable FolderElement parent;
 
     public abstract boolean exportTo(File file, boolean isRoot);
 
@@ -37,7 +37,7 @@ public abstract class FileSystemElement {
     }
 
     public void setName(String name) {
-        Utilities.ensureAuthorizedAccess(FileSystemController.class, ContentAdder.class, Configuration.class);
+        Utilities.ensureAuthorizedAccess(FileSystemController.class);
         this.name = name;
     }
 
@@ -71,13 +71,17 @@ public abstract class FileSystemElement {
         };
     }
 
-    public void ensureFields(@Nullable FolderElement parent) {
-        if (name == null || name.isBlank() || name.equals(".")) {
-            name = "UNNAMED ENTITY";
-        }
+    public void ensureFields(String name, @Nullable FolderElement parent) {
+        Utilities.ensureAuthorizedAccess(DataElement.class, FolderElement.class);
+        this.name = name;
         if (description != null && description.isBlank()) {
             description = null; // If existing description is blank, trat it as unexisting
         }
+        this.parent = parent;
+    }
+
+    public void updateParent(FolderElement parent) {
+        Utilities.ensureAuthorizedAccess(FileSystemController.class);
         this.parent = parent;
     }
 
@@ -103,5 +107,11 @@ public abstract class FileSystemElement {
             current = subFolder;
         }
         return current;
+    }
+
+    abstract FileSystemElement deepCopy(@Nullable FolderElement parent);
+
+    public FileSystemElement deepCopy() {
+        return deepCopy(parent);
     }
 }

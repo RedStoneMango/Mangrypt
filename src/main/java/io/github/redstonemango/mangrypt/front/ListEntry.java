@@ -1,12 +1,12 @@
 package io.github.redstonemango.mangrypt.front;
 
+import io.github.redstonemango.mangrypt.back.PseudoClipboard;
+import io.github.redstonemango.mangrypt.back.dataTypes.FileSystemElement;
 import io.github.redstonemango.mangrypt.front.elementBase.ListEntryBase;
 import javafx.application.Platform;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
-import javafx.scene.control.ContextMenu;
-import javafx.scene.control.ListView;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.SeparatorMenuItem;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
@@ -14,6 +14,8 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontPosture;
 import javafx.scene.text.FontWeight;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.List;
 
 public class ListEntry extends ListEntryBase {
 
@@ -24,7 +26,9 @@ public class ListEntry extends ListEntryBase {
 
     public ListEntry(String name, String description, Runnable onSelect, Runnable onDelete, Runnable onDeleteSelection,
                      Runnable onSetName, Runnable onSetDescription, Runnable onExport, Runnable onExportParent,
-                     @Nullable Image icon, boolean folder, ListView<?> view) {
+                     Runnable onCopy, Runnable onCut, Runnable onPaste, Runnable onPasteInto, Runnable onClone,
+                     @Nullable Image icon, boolean folder, PseudoClipboard clipboard,
+                     List<FileSystemElement> selectedElements, ListView<?> view) {
         nameLabel.setText(name);
         if (name.startsWith(".")) nameLabel.setFont(Font.font("", FontWeight.NORMAL, FontPosture.ITALIC, 17));
         descriptionLabel.setText(description);
@@ -55,14 +59,42 @@ public class ListEntry extends ListEntryBase {
         nameItem.setOnAction(_ -> onSetName.run());
         MenuItem descriptionItem = new MenuItem("Change Description");
         descriptionItem.setOnAction(_ -> onSetDescription.run());
-        MenuItem exportItem = new MenuItem("Export");
+        MenuItem copyItem = new MenuItem("Copy");
+        copyItem.setOnAction(_ -> onCopy.run());
+        MenuItem cutItem = new MenuItem("Cut");
+        cutItem.setOnAction(_ -> onCut.run());
+        MenuItem pasteItem = new MenuItem("Paste");
+        pasteItem.setOnAction(_ -> onPaste.run());
+        MenuItem pasteIntoItem = new MenuItem("Paste Into");
+        pasteIntoItem.setOnAction(_ -> onPasteInto.run());
+        MenuItem cloneItem = new MenuItem("Clone");
+        cloneItem.setOnAction(_ -> onClone.run());
+        MenuItem exportItem = new MenuItem("Export Item");
         exportItem.setOnAction(_ -> onExport.run());
         MenuItem exportParentItem = new MenuItem("Export Current Folder");
         exportParentItem.setOnAction(_ -> onExportParent.run());
-        ContextMenu menu = new ContextMenu(openItem, deleteItem, new SeparatorMenuItem(), nameItem, descriptionItem, new SeparatorMenuItem(), exportItem, exportParentItem);
+        Menu editMenu = new Menu("Edit");
+        editMenu.getItems().addAll(nameItem, descriptionItem);
+        Menu clipboardMenu = new Menu("Clipboard");
+        clipboardMenu.getItems().addAll(copyItem, cutItem, pasteItem, cloneItem);
+        if (folder) clipboardMenu.getItems().add(3, pasteIntoItem);
+        Menu exportMenu = new Menu("Export");
+        exportMenu.getItems().addAll(exportItem, exportParentItem);
+        ContextMenu menu = new ContextMenu(
+                openItem, deleteItem,
+                new SeparatorMenuItem(),
+                editMenu,
+                new SeparatorMenuItem(),
+                clipboardMenu,
+                new SeparatorMenuItem(),
+                exportMenu
+        );
         setOnMouseClicked(e -> {
             if (menu.isShowing()) menu.hide();
             if (e.getButton() == MouseButton.SECONDARY) {
+                pasteItem.setDisable(clipboard.isEmpty());
+                pasteIntoItem.setDisable(clipboard.isEmpty());
+                openItem.setDisable(selectedElements.size() > 1);
                 menu.show(this, e.getScreenX(), e.getScreenY());
             }
         });

@@ -1,6 +1,7 @@
 package io.github.redstonemango.mangrypt.back.dataTypes;
 
 import io.github.redstonemango.mangoutils.MangoIO;
+import io.github.redstonemango.mangrypt.back.Configuration;
 import io.github.redstonemango.mangrypt.back.ContentAdder;
 import io.github.redstonemango.mangrypt.back.Utilities;
 import io.github.redstonemango.mangrypt.front.DataView;
@@ -63,8 +64,9 @@ public abstract class DataElement extends FileSystemElement {
     }
 
     @Override
-    public void ensureFields(FolderElement parent) {
-        super.ensureFields(parent);
+    public void ensureFields(String name, FolderElement parent) {
+        Utilities.ensureAuthorizedAccess(ContentAdder.class, FolderElement.class);
+        super.ensureFields(name, parent);
         if (bytes == null) {
             bytes = new byte[0]; // Dummy init
         }

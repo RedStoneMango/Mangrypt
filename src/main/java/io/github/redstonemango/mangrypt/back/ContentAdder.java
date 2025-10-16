@@ -16,9 +16,8 @@ public class ContentAdder {
     public static void addFolder(FolderElement parentFolder, Consumer<FileSystemElement> callback, Set<String> existingNames) {
         nameInputDialog(name -> {
             FolderElement newFolder = new FolderElement();
-            newFolder.setName(name);
+            newFolder.ensureFields(name, parentFolder);
             parentFolder.getContent().put(name, newFolder);
-            newFolder.ensureFields(parentFolder);
             callback.accept(newFolder);
             ConfigIO.markShouldSave();
         }, existingNames);
@@ -27,10 +26,9 @@ public class ContentAdder {
     public static void addTextElement(FolderElement parentFolder, Consumer<FileSystemElement> callback, Set<String> existingNames) {
         nameInputDialog(name -> {
             TextDataElement element = new TextDataElement();
-            element.setName(name);
-            parentFolder.getContent().put(name, element);
-            element.ensureFields(parentFolder);
+            element.ensureFields(name, parentFolder);
             element.fileExtension(".txt");
+            parentFolder.getContent().put(name, element);
             callback.accept(element);
             ConfigIO.markShouldSave();
         }, existingNames);
@@ -53,11 +51,10 @@ public class ContentAdder {
 
                         String fileExtension = selectedFile.getName().substring(selectedFile.getName().lastIndexOf("."));
                         ImageDataElement element = new ImageDataElement();
-                        element.setName(name);
                         element.bytes(bytes);
                         element.fileExtension(fileExtension);
+                        element.ensureFields(name, parentFolder);
                         parentFolder.getContent().put(name, element);
-                        element.ensureFields(parentFolder);
                         callback.accept(element);
                         ConfigIO.markShouldSave();
                     },
@@ -88,11 +85,10 @@ public class ContentAdder {
 
                         String fileExtension = selectedFile.getName().substring(selectedFile.getName().lastIndexOf("."));
                         MediaDataElement element = new MediaDataElement();
-                        element.setName(name);
                         element.bytes(bytes);
                         element.fileExtension(fileExtension);
+                        element.ensureFields(name, parentFolder);
                         parentFolder.getContent().put(name, element);
-                        element.ensureFields(parentFolder);
                         callback.accept(element);
                         ConfigIO.markShouldSave();
                     },

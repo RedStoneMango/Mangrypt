@@ -1,7 +1,6 @@
 package io.github.redstonemango.mangrypt.back.dataTypes;
 
 import io.github.redstonemango.mangoutils.MangoIO;
-import io.github.redstonemango.mangrypt.Mangrypt;
 import io.github.redstonemango.mangrypt.back.Configuration;
 import io.github.redstonemango.mangrypt.back.ContentAdder;
 import io.github.redstonemango.mangrypt.back.Utilities;
@@ -72,12 +71,13 @@ public class FolderElement extends FileSystemElement {
     }
 
     @Override
-    public void ensureFields(FolderElement parent) {
-        super.ensureFields(parent);
+    public void ensureFields(String name, FolderElement parent) {
+        Utilities.ensureAuthorizedAccess(ContentAdder.class, FolderElement.class);
+        super.ensureFields(name, parent);
         if (content == null) {
             content = new HashMap<>();
         }
-        content.values().forEach(element -> element.ensureFields(this));
+        content.forEach((elementName, element) -> element.ensureFields(elementName, this));
     }
 
     @Override
@@ -86,5 +86,19 @@ public class FolderElement extends FileSystemElement {
         content.values().forEach(FileSystemElement::zeroOut);
         content.clear();
         content = null;
+    }
+
+    @Override
+    FileSystemElement deepCopy(FolderElement parent) {
+        FolderElement copy = new FolderElement();
+        copy.name = name;
+        copy.description = description;
+        copy.parent = parent;
+        copy.content = new HashMap<>();
+
+        content.values().forEach(element -> {
+            copy.getContent().put(element.getName(), element.deepCopy(this));
+        });
+        return copy;
     }
 }

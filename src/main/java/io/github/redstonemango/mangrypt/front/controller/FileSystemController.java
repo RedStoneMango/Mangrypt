@@ -4,6 +4,7 @@ import io.github.redstonemango.mangoutils.NameConverter;
 import io.github.redstonemango.mangoutils.OperatingSystem;
 import io.github.redstonemango.mangrypt.Mangrypt;
 import io.github.redstonemango.mangrypt.back.ContentAdder;
+import io.github.redstonemango.mangrypt.back.PseudoClipboard;
 import io.github.redstonemango.mangrypt.back.dataTypes.*;
 import io.github.redstonemango.mangrypt.front.ListEntry;
 import io.github.redstonemango.mangrypt.back.ConfigIO;
@@ -20,23 +21,20 @@ import javafx.geometry.Point2D;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
-import javafx.scene.input.MouseButton;
-import javafx.scene.input.MouseEvent;
+import javafx.scene.input.*;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 public class FileSystemController {
+
+    private final PseudoClipboard clipboard = new PseudoClipboard();
 
     private final BooleanProperty showHiddenContentProperty = new SimpleBooleanProperty(false);
     private FolderElement currentFolder = ConfigIO.getConfig().getRootFolder(); // In the beginning, we are in the root folder
@@ -70,8 +68,18 @@ public class FileSystemController {
                     this::onChangeDescription,
                     this::onExport,
                     () -> export(parent),
+                    this::onCopy,
+                    this::onCut,
+                    this::onPaste,
+                    () -> onPasteInto((FolderElement) element),
+                    () -> {
+                        onCopy();
+                        onPaste();
+                    },
                     element.runIconImageBuild(),
                     element instanceof FolderElement,
+                    clipboard,
+                    selectedElements,
                     contentView);
             },
             new Insets(0, 0, 1, 0));
@@ -89,6 +97,31 @@ public class FileSystemController {
             else updatedPathFieldTargetToMultiple(l.getList().size());
         });
         prepareContentViewMenu();
+        contentView.setOnKeyPressed(e -> {
+            boolean controlDown = OperatingSystem.isMac() ? e.isMetaDown() : e.isControlDown();
+            if (controlDown && e.getCode() == KeyCode.C) {
+                onCopy();
+            }
+            else if (controlDown && e.getCode() == KeyCode.X) {
+                onCut();
+            }
+            else if (controlDown && e.getCode() == KeyCode.V) {
+                onPaste();
+            }
+            else if (controlDown && e.getCode() == KeyCode.D) {
+                onCopy();
+                onPaste();
+            }
+            else if (e.getCode() == KeyCode.DELETE) {
+                if (!selectedElements.isEmpty()) onDeleteSelection();
+            }
+            else if (e.getCode() == KeyCode.ENTER) {
+                if (!selectedElements.isEmpty()) onOpen(selectedElements.getFirst());
+            }
+            else if ((e.isAltDown() && e.getCode() == KeyCode.UP) || e.getCode() == KeyCode.ESCAPE) {
+                if (!parentDirButton.isDisabled()) onParentDir();
+            }
+        });
 
         String name = ConfigIO.getVaultFile().getName().substring(0, ConfigIO.getVaultFile().getName().length() - ".mgvault".length());
         name = NameConverter.convert(
@@ -131,12 +164,18 @@ public class FileSystemController {
     }
 
     private void prepareContentViewMenu() {
+        MenuItem parentDirItem = new MenuItem("Open Parent Folder");
+        parentDirItem.setOnAction(_ -> onParentDir());
+        parentDirItem.disableProperty().bind(parentDirButton.disabledProperty());
         MenuItem exportItem = new MenuItem("Export Current Folder");
         exportItem.setOnAction(_ -> export(currentFolder));
-        contentViewMenu = new ContextMenu(exportItem);
+        MenuItem pasteItem = new MenuItem("Paste Elements");
+        pasteItem.setOnAction(_ -> onPaste());
+        contentViewMenu = new ContextMenu(parentDirItem, new SeparatorMenuItem(), exportItem, pasteItem);
         contentView.setOnMouseClicked(e -> {
             if (contentViewMenu.isShowing()) contentViewMenu.hide();
             if (e.getButton() == MouseButton.SECONDARY && isNotFilledCell(e)) {
+                pasteItem.setDisable(clipboard.isEmpty());
                 contentViewMenu.show(contentView, e.getScreenX(), e.getScreenY());
             }
         });
@@ -202,11 +241,12 @@ public class FileSystemController {
         Mangrypt.getBase().showConfirmationDialog(
                 "Delete '" + element.getName() + "'",
                 "Do you really want to delete '" + element.getName() + "'" +
-                        (element instanceof FolderElement ? " and all data it contains" : "") + "?",
+                        (element instanceof FolderElement ? " and all data it contains" : "") + "?" +
+                        (selectedElements.size() > 1 ? "\n\nOther selected items will not be deleted." : ""),
                 () -> {
                     currentFolder.getContent().remove(element.getName());
-                    element.zeroOut();
                     updateContentView(null);
+                    element.zeroOut();
                     ConfigIO.markShouldSave();
                 }
         );
@@ -234,7 +274,7 @@ public class FileSystemController {
                 baseName -> {
 
                     selectedElements.forEach(element -> {
-                        String name = nextFreeName(baseName);
+                        String name = nextFreeName(currentFolder, baseName, false);
                         currentFolder.getContent().remove(element.getName()); // Remove old
                         element.setName(name);
                         currentFolder.getContent().put(name, element); // Add new
@@ -246,10 +286,12 @@ public class FileSystemController {
         );
     }
 
-    private String nextFreeName(String baseName) {
+    private String nextFreeName(FolderElement folder, String baseName, boolean allowBaseOnly) {
+        if (allowBaseOnly && !folder.getContent().containsKey(baseName)) return baseName;
+
         AtomicInteger number = new AtomicInteger(1);
         String finalName = baseName + " (" + number.getAndIncrement() + ")";
-        while (currentFolder.getContent().containsKey(finalName)) {
+        while (folder.getContent().containsKey(finalName)) {
             finalName = baseName + " (" + number.getAndIncrement() + ")";
         }
         return finalName;
@@ -303,8 +345,7 @@ public class FileSystemController {
         else {
             // Create temporary pseudo-folder to wrap all elements in one
             FolderElement tempFolder = new FolderElement();
-            tempFolder.setName("Elements");
-            tempFolder.ensureFields(null);
+            tempFolder.ensureFields("Elements", null);
             selectedElements.forEach(element -> tempFolder.getContent().put(element.getName(), element));
             export(tempFolder);
         }
@@ -366,6 +407,50 @@ public class FileSystemController {
                     }
                 },
                 extension);
+    }
+
+    private void onCopy() {
+        clipboard.copy(selectedElements);
+    }
+    private void onCut() {
+        clipboard.copy(selectedElements);
+        selectedElements.forEach(element -> {
+            currentFolder.getContent().remove(element.getName());
+            element.zeroOut();
+        });
+
+        if (!selectedElements.isEmpty()) {
+            updateContentView(null);
+            ConfigIO.markShouldSave();
+        }
+    }
+    private void onPaste() {
+        clipboard.paste().ifPresent(elements -> {
+            AtomicReference<FileSystemElement> lastAdded = new AtomicReference<>();
+            elements.forEach(element -> {
+                lastAdded.set(element);
+                element.updateParent(currentFolder);
+                String name = nextFreeName(currentFolder, element.getName(), true);
+                currentFolder.getContent().put(name, element);
+                element.setName(name);
+            });
+
+            updateContentView(lastAdded.get());
+            ConfigIO.markShouldSave();
+        });
+    }
+    private void onPasteInto(FolderElement folder) {
+        clipboard.paste().ifPresent(elements -> {
+            elements.forEach(element -> {
+                element.updateParent(folder);
+                String name = nextFreeName(folder, element.getName(), true);
+                folder.getContent().put(name, element);
+                element.setName(name);
+            });
+
+            updateContentView(null); // Theoretically not needed, but it's a nice feedback that paste worked
+            ConfigIO.markShouldSave();
+        });
     }
 
     @FXML
