@@ -30,7 +30,7 @@ public class ListEntry extends ListEntryBase {
         descriptionLabel.setText(description);
         this.onSelect = onSelect;
         this.onDelete = onDelete;
-        prefWidthProperty().bind(view.widthProperty().subtract(30));
+        prefWidthProperty().bind(view.widthProperty().subtract(32));
         if (description == null || description.isBlank()) {
             nameLabel.setTranslateY(7); // If there is no description, shift the name label down
             descriptionLabel.setVisible(false);
