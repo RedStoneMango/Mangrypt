@@ -11,7 +11,7 @@ public class MediaDataElement extends DataElement {
 
     public String mimeType() {
         Utilities.ensureAuthorizedAccess(DataView.class);
-        return Utilities.getSupportedMimeType(fileExtension);
+        return Utilities.getSupportedMediaMimeType(fileExtension);
     }
 
     public static Image buildIconImage() {

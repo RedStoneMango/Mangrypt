@@ -132,7 +132,7 @@ public class DataView extends BorderPane {
 
     private void sizeUpdate(double sideLength, boolean isWidth) {
         // Most times this will be managed automatically by the layout, we just have to manually account for some exceptions
-        if (centerContainer.getChildren().getFirst() instanceof ImageView) {
+        if (centerContainer.getChildren().getFirst() instanceof ImageView && imageView != null) {
             if (isWidth) {
                 imageView.setFitWidth(sideLength);
             }

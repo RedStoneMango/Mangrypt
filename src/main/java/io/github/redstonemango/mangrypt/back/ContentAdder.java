@@ -1,8 +1,9 @@
 package io.github.redstonemango.mangrypt.back;
 
+import io.github.redstonemango.mangoutils.tuple.Tuple3;
 import io.github.redstonemango.mangrypt.Mangrypt;
 import io.github.redstonemango.mangrypt.back.dataTypes.*;
-import io.github.redstonemango.mangrypt.front.FileChooserNode;
+import io.github.redstonemango.mangrypt.front.IOLoaderNode;
 import javafx.application.Platform;
 import javafx.scene.layout.StackPane;
 
@@ -37,68 +38,58 @@ public class ContentAdder {
     public static void addImageElement(FolderElement parentFolder, Consumer<FileSystemElement> callback, Set<String> existingNames) {
         nameInputDialog(name -> {
             File userHome = new File(System.getProperty("user.home"));
-            FileChooserNode chooser = new FileChooserNode("Select image file", false, userHome,
-                    selectedFile -> {
+            Tuple3<IOLoaderNode, StackPane, StackPane> assets = IOLoaderNode.open(
+                    "Select image file",
+                    userHome,
+                    data -> {
                         Mangrypt.getBase().setSecondLayerRoot(null);
-                        byte[] bytes;
-                        try {
-                            bytes = Files.readAllBytes(selectedFile.toPath());
-                        }
-                        catch (Exception e) {
-                            Mangrypt.getBase().showErrorAlert(String.valueOf(e));
-                            throw new RuntimeException("Error reading image file", e);
-                        }
 
-                        String fileExtension = selectedFile.getName().substring(selectedFile.getName().lastIndexOf("."));
                         ImageDataElement element = new ImageDataElement();
-                        element.bytes(bytes);
-                        element.fileExtension(fileExtension);
+                        element.bytes(data.getFirst());
+                        element.fileExtension(data.getSecond());
                         element.ensureFields(name, parentFolder);
                         parentFolder.getContent().put(name, element);
                         callback.accept(element);
                         ConfigIO.markShouldSave();
                     },
-                    () -> Mangrypt.getBase().setSecondLayerRoot(null), "jpeg", "jpg", "png", "bmp", "gif");
-            StackPane background = new StackPane();
-            StackPane root = new StackPane();
-            chooser.prepareMangryptLayout(root, background);
-            Utilities.registerClosableOverlay(root, () -> Mangrypt.getBase().setSecondLayerRoot(null), background);
-            Mangrypt.getBase().setSecondLayerRoot(root);
-            Platform.runLater(chooser::requestFocus);
+                    ex -> {
+                        Mangrypt.getBase().showErrorAlert(String.valueOf(ex));
+                        throw new RuntimeException("Error accessing image", ex);
+                    },
+                    () -> Mangrypt.getBase().setSecondLayerRoot(null),
+                    "jpeg", "jpg", "png", "bmp", "gif");
+            Utilities.registerClosableOverlay(assets.getSecond(), () -> Mangrypt.getBase().setSecondLayerRoot(null), assets.getThird());
+            Mangrypt.getBase().setSecondLayerRoot(assets.getSecond());
+            Platform.runLater(() -> assets.getFirst().requestFocus());
         }, existingNames);
     }
 
     public static void addMediaElement(FolderElement parentFolder, Consumer<FileSystemElement> callback, Set<String> existingNames) {
         nameInputDialog(name -> {
             File userHome = new File(System.getProperty("user.home"));
-            FileChooserNode chooser = new FileChooserNode("Select video or audio file", false, userHome,
-                    selectedFile -> {
+            Tuple3<IOLoaderNode, StackPane, StackPane> assets = IOLoaderNode.open(
+                    "Select video or audio file",
+                    userHome,
+                    data -> {
                         Mangrypt.getBase().setSecondLayerRoot(null);
-                        byte[] bytes;
-                        try {
-                            bytes = Files.readAllBytes(selectedFile.toPath());
-                        }
-                        catch (Exception e) {
-                            Mangrypt.getBase().showErrorAlert(String.valueOf(e));
-                            throw new RuntimeException("Error reading media file", e);
-                        }
 
-                        String fileExtension = selectedFile.getName().substring(selectedFile.getName().lastIndexOf("."));
                         MediaDataElement element = new MediaDataElement();
-                        element.bytes(bytes);
-                        element.fileExtension(fileExtension);
+                        element.bytes(data.getFirst());
+                        element.fileExtension(data.getSecond());
                         element.ensureFields(name, parentFolder);
                         parentFolder.getContent().put(name, element);
                         callback.accept(element);
                         ConfigIO.markShouldSave();
                     },
-                    () -> Mangrypt.getBase().setSecondLayerRoot(null), "mp4", "mp3", "aac", "wav");
-            StackPane background = new StackPane();
-            StackPane root = new StackPane();
-            chooser.prepareMangryptLayout(root, background);
-            Utilities.registerClosableOverlay(root, () -> Mangrypt.getBase().setSecondLayerRoot(null), background);
-            Mangrypt.getBase().setSecondLayerRoot(root);
-            Platform.runLater(chooser::requestFocus);
+                    ex -> {
+                        Mangrypt.getBase().showErrorAlert(String.valueOf(ex));
+                        throw new RuntimeException("Error accessing media", ex);
+                    },
+                    () -> Mangrypt.getBase().setSecondLayerRoot(null),
+                    "mp4", "mp3", "aac", "wav");
+            Utilities.registerClosableOverlay(assets.getSecond(), () -> Mangrypt.getBase().setSecondLayerRoot(null), assets.getThird());
+            Mangrypt.getBase().setSecondLayerRoot(assets.getSecond());
+            Platform.runLater(() -> assets.getFirst().requestFocus());
         }, existingNames);
     }
 

@@ -1,8 +1,8 @@
 package io.github.redstonemango.mangrypt.back;
 
+import io.github.redstonemango.mangoutils.tuple.Tuple3;
 import io.github.redstonemango.mangrypt.Mangrypt;
-import io.github.redstonemango.mangrypt.back.dataTypes.MediaDataElement;
-import io.github.redstonemango.mangrypt.front.FileChooserNode;
+import io.github.redstonemango.mangrypt.front.IOLoaderNode;
 import javafx.animation.FadeTransition;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
@@ -17,7 +17,6 @@ import javafx.util.Callback;
 import javafx.util.Duration;
 
 import java.io.File;
-import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
@@ -157,7 +156,7 @@ public class Utilities {
         });
     }
 
-    public static String getSupportedMimeType(String ext) {
+    public static String getSupportedMediaMimeType(String ext) {
         return switch (ext) {
             case "mp3", ".mp3" -> "audio/mpeg";
             case "aac", ".aac" -> "audio/aac";
@@ -167,19 +166,36 @@ public class Utilities {
         };
     }
 
+    public static String getSupportedExtension(String mimeType) {
+        System.out.println(mimeType);
+        if (mimeType == null) return "Unknown";
+
+        return switch (mimeType.toLowerCase()) {
+            case "image/jpeg" -> ".jpg";
+            case "image/png" -> ".png";
+            case "image/gif" -> ".gif";
+            case "image/bmp" -> ".bmp";
+            case "audio/mpeg", "audio/mp3" -> ".mp3"; // IDK why, but some people do use audio/mp3...
+            case "audio/aac" -> ".aac";
+            case "audio/wav" -> ".wav";
+            case "video/mp4" -> ".mp4";
+            default -> "Unknown";
+        };
+    }
+
     public static void showSavingFileChooser(String title, String defaultName, Consumer<File> onSelected, String... extensions) {
-        File userHome = new File(System.getProperty("user.home"), defaultName);
-        FileChooserNode chooser = new FileChooserNode(title, true, userHome,
-                selectedFile -> {
+        File initialFile = new File(System.getProperty("user.home"), defaultName);
+        Tuple3<IOLoaderNode, StackPane, StackPane> assets = IOLoaderNode.save(
+                title,
+                initialFile,
+                file -> {
                     Mangrypt.getBase().setSecondLayerRoot(null);
-                    onSelected.accept(selectedFile);
+                    onSelected.accept(file);
                 },
-                () -> Mangrypt.getBase().setSecondLayerRoot(null), extensions);
-        StackPane background = new StackPane();
-        StackPane root = new StackPane();
-        chooser.prepareMangryptLayout(root, background);
-        Utilities.registerClosableOverlay(root, () -> Mangrypt.getBase().setSecondLayerRoot(null), background);
-        Mangrypt.getBase().setSecondLayerRoot(root);
-        Platform.runLater(chooser::requestFocus);
+                () -> Mangrypt.getBase().setSecondLayerRoot(null),
+                extensions);
+        Utilities.registerClosableOverlay(assets.getSecond(), () -> Mangrypt.getBase().setSecondLayerRoot(null), assets.getThird());
+        Mangrypt.getBase().setSecondLayerRoot(assets.getSecond());
+        Platform.runLater(() -> assets.getFirst().requestFocus());
     }
 }
