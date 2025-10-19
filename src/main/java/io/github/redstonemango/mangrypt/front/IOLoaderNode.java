@@ -175,20 +175,24 @@ public class IOLoaderNode extends VBox {
         webLoadBox.setAlignment(Pos.CENTER);
         VBox.setVgrow(webLoadBox, Priority.ALWAYS);
 
+        Font urlInfoFont = Font.font("", FontWeight.NORMAL, FontPosture.REGULAR, 15);
         Label urlInfoLabel1 = new Label("Please enter a valid web URL to a resource");
         urlInfoLabel1.setWrapText(true);
         urlInfoLabel1.setTextAlignment(TextAlignment.CENTER);
+        urlInfoLabel1.setFont(urlInfoFont);
         urlInfoLabel1.getStyleClass().add("uncolored-label");
         Label urlInfoLabel2 = new Label("This url will be accessed once to store the data locally. After this call, " +
                 "no more web requests will be made");
         urlInfoLabel2.setWrapText(true);
         urlInfoLabel2.setTextAlignment(TextAlignment.CENTER);
+        urlInfoLabel2.setFont(urlInfoFont);
         urlInfoLabel2.getStyleClass().add("uncolored-label");
         Label urlInfoLabel3 = new Label("!! Third-party resources might contain malicious data. Only load resources " +
                 "you trust. Consider using TSL encryption (https URLs) for a more secure connection !!");
         urlInfoLabel3.setTextFill(Color.DARKGOLDENROD);
         urlInfoLabel3.setWrapText(true);
         urlInfoLabel3.setTextAlignment(TextAlignment.CENTER);
+        urlInfoLabel3.setFont(urlInfoFont);
         VBox.setMargin(urlInfoLabel3, new Insets(0, 0, 20, 0));
 
         Label urlInvalidLabel = new Label("The supplied web URL is not valid");
