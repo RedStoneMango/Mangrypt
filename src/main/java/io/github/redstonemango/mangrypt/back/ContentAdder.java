@@ -8,7 +8,6 @@ import javafx.application.Platform;
 import javafx.scene.layout.StackPane;
 
 import java.io.File;
-import java.nio.file.Files;
 import java.util.Set;
 import java.util.function.Consumer;
 
