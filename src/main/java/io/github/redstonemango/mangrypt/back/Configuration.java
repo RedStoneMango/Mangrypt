@@ -14,8 +14,8 @@ public class Configuration {
     private transient SecretKey masterKey;
     private transient byte[] masterSalt;
     private transient String hash;
-    private FolderElement rootFolder;
     @Tag(1) private FolderElement rootFolder;
+    @Tag(7) private boolean renderDataBG;
 
     public SecretKey masterKey() {
         Utilities.ensureAuthorizedAccess(VersionedEncryptionHandler.class);
@@ -32,6 +32,13 @@ public class Configuration {
     public void definePassword(String hash) {
         Utilities.ensureAuthorizedAccess(ConfigIO.class);
         this.hash = hash;
+    }
+
+    public boolean renderDataBG() {
+        return renderDataBG;
+    }
+    public void renderDataBG(boolean renderDataBG) {
+        this.renderDataBG = renderDataBG;
     }
 
     public void cleanup() {

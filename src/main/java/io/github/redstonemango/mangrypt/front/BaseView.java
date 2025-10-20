@@ -1,10 +1,10 @@
 package io.github.redstonemango.mangrypt.front;
 
-import com.sun.javafx.tk.Toolkit;
 import io.github.redstonemango.mangrypt.Mangrypt;
+import io.github.redstonemango.mangrypt.back.dataTypes.DataElement;
+import io.github.redstonemango.mangrypt.back.dataTypes.FileSystemElement;
 import io.github.redstonemango.mangrypt.front.controller.*;
 import io.github.redstonemango.mangrypt.back.ConfigIO;
-import io.github.redstonemango.mangrypt.back.dataTypes.DataElement;
 import io.github.redstonemango.mangrypt.back.Utilities;
 import javafx.animation.FadeTransition;
 import javafx.application.Platform;
@@ -25,7 +25,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**

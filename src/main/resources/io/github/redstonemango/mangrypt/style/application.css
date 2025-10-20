@@ -185,13 +185,13 @@
 .swipe-arrow .arrow-shape {
     -fx-fill: lightgreen;
 }
-.swipe-arrow .arrow-background {
+.circle-background {
     -fx-fill: darkgreen;
 }
 .swipe-arrow:disabled .arrow-shape {
     -fx-fill: lightgray;
 }
-.swipe-arrow:disabled .arrow-background {
+.swipe-arrow:disabled .circle-background {
     -fx-fill: darkgray;
 }
 

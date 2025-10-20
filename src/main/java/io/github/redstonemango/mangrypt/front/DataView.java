@@ -3,10 +3,7 @@ package io.github.redstonemango.mangrypt.front;
 import io.github.redstonemango.mangoutils.OperatingSystem;
 import io.github.redstonemango.mangrypt.Mangrypt;
 import io.github.redstonemango.mangrypt.back.*;
-import io.github.redstonemango.mangrypt.back.dataTypes.DataElement;
-import io.github.redstonemango.mangrypt.back.dataTypes.ImageDataElement;
-import io.github.redstonemango.mangrypt.back.dataTypes.MediaDataElement;
-import io.github.redstonemango.mangrypt.back.dataTypes.TextDataElement;
+import io.github.redstonemango.mangrypt.back.dataTypes.*;
 import javafx.application.Platform;
 import javafx.css.PseudoClass;
 import javafx.geometry.Bounds;
@@ -37,7 +34,6 @@ import org.jetbrains.annotations.Nullable;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class DataView extends BorderPane {
@@ -46,6 +42,7 @@ public class DataView extends BorderPane {
     private final AnchorPane centerContainer;
     private final StackPane swipeArrowLeft;
     private final StackPane swipeArrowRight;
+    private final BorderPane topPane;
 
     private List<DataElement> availableData;
     private DataElement currentData;
@@ -59,10 +56,10 @@ public class DataView extends BorderPane {
     private boolean isShowingData = false;
 
     public DataView() {
-        swipeArrowLeft = createSwipeArrow(40, true);
+        swipeArrowLeft = createSwipeArrow(true);
         setLeft(swipeArrowLeft);
 
-        swipeArrowRight = createSwipeArrow(40, false);
+        swipeArrowRight = createSwipeArrow(false);
         setRight(swipeArrowRight);
 
         addEventHandler(KeyEvent.KEY_PRESSED, e -> { // Do not register a filter, for we do not want to override the caret-move event in the text-data-editor
@@ -74,11 +71,14 @@ public class DataView extends BorderPane {
             }
         });
 
+        topPane = new BorderPane();
+        setTop(topPane);
+
         nameLabel = new Label();
         nameLabel.getStyleClass().add("uncolored-label");
         nameLabel.setFont(Font.font("", FontWeight.BOLD, FontPosture.REGULAR, 30));
         nameLabel.setUnderline(true);
-        setTop(nameLabel);
+        topPane.setCenter(nameLabel);
         BorderPane.setAlignment(nameLabel, Pos.CENTER);
         BorderPane.setMargin(nameLabel, new Insets(10, 0, 10, 0));
 
@@ -93,19 +93,37 @@ public class DataView extends BorderPane {
             setVisible(false);
         }, () -> {
             List<Node> nodes = new ArrayList<>(List.of(swipeArrowLeft, swipeArrowRight, nameLabel));
+            nodes.add(topPane.getRight()); // BG toggle node
             if (centerContainer.getChildren().getFirst() instanceof MediaDisplay display) {
                 nodes.addAll(display.getUiElementsUnmodifiable());
             }
             else {
                 nodes.add(centerContainer.getChildren().getFirst());
             }
+            if (ConfigIO.getConfig().renderDataBG()) nodes.add(centerContainer);
             return nodes.toArray(Node[]::new);
         });
         centerContainer.widthProperty().addListener((_, _, width) -> sizeUpdate(width.doubleValue(), true));
         centerContainer.heightProperty().addListener((_, _, height) -> sizeUpdate(height.doubleValue(), false));
     }
 
+    private void updateBg(boolean active) {
+        StackPane node = createBgToggleNode(active);
+        topPane.setRight(node);
+        BorderPane.setMargin(topPane.getCenter(), new Insets(0, 0, 0, 50)); // Align label (because of bg toggle node)
+
+        centerContainer.setBackground(
+                active ?
+                new Background(new BackgroundFill(Color.BLACK, new CornerRadii(20), Insets.EMPTY))
+                :
+                Background.EMPTY
+        );
+        ConfigIO.markShouldSave();
+    }
+
     public void showData(List<DataElement> availableData, DataElement data) {
+        updateBg(ConfigIO.getConfig().renderDataBG());
+
         Node node;
         try {
             node = extractContentFrom(data);
@@ -278,17 +296,19 @@ public class DataView extends BorderPane {
     }
 
 
-    private StackPane createSwipeArrow(double size, boolean toLeft) {
-        double radius = size / 2;
+    private StackPane createSwipeArrow(boolean toLeft) {
+        final double SIZE = 40;
+
+        double radius = SIZE / 2;
 
         Circle circle = new Circle(radius);
-        circle.getStyleClass().add("arrow-background");
+        circle.getStyleClass().add("circle-background");
         circle.setOnMouseClicked(_ -> onSwipe(toLeft));
 
         Polygon arrow = new Polygon();
         arrow.getStyleClass().add("arrow-shape");
 
-        double scale = size / 30.0;
+        double scale = SIZE / 30.0;
 
         arrow.getPoints().addAll(
                 0.0 * scale, 0.0 * scale,      // Bottom-left
@@ -305,12 +325,45 @@ public class DataView extends BorderPane {
         StackPane stack = new StackPane(circle, arrow);
         stack.getStyleClass().add("swipe-arrow");
         stack.pseudoClassStateChanged(PseudoClass.getPseudoClass(toLeft ? "left" : "right"), true);
-        stack.setMaxWidth(circle.getRadius() * 2);
-        stack.setMaxHeight(circle.getRadius() * 2);
+        stack.setMaxWidth(SIZE);
+        stack.setMaxHeight(SIZE);
 
         BorderPane.setAlignment(stack, Pos.CENTER_RIGHT);
         BorderPane.setMargin(stack, new Insets(0, 20, 0, 20));
         Utilities.registerHoverAnimation(arrow);
+        stack.setCursor(Cursor.HAND);
+
+        return stack;
+    }
+
+    private StackPane createBgToggleNode(boolean isActive) {
+        final double SIZE = 40;
+
+        double radius = SIZE / 2;
+
+        Circle circle = new Circle(radius);
+        circle.getStyleClass().add("circle-background");
+
+        Image image = new Image(getClass().getResource("/io/github/redstonemango/mangrypt/image/background-" +
+                (isActive ? "on" : "off") + ".png").toExternalForm());
+        ImageView imageView = new ImageView(image);
+        imageView.setPreserveRatio(true);
+        imageView.setSmooth(true);
+        imageView.setFitWidth(SIZE);
+        imageView.setMouseTransparent(true);
+
+        StackPane stack = new StackPane(circle, imageView);
+        stack.setMaxWidth(SIZE);
+        stack.setMaxHeight(SIZE);
+        stack.setOnMouseClicked(_ -> {
+            Configuration config = ConfigIO.getConfig();
+
+            config.renderDataBG(!config.renderDataBG());
+            updateBg(config.renderDataBG());
+        });
+
+        BorderPane.setMargin(stack, new Insets(10, 10, 0, 0));
+        Utilities.registerHoverAnimation(imageView);
         stack.setCursor(Cursor.HAND);
 
         return stack;

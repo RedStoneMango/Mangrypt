@@ -56,33 +56,33 @@ public class FileSystemController {
     @FXML
     private void initialize() {
         Utilities.applyCustomNodeCellFactory(contentView, element -> {
-            FolderElement parent = element.getParent();
-            assert parent != null : "Only null when referencing root's parent, which should never happen";
-            return new ListEntry(
-                    element.getName(),
-                    element.getDescription(),
-                    () -> onOpen(element),
-                    () -> delete(element),
-                    this::onDeleteSelection,
-                    this::onRename,
-                    this::onChangeDescription,
-                    this::onExport,
-                    () -> export(parent),
-                    this::onCopy,
-                    this::onCut,
-                    this::onPaste,
-                    () -> onPasteInto((FolderElement) element),
-                    () -> {
-                        onCopy();
-                        onPaste();
-                    },
-                    element.runIconImageBuild(),
-                    element instanceof FolderElement,
-                    clipboard,
-                    selectedElements,
-                    contentView);
-            },
-            new Insets(0, 0, 1, 0));
+                    FolderElement parent = element.getParent();
+                    assert parent != null : "Only null when referencing root's parent, which should never happen";
+                    return new ListEntry(
+                            element.getName(),
+                            element.getDescription(),
+                            () -> onOpen(element),
+                            () -> delete(element),
+                            this::onDeleteSelection,
+                            this::onRename,
+                            this::onChangeDescription,
+                            this::onExport,
+                            () -> export(parent),
+                            this::onCopy,
+                            this::onCut,
+                            this::onPaste,
+                            () -> onPasteInto((FolderElement) element),
+                            () -> {
+                                onCopy();
+                                onPaste();
+                            },
+                            element.runIconImageBuild(),
+                            element instanceof FolderElement,
+                            clipboard,
+                            selectedElements,
+                            contentView);
+                },
+                new Insets(0, 0, 1, 0));
 
         updateContentView(null);
         preparePathPopup();
