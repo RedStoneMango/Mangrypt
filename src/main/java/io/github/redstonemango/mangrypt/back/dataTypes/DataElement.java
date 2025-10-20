@@ -1,7 +1,7 @@
 package io.github.redstonemango.mangrypt.back.dataTypes;
 
+import com.esotericsoftware.kryo.serializers.TaggedFieldSerializer.Tag;
 import io.github.redstonemango.mangoutils.MangoIO;
-import io.github.redstonemango.mangrypt.back.Configuration;
 import io.github.redstonemango.mangrypt.back.ContentAdder;
 import io.github.redstonemango.mangrypt.back.Utilities;
 import io.github.redstonemango.mangrypt.front.DataView;
@@ -9,14 +9,12 @@ import io.github.redstonemango.mangrypt.front.DataView;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Arrays;
 
 public abstract class DataElement extends FileSystemElement {
 
-    byte[] bytes;
-    String fileExtension;
+    @Tag(5) byte[] bytes;
+    @Tag(6) String fileExtension;
 
     public byte[] bytes() {
         Utilities.ensureAuthorizedAccess(DataView.class);

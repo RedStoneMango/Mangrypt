@@ -3,6 +3,7 @@ package io.github.redstonemango.mangrypt.back;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
+import com.esotericsoftware.kryo.serializers.TaggedFieldSerializer;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -23,6 +24,7 @@ public class SimplifiedKryo extends Kryo {
      */
     public SimplifiedKryo(Class<?>... classes) {
         super();
+        setDefaultSerializer(TaggedFieldSerializer.class);
         for (Class<?> aClass : classes) {
             register(aClass);
         }

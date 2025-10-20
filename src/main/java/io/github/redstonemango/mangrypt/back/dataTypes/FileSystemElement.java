@@ -1,8 +1,8 @@
 package io.github.redstonemango.mangrypt.back.dataTypes;
 
+import com.esotericsoftware.kryo.serializers.TaggedFieldSerializer.Tag;
 import io.github.redstonemango.mangrypt.back.ConfigIO;
 import io.github.redstonemango.mangrypt.back.Configuration;
-import io.github.redstonemango.mangrypt.back.ContentAdder;
 import io.github.redstonemango.mangrypt.back.Utilities;
 import io.github.redstonemango.mangrypt.front.DataView;
 import io.github.redstonemango.mangrypt.front.controller.FileSystemController;
@@ -15,8 +15,8 @@ import java.util.LinkedList;
 
 public abstract class FileSystemElement {
 
-    String name;
-    @Nullable String description;
+    @Tag(2) String name;
+    @Tag(3) @Nullable String description;
     transient @Nullable FolderElement parent;
 
     public abstract boolean exportTo(File file, boolean isRoot);

@@ -1,5 +1,6 @@
 package io.github.redstonemango.mangrypt.back.dataTypes;
 
+import com.esotericsoftware.kryo.serializers.TaggedFieldSerializer.Tag;
 import io.github.redstonemango.mangoutils.MangoIO;
 import io.github.redstonemango.mangrypt.back.Configuration;
 import io.github.redstonemango.mangrypt.back.ContentAdder;
@@ -9,12 +10,14 @@ import javafx.scene.image.Image;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class FolderElement extends FileSystemElement {
 
-    private Map<String, FileSystemElement> content;
+    @Tag(4) private Map<String, FileSystemElement> content;
 
     public static Image buildIconImage() {
         return new Image(Objects.requireNonNull(FolderElement.class.getResourceAsStream("/io/github/redstonemango/mangrypt/image/data-type-icon/folder.png"))); // Dummy value for now
