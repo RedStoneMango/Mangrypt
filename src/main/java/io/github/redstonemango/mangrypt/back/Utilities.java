@@ -167,11 +167,10 @@ public class Utilities {
     }
 
     public static String getSupportedExtension(String mimeType) {
-        System.out.println(mimeType);
         if (mimeType == null) return "Unknown";
 
         return switch (mimeType.toLowerCase()) {
-            case "image/jpeg" -> ".jpg";
+            case "image/jpeg", "image/jpg" -> ".jpg";
             case "image/png" -> ".png";
             case "image/gif" -> ".gif";
             case "image/bmp" -> ".bmp";
