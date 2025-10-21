@@ -40,13 +40,16 @@ public class ContentAdder {
             Tuple3<IOLoaderNode, StackPane, StackPane> assets = IOLoaderNode.open(
                     "Select image file",
                     userHome,
-                    data -> {
+                    (bytes, ext, remoteUrl) -> {
                         Mangrypt.getBase().setSecondLayerRoot(null);
 
                         ImageDataElement element = new ImageDataElement();
-                        element.bytes(data.getFirst());
-                        element.fileExtension(data.getSecond());
+                        element.bytes(bytes);
+                        element.fileExtension(ext);
                         element.ensureFields(name, parentFolder);
+                        if (remoteUrl != null && ConfigIO.getConfig().descriptionOnDownload()) {
+                            element.setDescription(remoteUrl);
+                        }
                         parentFolder.getContent().put(name, element);
                         callback.accept(element);
                         ConfigIO.markShouldSave();
@@ -69,13 +72,16 @@ public class ContentAdder {
             Tuple3<IOLoaderNode, StackPane, StackPane> assets = IOLoaderNode.open(
                     "Select video or audio file",
                     userHome,
-                    data -> {
+                    (bytes, ext, remoteUrl) -> {
                         Mangrypt.getBase().setSecondLayerRoot(null);
 
                         MediaDataElement element = new MediaDataElement();
-                        element.bytes(data.getFirst());
-                        element.fileExtension(data.getSecond());
+                        element.bytes(bytes);
+                        element.fileExtension(ext);
                         element.ensureFields(name, parentFolder);
+                        if (remoteUrl != null && ConfigIO.getConfig().descriptionOnDownload()) {
+                            element.setDescription(remoteUrl);
+                        }
                         parentFolder.getContent().put(name, element);
                         callback.accept(element);
                         ConfigIO.markShouldSave();

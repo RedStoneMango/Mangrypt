@@ -4,12 +4,24 @@
 }
 
 .button .label,
+.check-box,
 .uncolored-label {
     -fx-text-fill: #20ff00;
 }
 
-.text-field,
-.text-area,
+.check-box .box {
+    -fx-background-color: green;
+    -fx-border-color: lightgreen;
+    -fx-border-radius: 3px;
+}
+.check-box:hover .box {
+    -fx-background-color: #0A8A0A;
+}
+
+.check-box:selected .mark {
+    -fx-background-color: white;
+}
+
 .text-field,
 .password-field {
     -fx-background-color: linear-gradient(lightgreen, green);

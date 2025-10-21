@@ -1,8 +1,9 @@
 package io.github.redstonemango.mangrypt.front;
 
-import io.github.redstonemango.mangoutils.tuple.Tuple2;
+import io.github.redstonemango.mangoutils.function.TriConsumer;
 import io.github.redstonemango.mangoutils.tuple.Tuple3;
 import io.github.redstonemango.mangrypt.Mangrypt;
+import io.github.redstonemango.mangrypt.back.ConfigIO;
 import io.github.redstonemango.mangrypt.back.Utilities;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -10,6 +11,7 @@ import javafx.collections.ObservableList;
 import javafx.css.PseudoClass;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
+import javafx.geometry.NodeOrientation;
 import javafx.geometry.Point2D;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
@@ -19,6 +21,7 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.*;
+import org.jetbrains.annotations.Nullable;
 
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
@@ -46,14 +49,14 @@ public class IOLoaderNode extends VBox {
     private static final Pattern URL_PATTERN = Pattern.compile("^(https?://)?(www\\.)?((([\\w-]+\\.)+[a-zA-Z]{2,63})|(\\d{1,3}(\\.\\d{1,3}){3}))(:\\d{1,5})?(/[\\w\\-._~%!$&'()*+,;=:@/]*)*(\\?[\\w\\-._~%!$&'()*+,;=:@/?]*)?(#[\\w\\-._~%!$&'()*+,;=:@/?]*)?$");
 
     public static Tuple3<IOLoaderNode, StackPane, StackPane> save(String title, File initialDirectory, Consumer<File> onAction, Runnable onCancel, String... allowedExtensions) {
-        IOLoaderNode node = new IOLoaderNode(title, true, initialDirectory, onAction, _ -> {}, _ -> {}, onCancel, allowedExtensions);
+        IOLoaderNode node = new IOLoaderNode(title, true, initialDirectory, onAction, (_, _, _) -> {}, _ -> {}, onCancel, allowedExtensions);
         StackPane background = new StackPane();
         StackPane root = new StackPane();
         node.prepareMangryptLayout(root, background);
         return new Tuple3<>(node, root, background);
     }
 
-    public static Tuple3<IOLoaderNode, StackPane, StackPane> open(String title, File initialDirectory, Consumer<Tuple2<byte[], String>> onAction, Consumer<Exception> onOpenException, Runnable onCancel, String... allowedExtensions) {
+    public static Tuple3<IOLoaderNode, StackPane, StackPane> open(String title, File initialDirectory, TriConsumer<byte[], String, @Nullable String> onAction, Consumer<Exception> onOpenException, Runnable onCancel, String... allowedExtensions) {
         IOLoaderNode node = new IOLoaderNode(title, false, initialDirectory, _ -> {}, onAction, onOpenException, onCancel, allowedExtensions);
         StackPane background = new StackPane();
         StackPane root = new StackPane();
@@ -61,7 +64,7 @@ public class IOLoaderNode extends VBox {
         return new Tuple3<>(node, root, background);
     }
 
-    private IOLoaderNode(String title, boolean saveMode, File initialDirectory, Consumer<File> onSaveAction, Consumer<Tuple2<byte[], String>> onOpenAction, Consumer<Exception> onOpenException, Runnable onCancel, String... allowedExtensions) {
+    private IOLoaderNode(String title, boolean saveMode, File initialDirectory, Consumer<File> onSaveAction, TriConsumer<byte[], String, @Nullable String> onOpenAction, Consumer<Exception> onOpenException, Runnable onCancel, String... allowedExtensions) {
         List<String> extensions = normalizeAllowedExtensions(allowedExtensions);
 
         Label titleLabel = new Label(title);
@@ -240,7 +243,7 @@ public class IOLoaderNode extends VBox {
                 }
                 if (isValidFileExtension(file, extensions) && !file.isDirectory()) {
                     String fileExtension = file.getName().substring(file.getName().lastIndexOf("."));
-                    onOpenAction.accept(new Tuple2<>(bytes, fileExtension));
+                    onOpenAction.accept(bytes, fileExtension, null);
                 }
             }
             else {
@@ -251,12 +254,27 @@ public class IOLoaderNode extends VBox {
         cancelButton.setPrefWidth(80);
         cancelButton.setOnAction(_ -> onCancel.run());
 
+
+        CheckBox toggleUrlDescriptionBox = new CheckBox("Store URL In Description");
+        toggleUrlDescriptionBox.setFocusTraversable(false);
+        toggleUrlDescriptionBox.setNodeOrientation(NodeOrientation.RIGHT_TO_LEFT);
+        toggleUrlDescriptionBox.setSelected(ConfigIO.getConfig().descriptionOnDownload());
+        toggleUrlDescriptionBox.selectedProperty().addListener((_, _, isSelected) -> {
+                ConfigIO.getConfig().descriptionOnDownload(isSelected);
+                ConfigIO.markShouldSave();
+        });
+
+        HBox.setMargin(toggleUrlDescriptionBox, new Insets(4, 0, 0, 0));
+
+        HBox controlsBox = new HBox();
+
         Button typeChangeButton = new Button("From Web URL");
         typeChangeButton.setPrefWidth(110);
         typeChangeButton.setOnAction(_ -> {
             if (getChildren().contains(webLoadBox)) {
                 getChildren().remove(webLoadBox);
                 getChildren().add(1, fileChooserBox);
+                controlsBox.getChildren().remove(toggleUrlDescriptionBox);
                 fileView.requestFocus();
                 typeChangeButton.setText("From Web URL");
 
@@ -270,6 +288,7 @@ public class IOLoaderNode extends VBox {
             else {
                 getChildren().remove(fileChooserBox);
                 getChildren().add(1, webLoadBox);
+                controlsBox.getChildren().add(2, toggleUrlDescriptionBox);
                 urlField.requestFocus();
                 typeChangeButton.setText("From Local File");
 
@@ -280,13 +299,12 @@ public class IOLoaderNode extends VBox {
         Region spacingRegion = new Region();
         HBox.setHgrow(spacingRegion, Priority.ALWAYS);
 
-        HBox hbox = new HBox();
-        hbox.setSpacing(10);
-        hbox.getChildren().addAll(spacingRegion, cancelButton, doneButton);
-        if (!saveMode) hbox.getChildren().addFirst(typeChangeButton);
-        hbox.setPadding(new Insets(0, 10, 0, 10));
+        controlsBox.setSpacing(10);
+        controlsBox.getChildren().addAll(spacingRegion, cancelButton, doneButton);
+        if (!saveMode) controlsBox.getChildren().addFirst(typeChangeButton);
+        controlsBox.setPadding(new Insets(0, 10, 0, 10));
 
-        getChildren().addAll(titleLabel, fileChooserBox, hbox);
+        getChildren().addAll(titleLabel, fileChooserBox, controlsBox);
         setAlignment(Pos.CENTER);
         setSpacing(10);
         setPadding(new Insets(10, 0, 10, 0));
@@ -297,7 +315,7 @@ public class IOLoaderNode extends VBox {
         filePathField.setText(initialDirectory.getAbsolutePath());
     }
 
-    private void loadFromWeb(String rawUrl, Consumer<Tuple2<byte[], String>> onDownloaded, Consumer<Exception> onException, List<String> extensions) {
+    private void loadFromWeb(String rawUrl, TriConsumer<byte[], String, @Nullable String> onDownloaded, Consumer<Exception> onException, List<String> extensions) {
         String url = !(rawUrl.startsWith("http://") || rawUrl.startsWith("https://")) ? "https://" + rawUrl : rawUrl;
         Runnable download = () -> {
             boolean handleExceptionInternally = true;
@@ -343,7 +361,7 @@ public class IOLoaderNode extends VBox {
                     }
 
                     byte[] fileBytes = outputStream.toByteArray();
-                    onDownloaded.accept(new Tuple2<>(fileBytes, guessedExtension));
+                    onDownloaded.accept(fileBytes, guessedExtension, rawUrl);
                 }
                 finally {
                     connection.disconnect();

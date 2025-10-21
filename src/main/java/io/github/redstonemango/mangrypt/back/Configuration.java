@@ -16,6 +16,7 @@ public class Configuration {
     private transient String hash;
     @Tag(1) private FolderElement rootFolder;
     @Tag(7) private boolean renderDataBG;
+    @Tag(8) private boolean descriptionOnDownload;
 
     public SecretKey masterKey() {
         Utilities.ensureAuthorizedAccess(VersionedEncryptionHandler.class);
@@ -39,6 +40,12 @@ public class Configuration {
     }
     public void renderDataBG(boolean renderDataBG) {
         this.renderDataBG = renderDataBG;
+    }
+    public boolean descriptionOnDownload() {
+        return descriptionOnDownload;
+    }
+    public void descriptionOnDownload(boolean descriptionOnDownload) {
+        this.descriptionOnDownload = descriptionOnDownload;
     }
 
     public void cleanup() {

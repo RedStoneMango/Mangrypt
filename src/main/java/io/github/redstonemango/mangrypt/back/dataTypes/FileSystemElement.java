@@ -3,6 +3,7 @@ package io.github.redstonemango.mangrypt.back.dataTypes;
 import com.esotericsoftware.kryo.serializers.TaggedFieldSerializer.Tag;
 import io.github.redstonemango.mangrypt.back.ConfigIO;
 import io.github.redstonemango.mangrypt.back.Configuration;
+import io.github.redstonemango.mangrypt.back.ContentAdder;
 import io.github.redstonemango.mangrypt.back.Utilities;
 import io.github.redstonemango.mangrypt.front.DataView;
 import io.github.redstonemango.mangrypt.front.controller.FileSystemController;
@@ -27,7 +28,7 @@ public abstract class FileSystemElement {
     }
 
     public void setDescription(@Nullable String description) {
-        Utilities.ensureAuthorizedAccess(FileSystemController.class);
+        Utilities.ensureAuthorizedAccess(FileSystemController.class, ContentAdder.class);
         this.description = description;
     }
 
