@@ -167,6 +167,9 @@ public class IOLoaderNode extends VBox {
             filePathField.setText(item.getValue().getAbsolutePath() + (item.getValue().isDirectory() ? "/" : ""));
             filePathField.positionCaret(filePathField.getText().length());
         });
+        fileView.setOnKeyPressed(e -> {
+            if (e.getCode() == KeyCode.ENTER) doneButton.fire();
+        });
         VBox fileChooserBox = new VBox(10, filePathField, fileView);
         fileChooserBox.setAlignment(Pos.CENTER);
         VBox.setVgrow(fileChooserBox, Priority.ALWAYS);
@@ -207,15 +210,19 @@ public class IOLoaderNode extends VBox {
             doneButton.setDisable(!valid);
             urlInvalidLabel.setVisible(!valid);
         });
+        urlField.setOnKeyPressed(e -> {
+            if (e.getCode() == KeyCode.ENTER) doneButton.fire();
+        });
         urlField.prefWidthProperty().bind(webLoadBox.widthProperty());
         webLoadBox.getChildren().addAll(urlInfoLabel1, urlInfoLabel2, urlInfoLabel3, urlField, urlInvalidLabel);
         VBox.setMargin(webLoadBox, new Insets(0, 50, 0, 50));
 
         doneButton = new Button(saveMode ? "Save" : "Select");
         doneButton.setPrefWidth(80);
-        doneButton.setDefaultButton(true);
         doneButton.setDisable(true);
         doneButton.setOnAction(_ -> {
+            if (Mangrypt.getBase().isObscuring()) return;
+
             if (saveMode) {
                 File file = fileFromString(filePathField.getText());
                 if (isValidFileExtension(file, extensions) && !file.isDirectory()) onSaveAction.accept(file);
