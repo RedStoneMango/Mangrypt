@@ -174,6 +174,7 @@ public class Utilities {
             case "image/png" -> ".png";
             case "image/gif" -> ".gif";
             case "image/bmp" -> ".bmp";
+            case "image/webp" -> ".webp";
             case "audio/mpeg", "audio/mp3" -> ".mp3"; // IDK why, but some people do use audio/mp3...
             case "audio/aac" -> ".aac";
             case "audio/wav" -> ".wav";

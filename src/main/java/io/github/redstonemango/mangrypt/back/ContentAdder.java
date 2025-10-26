@@ -7,7 +7,13 @@ import io.github.redstonemango.mangrypt.front.IOLoaderNode;
 import javafx.application.Platform;
 import javafx.scene.layout.StackPane;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
+import java.util.Arrays;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -43,6 +49,15 @@ public class ContentAdder {
                     (bytes, ext, remoteUrl) -> {
                         Mangrypt.getBase().setSecondLayerRoot(null);
 
+                        if (ext.equals(".webp")) {
+                            try {
+                                bytes = webpToPng(bytes);
+                            } catch (IOException ex) {
+                                Mangrypt.getBase().showErrorAlert(String.valueOf(ex));
+                                throw new RuntimeException("Error converting webp to png", ex);
+                            }
+                        }
+
                         ImageDataElement element = new ImageDataElement();
                         element.bytes(bytes);
                         element.fileExtension(ext);
@@ -59,7 +74,7 @@ public class ContentAdder {
                         throw new RuntimeException("Error accessing image", ex);
                     },
                     () -> Mangrypt.getBase().setSecondLayerRoot(null),
-                    "jpeg", "jpg", "png", "bmp", "gif");
+                    "jpeg", "jpg", "png", "bmp", "gif", "webp");
             Utilities.registerClosableOverlay(assets.getSecond(), () -> Mangrypt.getBase().setSecondLayerRoot(null), assets.getThird());
             Mangrypt.getBase().setSecondLayerRoot(assets.getSecond());
             Platform.runLater(() -> assets.getFirst().requestFocus());
@@ -116,4 +131,47 @@ public class ContentAdder {
                 action
         );
     }
+
+    public static byte[] webpToPng(byte[] webpBytes) throws IOException {
+        if (webpBytes == null || webpBytes.length == 0) {
+            throw new IllegalArgumentException("Input WebP bytes cannot be null or empty");
+        }
+
+        ByteArrayInputStream input = null;
+        ByteArrayOutputStream output = null;
+        BufferedImage image;
+
+        try {
+            input = new ByteArrayInputStream(webpBytes);
+            image = ImageIO.read(input);
+
+            if (image == null) {
+                throw new IOException("Could not decode WebP image. Ensure webp-imageio is on the classpath.");
+            }
+
+            output = new ByteArrayOutputStream();
+            boolean written = ImageIO.write(image, "png", output);
+            if (!written) {
+                throw new IOException("PNG writer not found.");
+            }
+
+            return output.toByteArray();
+
+        } finally {
+            // --- Memory hygiene: zero out and close resources ---
+            if (input != null) {
+                try { input.close(); } catch (IOException ignored) {}
+            }
+            if (output != null) {
+                try { output.close(); } catch (IOException ignored) {}
+            }
+
+            Arrays.fill(webpBytes, (byte) 0);
+            image = null;
+            input = null;
+            output = null;
+        }
+    }
+
+
 }

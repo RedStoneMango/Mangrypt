@@ -361,7 +361,9 @@ public class IOLoaderNode extends VBox {
                     }
 
                     byte[] fileBytes = outputStream.toByteArray();
+                    handleExceptionInternally = false;
                     onDownloaded.accept(fileBytes, guessedExtension, rawUrl);
+                    handleExceptionInternally = true;
                 }
                 finally {
                     connection.disconnect();

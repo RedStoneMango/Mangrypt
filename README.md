@@ -136,6 +136,7 @@ Mangrypt is written using:
 - **Cryptographic Algorithms:** [`Bouncy Castle`](https://www.bouncycastle.org/) 1.82 (jdk18on)
 - **Cryptographic Acceleration:** [`Google Conscrypt`](https://conscrypt.org/) 2.5.2
 - **Utility Dependencies:** [`Mango-Utils`](https://github.com/RedStoneMango/Mango-Utils) 2.2.0
+- **WebP Image Processing:** [`WebP-ImageIO`](https://github.com/milad-zanganeh/webp-imageio) 1.2
 - **Automated Unit Tests:** [`JUnit`](https://junit.org/) 5.10.2
 - **Native Packaging:** [`javapackager`](https://github.com/javapackager/JavaPackager) 1.7.6
 

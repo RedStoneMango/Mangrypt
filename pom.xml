@@ -93,6 +93,13 @@
             <version>2.5.2</version>
             <classifier>${os.detected.classifier}</classifier>
         </dependency>
+
+        <!-- WebP ImageIO plugin -->
+        <dependency>
+            <groupId>com.github.miluxhd</groupId>
+            <artifactId>webp-imageio</artifactId>
+            <version>1.2</version>
+        </dependency>
     </dependencies>
 
     <build>
