@@ -345,7 +345,7 @@ public class IOLoaderNode extends VBox {
 
                 if (!extensions.contains(guessedExtension.toLowerCase()) && !extensions.isEmpty()) {
                     Mangrypt.getBase().showWarningAlert("The file under the specified URL is not of an allowed type:\n\n" +
-                            "Does not allow '" + guessedExtension + "' in this context");
+                            "Does not allow '" + contentType + "' in this context");
                     connection.disconnect();
                     return;
                 }
