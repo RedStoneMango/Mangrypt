@@ -493,8 +493,9 @@ public class FileSystemController {
     private void onConfigure() {
         CheckMenuItem showHiddenFoldersItem = new CheckMenuItem("Show hidden elements");
         MenuItem passwordChangeItem = new MenuItem("Change password & passphrase");
+        MenuItem vaultSaveItem = new MenuItem("Save Vault");
         MenuItem backMenuItem = new MenuItem("Back to vault overview");
-        ContextMenu menu = new ContextMenu(showHiddenFoldersItem, passwordChangeItem, new SeparatorMenuItem(), backMenuItem);
+        ContextMenu menu = new ContextMenu(showHiddenFoldersItem, passwordChangeItem, vaultSaveItem, new SeparatorMenuItem(), backMenuItem);
         Point2D imagePos = configureImage.localToScreen(0, 0);
         menu.show(configureImage.getParent(), imagePos.getX(), imagePos.getY());
         menu.setX(imagePos.getX() - menu.getWidth());
@@ -512,6 +513,10 @@ public class FileSystemController {
                 throw new RuntimeException(e); // I love happy compilers
             }
         });
+
+        vaultSaveItem.setOnAction(_ -> Mangrypt.getBase().savingRoutine(() ->
+                Mangrypt.getBase().showInfoAlert("\nDone Saving Your Vault!"),
+            false, true));
 
         backMenuItem.setOnAction(_ -> Mangrypt.getBase().playTransition(() -> Mangrypt.getBase().savingRoutine()));
     }

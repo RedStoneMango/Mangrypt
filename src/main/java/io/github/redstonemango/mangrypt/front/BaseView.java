@@ -298,13 +298,13 @@ public class BaseView extends StackPane {
     }
 
     public void savingRoutine() {
-        savingRoutine(this::closeVaultUi, false);
+        savingRoutine(this::closeVaultUi, false, false);
     }
 
-    public synchronized void savingRoutine(Runnable postSaveAction, boolean beforeExit) {
+    public synchronized void savingRoutine(Runnable postSaveAction, boolean beforeExit, boolean runAlways) {
         Utilities.ensureAuthorizedAccess(FileSystemController.class, OverlayController.class, Mangrypt.class);
 
-        if (!ConfigIO.shouldSave()) {
+        if (!ConfigIO.shouldSave() && !runAlways) {
             postSaveAction.run();
             return;
         }
