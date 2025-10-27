@@ -251,6 +251,11 @@ public class DataView extends BorderPane {
 
         if (Platform.isFxApplicationThread()) {
             centerContainer.getChildren().clear();
+            
+            if (checkMouseHideService != null) {
+                checkMouseHideService.cancel();
+                checkMouseHideService = null;
+            }
         }
         shutdownMediaServer();
     }
