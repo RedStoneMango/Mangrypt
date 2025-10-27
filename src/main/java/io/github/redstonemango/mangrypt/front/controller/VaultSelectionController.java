@@ -57,6 +57,10 @@ public class VaultSelectionController {
             if (e.getCode() == KeyCode.ENTER && !vaultList.getSelectionModel().isEmpty()) {
                 onOpen();
             }
+            boolean controlDown = OperatingSystem.isMac() ? e.isMetaDown() : e.isControlDown();
+            if (e.getCode() == KeyCode.R && controlDown) {
+                updateVaultList();
+            }
         });
 
         filterField.textProperty().addListener((_, _, _) -> updateVaultList());
