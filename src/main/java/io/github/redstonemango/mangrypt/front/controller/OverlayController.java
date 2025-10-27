@@ -2,6 +2,8 @@ package io.github.redstonemango.mangrypt.front.controller;
 
 import io.github.redstonemango.mangrypt.Mangrypt;
 import io.github.redstonemango.mangrypt.back.ConfigIO;
+import io.github.redstonemango.mangrypt.back.Utilities;
+import io.github.redstonemango.mangrypt.front.BaseView;
 import io.github.redstonemango.mangrypt.front.ShakeTransition;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -72,6 +74,15 @@ public class OverlayController {
             passwordField.requestFocus();
             passwordField.selectAll();
         }
+    }
+
+    public void prepare() {
+        Utilities.ensureAuthorizedAccess(BaseView.class);
+
+        tries = 3;
+        allowAccess = true;
+        passwordField.setText("");
+        triesLeftLabel.setText("3 tries left");
     }
 
 }

@@ -81,8 +81,13 @@ public class BaseView extends StackPane {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/io/github/redstonemango/mangrypt/fxml/overlay.fxml"));
             passwordOverlayLayer = loader.load();
             passwordOverlayLayer.setVisible(false);
-            passwordOverlayLayer.visibleProperty().addListener((_, _, _) ->
-                    checkAllowSceneRootFocus());
+            OverlayController oc = loader.getController();
+            passwordOverlayLayer.visibleProperty().addListener((_, _, visible) -> {
+               checkAllowSceneRootFocus();
+               if (visible) {
+                   oc.prepare();
+               }
+            });
         }
         catch (IOException e) {
             throw new RuntimeException(e);
