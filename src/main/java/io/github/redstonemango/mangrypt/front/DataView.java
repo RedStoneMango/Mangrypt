@@ -5,6 +5,8 @@ import io.github.redstonemango.mangrypt.Mangrypt;
 import io.github.redstonemango.mangrypt.back.*;
 import io.github.redstonemango.mangrypt.back.dataTypes.*;
 import javafx.application.Platform;
+import javafx.concurrent.ScheduledService;
+import javafx.concurrent.Task;
 import javafx.css.PseudoClass;
 import javafx.geometry.Bounds;
 import javafx.geometry.Insets;
@@ -29,12 +31,14 @@ import javafx.scene.shape.Polygon;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontPosture;
 import javafx.scene.text.FontWeight;
+import javafx.util.Duration;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 public class DataView extends BorderPane {
 
@@ -54,6 +58,8 @@ public class DataView extends BorderPane {
     private @Nullable SecureInMemoryMediaServer mediaServer;
 
     private boolean isShowingData = false;
+    private long lastMouseMoved = -1;
+    private @Nullable ScheduledService<Void> checkMouseHideService = null;
 
     public DataView() {
         swipeArrowLeft = createSwipeArrow(true);
@@ -145,7 +151,53 @@ public class DataView extends BorderPane {
         sizeUpdate(centerContainer.getWidth(), true);
         sizeUpdate(centerContainer.getHeight(), false);
 
+        tryUseHiddenCursorNode(node, hiddenCursorNode -> {
+            if (checkMouseHideService != null) {
+                checkMouseHideService.cancel();
+                checkMouseHideService = null;
+            }
+
+            if (hiddenCursorNode != null) {
+                hiddenCursorNode.setOnMouseMoved(_ -> {
+                    lastMouseMoved = System.currentTimeMillis();
+                    if (!checkHideCursor() && hiddenCursorNode.getCursor() != null) {
+                        hiddenCursorNode.setCursor(null);
+                    }
+                });
+
+                checkMouseHideService = new ScheduledService<>() {
+                    @Override
+                    protected Task<Void> createTask() {
+                        return new Task<>() {
+                            @Override
+                            protected Void call() {
+                                if (checkHideCursor() && hiddenCursorNode.getCursor() == null) {
+                                    hiddenCursorNode.setCursor(Cursor.NONE);
+                                }
+                                return null;
+                            }
+                        };
+                    }
+                };
+                checkMouseHideService.setPeriod(Duration.seconds(3));
+                checkMouseHideService.start();
+            }
+            else {
+                lastMouseMoved = System.currentTimeMillis();
+            }
+        });
+
         checkSwipeable();
+    }
+
+    private boolean checkHideCursor() {
+        return System.currentTimeMillis() - lastMouseMoved >= 5000;
+    }
+
+    private void tryUseHiddenCursorNode(Node node, Consumer<@Nullable Node> action) {
+        if (node instanceof ImageView) action.accept(node);
+        else if (node instanceof MediaDisplay mediaDisplay) mediaDisplay.tryUseMediaView(action::accept);
+        else action.accept(null);
     }
 
     private void sizeUpdate(double sideLength, boolean isWidth) {
@@ -195,6 +247,10 @@ public class DataView extends BorderPane {
         if (mediaPlayer != null) {
             mediaPlayer.dispose();
             mediaPlayer = null;
+        }
+
+        if (Platform.isFxApplicationThread()) {
+            centerContainer.getChildren().clear();
         }
         shutdownMediaServer();
     }

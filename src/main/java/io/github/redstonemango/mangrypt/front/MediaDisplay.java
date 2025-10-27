@@ -14,10 +14,12 @@ import javafx.scene.media.MediaView;
 import javafx.scene.media.VideoTrack;
 import javafx.scene.paint.Color;
 import javafx.util.Duration;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * Wrapper class for a {@link javafx.scene.media.MediaPlayer}. Displays basic flw controls for the media and shows video graphics if a video track exists in the player's underlying {@link javafx.scene.media.Media} object.
@@ -25,6 +27,7 @@ import java.util.List;
 public class MediaDisplay extends VBox {
 
     private String maxTime = "--:--";
+    private @Nullable Consumer<@Nullable MediaView> mediaViewAction;
 
     public MediaDisplay(MediaPlayer player) {
         Label timeLabel = new Label("--:-- / --:--");
@@ -96,8 +99,9 @@ public class MediaDisplay extends VBox {
         VBox.setMargin(buttonBox, new Insets(0, 0, 5, 0));
 
         player.setOnReady(() -> {
+            MediaView mv;
             if (player.getMedia().getTracks().stream().anyMatch(track -> track instanceof VideoTrack)) {
-                MediaView mv = new MediaView(player);
+                mv = new MediaView(player);
                 mv.setPreserveRatio(true);
                 mv.setManaged(false);
                 AnchorPane pane = new AnchorPane(mv);
@@ -108,6 +112,11 @@ public class MediaDisplay extends VBox {
 
                 pane.widthProperty().addListener((_, _, val) -> sizeUpdate(true, val.doubleValue(), mv, pane));
                 pane.heightProperty().addListener((_, _, val) -> sizeUpdate(false, val.doubleValue(), mv, pane));
+            } else {
+                mv = null;
+            }
+            if (mediaViewAction != null) {
+                mediaViewAction.accept(mv);
             }
 
             maxTime = formatDuration(player.getMedia().getDuration());
@@ -159,6 +168,9 @@ public class MediaDisplay extends VBox {
             else es.add(child);
         });
         return Collections.unmodifiableList(es);
+    }
+    void tryUseMediaView(Consumer<@Nullable MediaView> mediaViewAction) {
+        this.mediaViewAction = mediaViewAction;
     }
     public static String formatDuration(Duration duration) {
         StringBuilder builder = new StringBuilder();
