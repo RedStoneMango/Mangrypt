@@ -124,7 +124,6 @@ public class DataView extends BorderPane {
                 :
                 Background.EMPTY
         );
-        ConfigIO.markShouldSave();
     }
 
     public void showData(List<DataElement> availableData, DataElement data) {
@@ -422,6 +421,7 @@ public class DataView extends BorderPane {
 
             config.renderDataBG(!config.renderDataBG());
             updateBg(config.renderDataBG());
+            ConfigIO.markShouldSave();
         });
 
         BorderPane.setMargin(stack, new Insets(10, 10, 0, 0));
