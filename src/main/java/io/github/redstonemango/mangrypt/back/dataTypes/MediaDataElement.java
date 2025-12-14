@@ -14,6 +14,14 @@ public class MediaDataElement extends DataElement {
         return Utilities.getSupportedMediaMimeType(fileExtension);
     }
 
+    @Override
+    public DataElement symlinkedVersion(String symlinkName) {
+        MediaDataElement element = new MediaDataElement();
+        element.name = symlinkName;
+        element.bytesWrapper = bytesWrapper;
+        return element;
+    }
+
     public static Image buildIconImage() {
         return new Image(Objects.requireNonNull(MediaDataElement.class.getResourceAsStream("/io/github/redstonemango/mangrypt/image/data-type-icon/media.png")));
     }
@@ -25,7 +33,7 @@ public class MediaDataElement extends DataElement {
         copy.description = description;
         copy.parent = parent;
         copy.fileExtension = fileExtension;
-        copy.bytes = Arrays.copyOf(bytes, bytes.length);
+        copy.bytesWrapper = new byte[][]{Arrays.copyOf(bytesWrapper[0], bytesWrapper[0].length)};
 
         return copy;
     }

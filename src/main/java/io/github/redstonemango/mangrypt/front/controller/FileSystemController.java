@@ -79,7 +79,8 @@ public class FileSystemController {
                             },
                             this::onSymlink,
                             element.runIconImageBuild(),
-                            element instanceof FolderElement,
+                            element instanceof FolderElement ||
+                                    (element instanceof SymlinkElement lnk && lnk.resolveTargetElement() instanceof FolderElement),
                             element instanceof SymlinkElement,
                             clipboard,
                             selectedElements,
@@ -209,7 +210,9 @@ public class FileSystemController {
     }
 
     private void onOpen(FileSystemElement element) {
+        boolean wasSymlink = false;
         if (element instanceof SymlinkElement symlink) {
+            wasSymlink = true;
             element = symlink.resolveTargetElement();
             if (element == null) {
                 Mangrypt.getBase().showErrorAlert("Cannot find symlink target. Maybe it was deleted?");
@@ -221,20 +224,24 @@ public class FileSystemController {
             openFolder(folder);
         }
         else if (element instanceof DataElement data) {
+            DataElement openedData = null;
             List<DataElement> availableData = new ArrayList<>();
-            contentView.getItems().forEach(item -> {
+            for (FileSystemElement item : contentView.getItems()) {
                 if (item instanceof DataElement this_data) {
                     availableData.add(this_data);
+                    if (this_data.equals(data) && !wasSymlink) openedData = this_data;
                 }
                 else if (item instanceof SymlinkElement symlink) {
                     var target = symlink.resolveTargetElement();
                     if (target instanceof DataElement this_data) {
-                        availableData.add(this_data);
+                        DataElement symlinked = this_data.symlinkedVersion(symlink.getName());
+                        if (this_data.equals(data)) openedData = symlinked;
+                        availableData.add(symlinked);
                     }
                 }
-            });
+            }
 
-            Mangrypt.getBase().showData(availableData, data);
+            Mangrypt.getBase().showData(availableData, openedData);
         }
         else {
             Mangrypt.getBase().showErrorAlert("The specified FileSystemElement is neither a FolderElement, nor a DataElement nor a SymlinkElement");

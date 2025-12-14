@@ -13,17 +13,18 @@ import java.util.Arrays;
 
 public abstract class DataElement extends FileSystemElement {
 
-    @Tag(5) byte[] bytes;
+    @Tag(5) @Deprecated(forRemoval = true) byte[] bytes;
     @Tag(6) String fileExtension;
+    @Tag(12) byte[][] bytesWrapper;
 
     public byte[] bytes() {
         Utilities.ensureAuthorizedAccess(DataView.class);
-        return bytes;
+        return bytesWrapper[0];
     }
 
     public void bytes(byte[] bytes) {
         Utilities.ensureAuthorizedAccess(ContentAdder.class, DataView.class);
-        this.bytes = bytes;
+        this.bytesWrapper[0] = bytes;
     }
 
     public String fileExtension() {
@@ -65,8 +66,12 @@ public abstract class DataElement extends FileSystemElement {
     public void ensureFields(String name, FolderElement parent) {
         Utilities.ensureAuthorizedAccess(ContentAdder.class, FolderElement.class);
         super.ensureFields(name, parent);
-        if (bytes == null) {
-            bytes = new byte[0]; // Dummy init
+        if (bytes != null) {
+            bytesWrapper = new byte[][]{bytes}; // Copy to wrapper
+            bytes = null;
+        }
+        if (bytesWrapper == null) {
+            bytesWrapper = new byte[][]{new byte[0]}; // Dummy init
         }
         if (fileExtension == null) {
             fileExtension = "";
@@ -76,6 +81,10 @@ public abstract class DataElement extends FileSystemElement {
     @Override
     public void zeroOut() {
         super.zeroOut();
-        Arrays.fill(bytes, (byte) 0);
+        Arrays.fill(bytesWrapper[0], (byte) 0);
+        bytesWrapper[0] = null;
+        bytesWrapper = null;
     }
+
+    public abstract DataElement symlinkedVersion(String symlinkName);
 }

@@ -12,13 +12,21 @@ public class TextDataElement extends DataElement {
     }
 
     @Override
+    public DataElement symlinkedVersion(String symlinkName) {
+        TextDataElement element = new TextDataElement();
+        element.name = symlinkName;
+        element.bytesWrapper = bytesWrapper;
+        return element;
+    }
+
+    @Override
     FileSystemElement deepCopy(FolderElement parent) {
         TextDataElement copy = new TextDataElement();
         copy.name = name;
         copy.description = description;
         copy.parent = parent;
         copy.fileExtension = fileExtension;
-        copy.bytes = Arrays.copyOf(bytes, bytes.length);
+        copy.bytesWrapper = new byte[][]{Arrays.copyOf(bytesWrapper[0], bytesWrapper[0].length)};
 
         return copy;
     }
