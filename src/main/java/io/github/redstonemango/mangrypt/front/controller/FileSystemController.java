@@ -133,6 +133,12 @@ public class FileSystemController {
         nameLabel.setText(name);
 
         showHiddenContentProperty.addListener((_, _, _) -> updateContentView(null));
+        showHiddenContentProperty.set(ConfigIO.getConfig().isShowHidden());
+        showHiddenContentProperty.addListener((_, _, b) -> {
+            updateContentView(null);
+            ConfigIO.getConfig().setShowHidden(b);
+            ConfigIO.markShouldSave();
+        });
 
         pathField.setOnKeyPressed(e -> {
             if (e.getCode() == KeyCode.ENTER) {
