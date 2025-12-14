@@ -15,7 +15,7 @@ public class VersionedEncryptionHandler {
     public static final SimplifiedKryo v1_KRYO = new SimplifiedKryo(
             Configuration.class, SecretKey.class, byte[].class, String.class, FolderElement.class, Map.class,
             FileSystemElement.class, TextDataElement.class, ImageDataElement.class, MediaDataElement.class,
-            HashMap.class);
+            HashMap.class, SymlinkElement.class);
 
     public static @Nullable Configuration decrypt(int version, byte[] encrypted, char[] passphrase, char[] password) throws Exception {
         switch (version) {

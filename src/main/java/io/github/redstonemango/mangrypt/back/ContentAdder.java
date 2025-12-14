@@ -29,6 +29,21 @@ public class ContentAdder {
         }, existingNames);
     }
 
+    public static void addSymlink(FolderElement parentFolder, Consumer<FileSystemElement> callback, Set<String> existingNames, FileSystemElement target) {
+        if (target instanceof SymlinkElement) {
+            Mangrypt.getBase().showErrorAlert("Cannot create a symlink linking to a symlink");
+            return;
+        }
+        nameInputDialog(name -> {
+            SymlinkElement element = new SymlinkElement();
+            element.ensureFields(name, parentFolder);
+            element.targetPath(target.buildPath());
+            parentFolder.getContent().put(name, element);
+            callback.accept(element);
+            ConfigIO.markShouldSave();
+        }, existingNames);
+    }
+
     public static void addTextElement(FolderElement parentFolder, Consumer<FileSystemElement> callback, Set<String> existingNames) {
         nameInputDialog(name -> {
             TextDataElement element = new TextDataElement();

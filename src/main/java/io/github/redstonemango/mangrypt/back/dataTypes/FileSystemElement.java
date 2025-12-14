@@ -68,6 +68,7 @@ public abstract class FileSystemElement {
             case TextDataElement _ -> TextDataElement.buildIconImage();
             case ImageDataElement _ -> ImageDataElement.buildIconImage();
             case MediaDataElement _ -> MediaDataElement.buildIconImage();
+            case SymlinkElement e -> e.runIconImageBuild();
             default -> null;
         };
     }
