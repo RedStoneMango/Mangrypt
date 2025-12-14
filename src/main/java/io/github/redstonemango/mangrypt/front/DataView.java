@@ -42,6 +42,9 @@ import java.util.function.Consumer;
 
 public class DataView extends BorderPane {
 
+    public static final PseudoClass SWIPE_ARROW_GALLERY_END = PseudoClass.getPseudoClass("gallery_end");
+    public static final PseudoClass SWIPE_ARROW_DISABLE_ACTION = PseudoClass.getPseudoClass("disable_action");
+
     private final Label nameLabel;
     private final AnchorPane centerContainer;
     private final StackPane swipeArrowLeft;
@@ -69,10 +72,10 @@ public class DataView extends BorderPane {
         setRight(swipeArrowRight);
 
         addEventHandler(KeyEvent.KEY_PRESSED, e -> { // Do not register a filter, for we do not want to override the caret-move event in the text-data-editor
-            if (e.getCode() == KeyCode.LEFT && !swipeArrowLeft.isDisabled()) {
+            if (e.getCode() == KeyCode.LEFT && !swipeArrowLeft.getPseudoClassStates().contains(SWIPE_ARROW_DISABLE_ACTION)) {
                 onSwipe(true);
             }
-            if (e.getCode() == KeyCode.RIGHT && !swipeArrowRight.isDisabled()) {
+            if (e.getCode() == KeyCode.RIGHT && !swipeArrowRight.getPseudoClassStates().contains(SWIPE_ARROW_DISABLE_ACTION)) {
                 onSwipe(false);
             }
         });
@@ -356,8 +359,17 @@ public class DataView extends BorderPane {
 
     private void checkSwipeable() {
         int index = availableData.indexOf(currentData);
-        swipeArrowLeft.setDisable(index <= 0);
-        swipeArrowRight.setDisable(index >= availableData.size() - 1);
+        boolean wraparound = ConfigIO.getConfig().isWraparoundNavigation();
+
+        boolean leftEnd = index <= 0;
+        swipeArrowLeft.pseudoClassStateChanged(SWIPE_ARROW_GALLERY_END, leftEnd);
+        swipeArrowLeft.pseudoClassStateChanged(SWIPE_ARROW_DISABLE_ACTION, leftEnd && !wraparound);
+        swipeArrowLeft.setMouseTransparent(leftEnd && !wraparound);
+
+        boolean rightEnd = index >= availableData.size() - 1;
+        swipeArrowRight.pseudoClassStateChanged(SWIPE_ARROW_GALLERY_END, rightEnd);
+        swipeArrowRight.pseudoClassStateChanged(SWIPE_ARROW_DISABLE_ACTION, rightEnd && !wraparound);
+        swipeArrowRight.setMouseTransparent(rightEnd && !wraparound);
     }
 
 

@@ -197,13 +197,13 @@
 .swipe-arrow .arrow-shape {
     -fx-fill: lightgreen;
 }
-.circle-background {
+.swipe-arrow .circle-background {
     -fx-fill: darkgreen;
 }
-.swipe-arrow:disabled .arrow-shape {
+.swipe-arrow:gallery_end .arrow-shape {
     -fx-fill: lightgray;
 }
-.swipe-arrow:disabled .circle-background {
+.swipe-arrow:gallery_end:disable_action .circle-background {
     -fx-fill: darkgray;
 }
 
