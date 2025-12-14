@@ -347,6 +347,10 @@ public class DataView extends BorderPane {
 
         int index = availableData.indexOf(currentData);
         int newIndex = index + (toLeft ? -1 : 1);
+
+        if (newIndex < 0) newIndex = availableData.size() - 1;
+        if (newIndex >= availableData.size()) newIndex = 0;
+
         showData(availableData, availableData.get(newIndex));
     }
 
