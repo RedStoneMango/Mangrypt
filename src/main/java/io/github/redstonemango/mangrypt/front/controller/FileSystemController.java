@@ -211,6 +211,10 @@ public class FileSystemController {
     private void onOpen(FileSystemElement element) {
         if (element instanceof SymlinkElement symlink) {
             element = symlink.resolveTargetElement();
+            if (element == null) {
+                Mangrypt.getBase().showErrorAlert("Cannot find symlink target. Maybe it was deleted?");
+                return;
+            }
         }
 
         if (element instanceof FolderElement folder) {

@@ -5,6 +5,7 @@ import io.github.redstonemango.mangrypt.back.ContentAdder;
 import io.github.redstonemango.mangrypt.back.Utilities;
 import io.github.redstonemango.mangrypt.front.DataView;
 import io.github.redstonemango.mangrypt.front.controller.FileSystemController;
+import javafx.scene.image.Image;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
@@ -25,7 +26,16 @@ public class SymlinkElement extends FileSystemElement {
 
     public FileSystemElement resolveTargetElement() {
         Utilities.ensureAuthorizedAccess(FileSystemController.class);
+        FileSystemElement target = FileSystemElement.fromPath(targetPath);
+        if (!target.buildPath().equals(targetPath)) return null; // Might be the case if target was deleted and detection logic falls back to parent folder
         return FileSystemElement.fromPath(targetPath);
+    }
+
+    @Override
+    public Image runIconImageBuild() {
+        FileSystemElement target = resolveTargetElement();
+        if (target == null) return null;
+        return target.runIconImageBuild();
     }
 
     @Override
