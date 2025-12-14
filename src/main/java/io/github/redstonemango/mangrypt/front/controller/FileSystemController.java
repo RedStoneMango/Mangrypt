@@ -37,6 +37,7 @@ public class FileSystemController {
     private final PseudoClipboard clipboard = new PseudoClipboard();
 
     private final BooleanProperty showHiddenContentProperty = new SimpleBooleanProperty(false);
+    private final BooleanProperty wraparoundNavigationProperty = new SimpleBooleanProperty(false);
     private FolderElement currentFolder = ConfigIO.getConfig().getRootFolder(); // In the beginning, we are in the root folder
     private boolean ignorePathChange = false;
     private ObservableList<FileSystemElement> selectedElements;
@@ -132,7 +133,11 @@ public class FileSystemController {
 
         nameLabel.setText(name);
 
-        showHiddenContentProperty.addListener((_, _, _) -> updateContentView(null));
+        wraparoundNavigationProperty.set(ConfigIO.getConfig().isWraparoundNavigation());
+        wraparoundNavigationProperty.addListener((_, _, b) -> {
+            ConfigIO.getConfig().setWraparoundNavigation(b);
+            ConfigIO.markShouldSave();
+        });
         showHiddenContentProperty.set(ConfigIO.getConfig().isShowHidden());
         showHiddenContentProperty.addListener((_, _, b) -> {
             updateContentView(null);
@@ -498,10 +503,18 @@ public class FileSystemController {
     @FXML
     private void onConfigure() {
         CheckMenuItem showHiddenFoldersItem = new CheckMenuItem("Show hidden elements");
+        CheckMenuItem wraparoundNavigationItem = new CheckMenuItem("Wraparound navigation");
         MenuItem passwordChangeItem = new MenuItem("Change password & passphrase");
         MenuItem vaultSaveItem = new MenuItem("Save Vault");
         MenuItem backMenuItem = new MenuItem("Back to vault overview");
-        ContextMenu menu = new ContextMenu(showHiddenFoldersItem, passwordChangeItem, vaultSaveItem, new SeparatorMenuItem(), backMenuItem);
+        ContextMenu menu = new ContextMenu(
+                showHiddenFoldersItem,
+                wraparoundNavigationItem,
+                passwordChangeItem,
+                vaultSaveItem,
+                new SeparatorMenuItem(),
+                backMenuItem
+        );
         Point2D imagePos = configureImage.localToScreen(0, 0);
         menu.show(configureImage.getParent(), imagePos.getX(), imagePos.getY());
         menu.setX(imagePos.getX() - menu.getWidth());
@@ -509,6 +522,10 @@ public class FileSystemController {
         showHiddenFoldersItem.setSelected(showHiddenContentProperty.get());
         showHiddenFoldersItem.selectedProperty().addListener((_, _, b) ->
                 showHiddenContentProperty.set(b));
+
+        wraparoundNavigationItem.setSelected(wraparoundNavigationProperty.get());
+        wraparoundNavigationItem.selectedProperty().addListener((_, _, b) ->
+                wraparoundNavigationProperty.set(b));
 
         passwordChangeItem.setOnAction(_ -> {
             try {
