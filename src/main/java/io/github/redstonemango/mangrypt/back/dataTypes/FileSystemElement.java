@@ -33,7 +33,7 @@ public abstract class FileSystemElement {
     }
 
     public String getName() {
-        Utilities.ensureAuthorizedAccess(FileSystemController.class, DataView.class);
+        Utilities.ensureAuthorizedAccess(FileSystemController.class, DataView.class, FileSystemElement.class);
         return name;
     }
 
@@ -43,7 +43,7 @@ public abstract class FileSystemElement {
     }
 
     public @Nullable FolderElement getParent() {
-        Utilities.ensureAuthorizedAccess(FileSystemController.class);
+        Utilities.ensureAuthorizedAccess(FileSystemController.class, FileSystemElement.class);
         return parent;
     }
 
@@ -68,13 +68,13 @@ public abstract class FileSystemElement {
             case TextDataElement _ -> TextDataElement.buildIconImage();
             case ImageDataElement _ -> ImageDataElement.buildIconImage();
             case MediaDataElement _ -> MediaDataElement.buildIconImage();
-            case SymlinkElement e -> e.runIconImageBuild();
+            case SymlinkElement e -> e.resolveTargetElement().runIconImageBuild();
             default -> null;
         };
     }
 
     public void ensureFields(String name, @Nullable FolderElement parent) {
-        Utilities.ensureAuthorizedAccess(DataElement.class, FolderElement.class);
+        Utilities.ensureAuthorizedAccess(DataElement.class, FolderElement.class, SymlinkElement.class);
         this.name = name;
         if (description != null && description.isBlank()) {
             description = null; // If existing description is blank, trat it as unexisting

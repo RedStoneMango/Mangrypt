@@ -77,8 +77,10 @@ public class FileSystemController {
                                 onCopy();
                                 onPaste();
                             },
+                            this::onSymlink,
                             element.runIconImageBuild(),
                             element instanceof FolderElement,
+                            element instanceof SymlinkElement,
                             clipboard,
                             selectedElements,
                             contentView);
@@ -207,6 +209,10 @@ public class FileSystemController {
     }
 
     private void onOpen(FileSystemElement element) {
+        if (element instanceof SymlinkElement symlink) {
+            element = symlink.resolveTargetElement();
+        }
+
         if (element instanceof FolderElement folder) {
             openFolder(folder);
         }
@@ -216,15 +222,22 @@ public class FileSystemController {
                 if (item instanceof DataElement this_data) {
                     availableData.add(this_data);
                 }
+                else if (item instanceof SymlinkElement symlink) {
+                    var target = symlink.resolveTargetElement();
+                    if (target instanceof DataElement this_data) {
+                        availableData.add(this_data);
+                    }
+                }
             });
 
             Mangrypt.getBase().showData(availableData, data);
         }
         else {
-            Mangrypt.getBase().showErrorAlert("The specified FileSystemElement is neither a FolderElement nor a DataElement");
+            Mangrypt.getBase().showErrorAlert("The specified FileSystemElement is neither a FolderElement, nor a DataElement nor a SymlinkElement");
 
-            throw new RuntimeException("element has to be an instance of " + FolderElement.class.getName() + " or " +
-                    DataElement.class.getName() + ". Found" + element.getClass().getName() + "instead");
+            throw new RuntimeException("element has to be an instance of " + FolderElement.class.getName() + ", " +
+                    DataElement.class.getName() + " or + " + SymlinkElement.class.getName() +
+                    ". Found" + element.getClass().getName() + "instead");
         }
     }
 
@@ -314,7 +327,7 @@ public class FileSystemController {
 
         Mangrypt.getBase().showInputDialog(
                 "Please set a new name for the element",
-                "Element name",
+                "Name",
                 element.getName(),
                 true,
                 name -> {
@@ -462,6 +475,13 @@ public class FileSystemController {
             updateContentView(null); // Theoretically not needed, but it's a nice feedback that paste worked
             ConfigIO.markShouldSave();
         });
+    }
+    private void onSymlink() {
+        Set<String> existingNames = currentFolder.getContent().keySet();
+
+        selectedElements.forEach(element ->
+            ContentAdder.addSymlink(currentFolder, this::updateContentView, existingNames, element)
+        );
     }
 
     @FXML

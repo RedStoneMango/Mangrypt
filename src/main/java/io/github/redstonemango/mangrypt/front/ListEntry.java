@@ -3,8 +3,6 @@ package io.github.redstonemango.mangrypt.front;
 import io.github.redstonemango.mangrypt.back.PseudoClipboard;
 import io.github.redstonemango.mangrypt.back.dataTypes.FileSystemElement;
 import io.github.redstonemango.mangrypt.front.elementBase.ListEntryBase;
-import javafx.application.Platform;
-import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
@@ -27,7 +25,7 @@ public class ListEntry extends ListEntryBase {
     public ListEntry(String name, String description, Runnable onSelect, Runnable onDelete, Runnable onDeleteSelection,
                      Runnable onSetName, Runnable onSetDescription, Runnable onExport, Runnable onExportParent,
                      Runnable onCopy, Runnable onCut, Runnable onPaste, Runnable onPasteInto, Runnable onClone,
-                     @Nullable Image icon, boolean folder, PseudoClipboard clipboard,
+                     Runnable onSymlink, @Nullable Image icon, boolean folder, boolean symlink, PseudoClipboard clipboard,
                      List<FileSystemElement> selectedElements, ListView<?> view) {
         nameLabel.setText(name);
         if (name.startsWith(".")) nameLabel.setFont(Font.font("", FontWeight.NORMAL, FontPosture.ITALIC, 17));
@@ -78,10 +76,13 @@ public class ListEntry extends ListEntryBase {
         Menu clipboardMenu = new Menu("Clipboard");
         clipboardMenu.getItems().addAll(copyItem, cutItem, pasteItem, cloneItem);
         if (folder) clipboardMenu.getItems().add(3, pasteIntoItem);
+        MenuItem symlinkMenu = new MenuItem("Create Symlink");
+        symlinkMenu.setOnAction(_ -> onSymlink.run());
+        symlinkMenu.setDisable(symlink);
         Menu exportMenu = new Menu("Export");
         exportMenu.getItems().addAll(exportItem, exportParentItem);
         ContextMenu menu = new ContextMenu(
-                openItem, deleteItem,
+                openItem, deleteItem, symlinkMenu,
                 new SeparatorMenuItem(),
                 editMenu,
                 new SeparatorMenuItem(),

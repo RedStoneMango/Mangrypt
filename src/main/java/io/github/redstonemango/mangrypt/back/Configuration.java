@@ -65,7 +65,7 @@ public class Configuration {
     }
 
     public FolderElement getRootFolder() {
-        Utilities.ensureAuthorizedAccess(FileSystemController.class, FolderElement.class);
+        Utilities.ensureAuthorizedAccess(FileSystemController.class, FolderElement.class, ContentAdder.class);
         return rootFolder;
     }
 
