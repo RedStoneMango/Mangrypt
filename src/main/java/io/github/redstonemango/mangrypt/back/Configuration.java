@@ -17,6 +17,8 @@ public class Configuration {
     @Tag(1) private FolderElement rootFolder;
     @Tag(7) private boolean renderDataBG;
     @Tag(8) private boolean descriptionOnDownload;
+    @Tag(9) private boolean wraparoundNavigation;
+    @Tag(10) private boolean showHidden;
 
     public SecretKey masterKey() {
         Utilities.ensureAuthorizedAccess(VersionedEncryptionHandler.class);
@@ -77,5 +79,21 @@ public class Configuration {
         rootFolder.ensureFields("Root", null);
 
         // Master key & salt have to be set separately
+    }
+
+    public boolean isWraparoundNavigation() {
+        return wraparoundNavigation;
+    }
+
+    public void setWraparoundNavigation(boolean wraparoundNavigation) {
+        this.wraparoundNavigation = wraparoundNavigation;
+    }
+
+    public boolean isShowHidden() {
+        return showHidden;
+    }
+
+    public void setShowHidden(boolean showHidden) {
+        this.showHidden = showHidden;
     }
 }
