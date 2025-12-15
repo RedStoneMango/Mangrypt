@@ -1,14 +1,15 @@
 package io.github.redstonemango.mangrypt.back.dataTypes;
 
 import com.esotericsoftware.kryo.serializers.TaggedFieldSerializer.Tag;
+import io.github.redstonemango.mangoutils.MangoIO;
 import io.github.redstonemango.mangrypt.back.ContentAdder;
 import io.github.redstonemango.mangrypt.back.Utilities;
-import io.github.redstonemango.mangrypt.front.DataView;
 import io.github.redstonemango.mangrypt.front.controller.FileSystemController;
 import javafx.scene.image.Image;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.io.IOException;
 
 public class SymlinkElement extends FileSystemElement {
 
@@ -55,11 +56,21 @@ public class SymlinkElement extends FileSystemElement {
 
     @Override
     public boolean exportTo(File file, boolean isRoot) {
-        return false; // TODO
+        FileSystemElement target = resolveTargetElement();
+        if (target != null) {
+            target.exportTo(file, isRoot);
+        }
+        return true;
     }
 
     @Override
     FileSystemElement deepCopy(@Nullable FolderElement parent) {
-        return null; // TODO
+        SymlinkElement copy = new SymlinkElement();
+        copy.name = name;
+        copy.description = description;
+        copy.parent = parent;
+        copy.targetPath = targetPath;
+
+        return copy;
     }
 }
