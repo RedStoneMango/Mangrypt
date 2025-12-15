@@ -215,7 +215,7 @@ public class FileSystemController {
             wasSymlink = true;
             element = symlink.resolveTargetElement();
             if (element == null) {
-                Mangrypt.getBase().showErrorAlert("Cannot find symlink target. Maybe it was deleted?");
+                Mangrypt.getBase().showErrorAlert("Linked element '" + symlink.getTargetPath() + "' does not exist");
                 return;
             }
         }
