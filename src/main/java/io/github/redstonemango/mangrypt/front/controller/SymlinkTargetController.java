@@ -1,7 +1,10 @@
 package io.github.redstonemango.mangrypt.front.controller;
 
 import io.github.redstonemango.mangrypt.back.Utilities;
+import io.github.redstonemango.mangrypt.back.dataTypes.FolderElement;
+import io.github.redstonemango.mangrypt.front.PathCompletion;
 import javafx.application.Platform;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.*;
@@ -19,28 +22,30 @@ public class SymlinkTargetController {
 
     private Node oldFocusOwner;
 
-    public void init(String initialPath, Consumer<String> doneCallback) {
+    public void init(String initialPath, FolderElement currentFolder, Consumer<String> doneCallback, Runnable closeCallback) {
         pathField.setText(initialPath);
         pathField.selectAll();
 
         oldFocusOwner = root.getScene().getFocusOwner();
         Platform.runLater(() -> pathField.requestFocus());
 
+        new PathCompletion(pathField, currentFolder, new SimpleBooleanProperty(true), _ -> {});
+
         doneButton.setOnAction(_ -> {
             doneCallback.accept(pathField.getText());
             oldFocusOwner.requestFocus();
-            root.getParent().setVisible(false);
+            closeCallback.run();
         });
         cancelButton.setOnAction(_ -> {
             oldFocusOwner.requestFocus();
-            root.getParent().setVisible(false);
+            closeCallback.run();
         });
         pathField.setOnKeyPressed(e -> {
             if (e.getCode() == KeyCode.ENTER) doneButton.fire();
         });
         Utilities.registerClosableOverlay(root, () -> {
-            root.getParent().setVisible(false);
             oldFocusOwner.requestFocus();
+            closeCallback.run();
         }, pathField.getParent());
     }
 }

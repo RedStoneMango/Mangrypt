@@ -25,8 +25,8 @@ public class ListEntry extends ListEntryBase {
     public ListEntry(String name, String description, Runnable onSelect, Runnable onDelete, Runnable onDeleteSelection,
                      Runnable onSetName, Runnable onSetDescription, Runnable onExport, Runnable onExportParent,
                      Runnable onCopy, Runnable onCut, Runnable onPaste, Runnable onPasteInto, Runnable onClone,
-                     Runnable onSymlink, @Nullable Image icon, boolean folder, boolean symlink, PseudoClipboard clipboard,
-                     List<FileSystemElement> selectedElements, ListView<?> view) {
+                     Runnable onSymlink, Runnable onSymlinkEdit, @Nullable Image icon, boolean folder, boolean symlink,
+                     PseudoClipboard clipboard, List<FileSystemElement> selectedElements, ListView<?> view) {
         nameLabel.setText(name);
         if (name.startsWith(".")) nameLabel.setFont(Font.font("", FontWeight.NORMAL, FontPosture.ITALIC, 17));
         descriptionLabel.setText(description);
@@ -71,22 +71,29 @@ public class ListEntry extends ListEntryBase {
         exportItem.setOnAction(_ -> onExport.run());
         MenuItem exportParentItem = new MenuItem("Export Current Folder");
         exportParentItem.setOnAction(_ -> onExportParent.run());
+        MenuItem createSymlinkItem = new MenuItem("Create Symlink");
+        createSymlinkItem.setOnAction(_ -> onSymlink.run());
+        createSymlinkItem.setDisable(symlink);
+        MenuItem editSymlinkItem = new MenuItem("Change Symlink Target");
+        editSymlinkItem.setOnAction(_ -> onSymlinkEdit.run());
+        editSymlinkItem.setDisable(!symlink);
         Menu editMenu = new Menu("Edit");
         editMenu.getItems().addAll(nameItem, descriptionItem);
         Menu clipboardMenu = new Menu("Clipboard");
         clipboardMenu.getItems().addAll(copyItem, cutItem, pasteItem, cloneItem);
         if (folder) clipboardMenu.getItems().add(3, pasteIntoItem);
-        MenuItem symlinkMenu = new MenuItem("Create Symlink");
-        symlinkMenu.setOnAction(_ -> onSymlink.run());
-        symlinkMenu.setDisable(symlink);
+        Menu symlinkMenu = new Menu("Symlink");
+        symlinkMenu.getItems().addAll(createSymlinkItem, editSymlinkItem);
         Menu exportMenu = new Menu("Export");
         exportMenu.getItems().addAll(exportItem, exportParentItem);
         ContextMenu menu = new ContextMenu(
-                openItem, deleteItem, symlinkMenu,
+                openItem, deleteItem,
                 new SeparatorMenuItem(),
                 editMenu,
                 new SeparatorMenuItem(),
                 clipboardMenu,
+                new SeparatorMenuItem(),
+                symlinkMenu,
                 new SeparatorMenuItem(),
                 exportMenu
         );

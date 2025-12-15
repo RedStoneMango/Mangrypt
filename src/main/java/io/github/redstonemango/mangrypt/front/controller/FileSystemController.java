@@ -23,15 +23,12 @@ import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.*;
-import javafx.scene.text.Font;
-import javafx.scene.text.Text;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
 
 public class FileSystemController {
 
@@ -77,6 +74,7 @@ public class FileSystemController {
                                 onPaste();
                             },
                             this::onSymlink,
+                            () -> onSymlinkEdit(element),
                             element.runIconImageBuild(),
                             element instanceof FolderElement ||
                                     (element instanceof SymlinkElement lnk && lnk.resolveTargetElement() instanceof FolderElement),
@@ -485,7 +483,24 @@ public class FileSystemController {
         Set<String> existingNames = currentFolder.getContent().keySet();
 
         selectedElements.forEach(element ->
-            ContentAdder.addSymlink(currentFolder, this::updateContentView, existingNames, element)
+            ContentAdder.addTargetingSymlink(currentFolder, this::updateContentView, existingNames, element)
+        );
+    }
+    private void onSymlinkEdit(FileSystemElement element) {
+        if (!(element instanceof SymlinkElement symlink)) return;
+
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/io/github/redstonemango/mangrypt/fxml/symlink-target-dialog.fxml"));
+        try {
+            Mangrypt.getBase().setSecondLayerRoot(loader.load());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        SymlinkTargetController controller = loader.getController();
+        controller.init(symlink.getTargetPath(), currentFolder, path -> {
+            symlink.targetPath(path);
+            updateContentView(null);
+        }, () ->
+            Mangrypt.getBase().setSecondLayerRoot(null)
         );
     }
 

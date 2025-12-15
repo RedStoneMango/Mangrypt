@@ -4,6 +4,7 @@ import com.esotericsoftware.kryo.serializers.TaggedFieldSerializer.Tag;
 import io.github.redstonemango.mangoutils.MangoIO;
 import io.github.redstonemango.mangrypt.back.ContentAdder;
 import io.github.redstonemango.mangrypt.back.Utilities;
+import io.github.redstonemango.mangrypt.front.PathCompletion;
 import io.github.redstonemango.mangrypt.front.controller.FileSystemController;
 import javafx.scene.image.Image;
 import org.jetbrains.annotations.Nullable;
@@ -23,12 +24,12 @@ public class SymlinkElement extends FileSystemElement {
     }
 
     public void targetPath(String targetPath) {
-        Utilities.ensureAuthorizedAccess(ContentAdder.class);
+        Utilities.ensureAuthorizedAccess(ContentAdder.class, FileSystemController.class);
         this.targetPath = targetPath;
     }
 
     public FileSystemElement resolveTargetElement() {
-        Utilities.ensureAuthorizedAccess(FileSystemController.class);
+        Utilities.ensureAuthorizedAccess(FileSystemController.class, PathCompletion.class);
         FileSystemElement target = FileSystemElement.fromPath(targetPath);
         if (!target.buildPath().equals(targetPath)) return null; // Might be the case if target was deleted and detection logic falls back to parent folder
         return FileSystemElement.fromPath(targetPath);
