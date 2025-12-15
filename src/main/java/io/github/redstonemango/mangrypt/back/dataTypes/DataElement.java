@@ -55,7 +55,7 @@ public abstract class DataElement extends FileSystemElement {
         }
 
         try {
-            Files.write(file.toPath(), bytes);
+            Files.write(file.toPath(), bytesWrapper[0]);
         } catch (IOException _) {
             return false;
         }
