@@ -225,7 +225,7 @@ public class FileSystemController {
                 openFolder(folder);
             }
             else {
-                openFolder(folder.symlinkedVersion(originalSymlink.getName()));
+                openFolder(folder.symlinkedVersion(originalSymlink.getName(), originalSymlink.getParent()));
             }
         }
         else if (element instanceof DataElement data) {

@@ -79,10 +79,10 @@ public class FolderElement extends FileSystemElement {
         return false;
     }
 
-    public FolderElement symlinkedVersion(String symlinkName) {
+    public FolderElement symlinkedVersion(String symlinkName, FolderElement symlinkParent) {
         FolderElement element = new FolderElement();
         element.name = symlinkName;
-        element.parent = parent;
+        element.parent = symlinkParent;
         element.content = content;
         return element;
     }
