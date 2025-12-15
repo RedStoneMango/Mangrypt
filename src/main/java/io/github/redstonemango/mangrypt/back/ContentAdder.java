@@ -4,7 +4,9 @@ import io.github.redstonemango.mangoutils.tuple.Tuple3;
 import io.github.redstonemango.mangrypt.Mangrypt;
 import io.github.redstonemango.mangrypt.back.dataTypes.*;
 import io.github.redstonemango.mangrypt.front.IOLoaderNode;
+import io.github.redstonemango.mangrypt.front.controller.SymlinkTargetController;
 import javafx.application.Platform;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.layout.StackPane;
 
 import javax.imageio.ImageIO;
@@ -29,7 +31,29 @@ public class ContentAdder {
         }, existingNames);
     }
 
-    public static void addSymlink(FolderElement parentFolder, Consumer<FileSystemElement> callback, Set<String> existingNames, FileSystemElement target) {
+    public static void addSymlink(FolderElement parentFolder, Consumer<FileSystemElement> callback, Set<String> existingNames, FolderElement currentFolder) {
+        nameInputDialog(name -> {
+            FXMLLoader loader = new FXMLLoader(ContentAdder.class.getResource("/io/github/redstonemango/mangrypt/fxml/symlink-target-dialog.fxml"));
+            try {
+                Mangrypt.getBase().setSecondLayerRoot(loader.load());
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            SymlinkTargetController controller = loader.getController();
+            controller.init("", currentFolder, path -> {
+                    SymlinkElement element = new SymlinkElement();
+                    element.ensureFields(name, parentFolder);
+                    element.targetPath(path);
+                    parentFolder.getContent().put(name, element);
+                    callback.accept(element);
+                    ConfigIO.markShouldSave();
+                }, () ->
+                    Mangrypt.getBase().setSecondLayerRoot(null)
+            );
+        }, existingNames);
+    }
+
+    public static void addTargetingSymlink(FolderElement parentFolder, Consumer<FileSystemElement> callback, Set<String> existingNames, FileSystemElement target) {
         if (target instanceof SymlinkElement) {
             Mangrypt.getBase().showErrorAlert("Cannot create a symlink linking to a symlink");
             return;
