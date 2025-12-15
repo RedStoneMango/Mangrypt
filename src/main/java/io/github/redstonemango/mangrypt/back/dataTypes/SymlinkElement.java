@@ -12,6 +12,7 @@ import org.jetbrains.annotations.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.Objects;
 import java.util.Set;
 
 public class SymlinkElement extends FileSystemElement {
@@ -40,6 +41,10 @@ public class SymlinkElement extends FileSystemElement {
         FileSystemElement target = resolveTargetElement();
         if (target == null) return null;
         return target.runIconImageBuild();
+    }
+
+    public static Image buildIconImage() {
+        return new Image(Objects.requireNonNull(MediaDataElement.class.getResourceAsStream("/io/github/redstonemango/mangrypt/image/data-type-icon/symlink.png")));
     }
 
     @Override

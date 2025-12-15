@@ -537,6 +537,10 @@ public class FileSystemController {
         mediaItem.setOnAction(_ -> ContentAdder.addMediaElement(currentFolder, this::updateContentView, existingNames));
 
         MenuItem symlinkItem = new MenuItem("Symlink");
+        ImageView symlinkIcon = new ImageView(SymlinkElement.buildIconImage());
+        symlinkIcon.setPreserveRatio(true);
+        symlinkIcon.setFitHeight(20);
+        symlinkItem.setGraphic(symlinkIcon);
         symlinkItem.setOnAction(_ -> ContentAdder.addSymlink(currentFolder, this::updateContentView, existingNames));
 
         ContextMenu menu = new ContextMenu(
