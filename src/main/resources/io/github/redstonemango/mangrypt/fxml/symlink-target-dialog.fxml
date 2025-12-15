@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.text.Font?>
+
+<StackPane fx:id="root" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="271.0" prefWidth="490.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.github.redstonemango.mangrypt.front.controller.SymlinkTargetController">
+    <children>
+        <ImageView fx:id="background" fitHeight="301.0" fitWidth="490.0" pickOnBounds="true" preserveRatio="true">
+            <image>
+                <Image url="@../image/alert_success.png" />
+            </image>
+        </ImageView>
+      <FlowPane alignment="CENTER">
+         <children>
+              <AnchorPane prefHeight="269.0" prefWidth="485.0">
+                  <children>
+                      <Label alignment="TOP_LEFT" layoutX="81.0" layoutY="58.0" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="56.0" prefWidth="322.0" styleClass="uncolored-label" text="Please provide a target for the symlink to point to" textAlignment="CENTER" wrapText="true">
+                          <font>
+                              <Font size="18.0" />
+                          </font>
+                      </Label>
+                  <TextField fx:id="pathField" layoutX="82.0" layoutY="139.0" prefHeight="26.0" prefWidth="322.0" />
+                  <HBox alignment="CENTER_RIGHT" layoutX="82.0" layoutY="206.0" prefHeight="35.0" prefWidth="322.0" spacing="10.0">
+                     <children>
+                        <Button fx:id="cancelButton" mnemonicParsing="false" text="Cancel" />
+                        <Button fx:id="doneButton" layoutX="281.0" layoutY="15.0" mnemonicParsing="false" text="Done" />
+                     </children>
+                  </HBox>
+                  </children>
+              </AnchorPane>
+         </children>
+      </FlowPane>
+    </children>
+</StackPane>
