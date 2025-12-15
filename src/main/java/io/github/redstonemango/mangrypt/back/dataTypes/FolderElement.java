@@ -77,6 +77,14 @@ public class FolderElement extends FileSystemElement {
         return false;
     }
 
+    public FolderElement symlinkedVersion(String symlinkName) {
+        FolderElement element = new FolderElement();
+        element.name = symlinkName;
+        element.parent = parent;
+        element.content = content;
+        return element;
+    }
+
     @Override
     public void ensureFields(String name, FolderElement parent) {
         Utilities.ensureAuthorizedAccess(ContentAdder.class, FolderElement.class);

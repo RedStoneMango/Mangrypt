@@ -210,9 +210,9 @@ public class FileSystemController {
     }
 
     private void onOpen(FileSystemElement element) {
-        boolean wasSymlink = false;
+        SymlinkElement originalSymlink = null;
         if (element instanceof SymlinkElement symlink) {
-            wasSymlink = true;
+            originalSymlink = symlink;
             element = symlink.resolveTargetElement();
             if (element == null) {
                 Mangrypt.getBase().showErrorAlert("Linked element '" + symlink.getTargetPath() + "' does not exist");
@@ -221,7 +221,12 @@ public class FileSystemController {
         }
 
         if (element instanceof FolderElement folder) {
-            openFolder(folder);
+            if (originalSymlink == null) {
+                openFolder(folder);
+            }
+            else {
+                openFolder(folder.symlinkedVersion(originalSymlink.getName()));
+            }
         }
         else if (element instanceof DataElement data) {
             DataElement openedData = null;
@@ -229,7 +234,7 @@ public class FileSystemController {
             for (FileSystemElement item : contentView.getItems()) {
                 if (item instanceof DataElement this_data) {
                     availableData.add(this_data);
-                    if (this_data.equals(data) && !wasSymlink) openedData = this_data;
+                    if (this_data.equals(data) && originalSymlink == null) openedData = this_data;
                 }
                 else if (item instanceof SymlinkElement symlink) {
                     var target = symlink.resolveTargetElement();
