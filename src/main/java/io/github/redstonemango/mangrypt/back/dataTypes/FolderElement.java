@@ -63,9 +63,13 @@ public class FolderElement extends FileSystemElement {
             if (isRoot) {
                 try {
                     MangoIO.compressFile(tmpDir, file);
+                } catch (IOException e) {
+                    success.set(false);
+                }
+                try {
                     MangoIO.deleteDirectoryRecursively(tmpDir);
                 } catch (IOException e) {
-                    return false;
+                    success.set(false);
                 }
             }
             return success.get();
