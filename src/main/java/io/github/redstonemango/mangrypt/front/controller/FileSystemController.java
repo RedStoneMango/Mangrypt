@@ -715,6 +715,9 @@ public class FileSystemController {
         pathCompletionList.getItems().clear();
         FileSystemElement pos = FileSystemElement.fromPath(path);
         FolderElement currentPos = pos instanceof FolderElement folder ? folder : pos.getParent();
+        if (pos instanceof SymlinkElement ln && ln.resolveTargetElement() instanceof FolderElement lnFolder) {
+            currentPos = lnFolder;
+        }
         if (currentPos == null) {
             pathCompletionMenu.hide();
             return;
@@ -736,7 +739,10 @@ public class FileSystemController {
         double maxTextWidth = 0;
         for (FileSystemElement option : options) {
             String name = option.getName();
-            if (option instanceof FolderElement) name = name + "/";
+            if (option instanceof FolderElement ||
+                    (option instanceof SymlinkElement ln && ln.resolveTargetElement() instanceof FolderElement)) {
+                name = name + "/";
+            }
             pathCompletionList.getItems().add(name);
             Text text = new Text(name);
             text.setFont(font);

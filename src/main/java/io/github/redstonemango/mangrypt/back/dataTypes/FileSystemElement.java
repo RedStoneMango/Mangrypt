@@ -108,9 +108,20 @@ public abstract class FileSystemElement {
             if (part.isBlank()) continue;
 
             FileSystemElement subElement = current.getContent().get(part);
-            if (subElement == null) return current; // Fall back to the closest folder
-            if (!(subElement instanceof FolderElement subFolder)) return subElement;
-            current = subFolder;
+            switch (subElement) {
+                case null -> {
+                    return current; // Fall back to the closest folder
+                }
+                case FolderElement folder -> {
+                    current = folder;
+                }
+                case SymlinkElement ln when ln.resolveTargetElement() instanceof FolderElement folder -> {
+                    current = folder;
+                }
+                default -> {
+                    return subElement;
+                }
+            }
         }
         return current;
     }
