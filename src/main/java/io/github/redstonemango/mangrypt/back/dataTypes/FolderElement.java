@@ -5,6 +5,7 @@ import io.github.redstonemango.mangoutils.MangoIO;
 import io.github.redstonemango.mangrypt.back.Configuration;
 import io.github.redstonemango.mangrypt.back.ContentAdder;
 import io.github.redstonemango.mangrypt.back.Utilities;
+import io.github.redstonemango.mangrypt.front.PathCompletion;
 import io.github.redstonemango.mangrypt.front.controller.FileSystemController;
 import javafx.scene.image.Image;
 
@@ -25,7 +26,7 @@ public class FolderElement extends FileSystemElement {
     }
 
     public Map<String, FileSystemElement> getContent() {
-        Utilities.ensureAuthorizedAccess(FileSystemController.class, Configuration.class, ContentAdder.class);
+        Utilities.ensureAuthorizedAccess(FileSystemController.class, Configuration.class, ContentAdder.class, PathCompletion.class);
         return content;
     }
 

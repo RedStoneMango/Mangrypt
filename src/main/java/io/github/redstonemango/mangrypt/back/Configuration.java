@@ -1,6 +1,7 @@
 package io.github.redstonemango.mangrypt.back;
 
 import com.esotericsoftware.kryo.serializers.TaggedFieldSerializer.Tag;
+import io.github.redstonemango.mangrypt.back.dataTypes.FileSystemElement;
 import io.github.redstonemango.mangrypt.back.dataTypes.FolderElement;
 import io.github.redstonemango.mangrypt.back.encryption.VersionedEncryptionHandler;
 import io.github.redstonemango.mangrypt.front.controller.AuthenticationController;
@@ -65,7 +66,7 @@ public class Configuration {
     }
 
     public FolderElement getRootFolder() {
-        Utilities.ensureAuthorizedAccess(FileSystemController.class, FolderElement.class, ContentAdder.class);
+        Utilities.ensureAuthorizedAccess(FileSystemController.class, FolderElement.class, ContentAdder.class, FileSystemElement.class);
         return rootFolder;
     }
 

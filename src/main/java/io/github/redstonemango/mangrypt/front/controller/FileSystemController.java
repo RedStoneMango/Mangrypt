@@ -9,6 +9,7 @@ import io.github.redstonemango.mangrypt.back.dataTypes.*;
 import io.github.redstonemango.mangrypt.front.ListEntry;
 import io.github.redstonemango.mangrypt.back.ConfigIO;
 import io.github.redstonemango.mangrypt.back.Utilities;
+import io.github.redstonemango.mangrypt.front.PathCompletion;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -39,8 +40,8 @@ public class FileSystemController {
     private final BooleanProperty showHiddenContentProperty = new SimpleBooleanProperty(false);
     private final BooleanProperty wraparoundNavigationProperty = new SimpleBooleanProperty(false);
     private FolderElement currentFolder = ConfigIO.getConfig().getRootFolder(); // In the beginning, we are in the root folder
-    private boolean ignorePathChange = false;
     private ObservableList<FileSystemElement> selectedElements;
+    private PathCompletion pathCompletion;
 
 
     @FXML ListView<FileSystemElement> contentView;
@@ -50,8 +51,6 @@ public class FileSystemController {
     @FXML TextField pathField;
     @FXML Button parentDirButton;
 
-    private ListView<String> pathCompletionList;
-    private ContextMenu pathCompletionMenu;
     private ContextMenu contentViewMenu;
 
     @FXML
@@ -89,16 +88,29 @@ public class FileSystemController {
                 new Insets(0, 0, 1, 0));
 
         updateContentView(null);
-        preparePathPopup();
+        pathCompletion = new PathCompletion(pathField, currentFolder, showHiddenContentProperty, element -> {
+            FolderElement folder = element instanceof FolderElement _folder ? _folder : element.getParent();
+            assert folder != null: "Folder is only null when referencing root's parent, which should never happen";
+            DataElement data = element instanceof DataElement _data ? _data : null;
+
+            if (folder != currentFolder) {
+                openFolder(folder);
+            }
+
+            if (data != null) {
+                contentView.scrollTo(data);
+                contentView.getSelectionModel().select(data);
+            }
+        });
 
 
         contentView.getStyleClass().add("file-system-list");
         contentView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
         selectedElements = contentView.getSelectionModel().getSelectedItems();
         selectedElements.addListener((ListChangeListener<? super FileSystemElement>) l -> {
-            if (l.getList().isEmpty()) updatedPathFieldTarget(null);
-            else if (l.getList().size() == 1) updatedPathFieldTarget(l.getList().getFirst());
-            else updatedPathFieldTargetToMultiple(l.getList().size());
+            if (l.getList().isEmpty()) pathCompletion.updatedPathFieldTarget(null);
+            else if (l.getList().size() == 1) pathCompletion.updatedPathFieldTarget(l.getList().getFirst());
+            else pathCompletion.updatedPathFieldTargetToMultiple(l.getList().size());
         });
         prepareContentViewMenu();
         contentView.setOnKeyPressed(e -> {
@@ -146,29 +158,6 @@ public class FileSystemController {
             updateContentView(null);
             ConfigIO.getConfig().setShowHidden(b);
             ConfigIO.markShouldSave();
-        });
-
-        pathField.setOnKeyPressed(e -> {
-            if (e.getCode() == KeyCode.ENTER) {
-                updateSelection();
-            }
-        });
-        pathField.textProperty().addListener((_, _, _) -> {
-            if (ignorePathChange) {
-                ignorePathChange = false;
-            }
-            else {
-                updatePathPopup(pathField.getText());
-            }
-        });
-        pathField.focusedProperty().addListener((_, _, focused) -> {
-            if (focused) {
-                showPathPopup();
-                updatePathPopup(pathField.getText());
-            }
-            else {
-                pathCompletionMenu.hide();
-            }
         });
 
         Platform.runLater(() -> {
@@ -608,169 +597,6 @@ public class FileSystemController {
         currentFolder = folder;
         updateContentView(null);
         parentDirButton.setDisable(folder == ConfigIO.getConfig().getRootFolder());
-        updatedPathFieldTarget(folder);
-    }
-
-    private void updatedPathFieldTarget(@Nullable FileSystemElement element) {
-        ignorePathChange = true;
-        String text = element != null && (showHiddenContentProperty.get() || !element.getName().startsWith("."))
-                ? element.buildPath() : currentFolder.buildPath();
-        if (element == currentFolder) text = text + "/"; // If we are IN the folder, add '/'. Do not add if folder's just selected
-        text = text.replaceAll("/{2,}", "/"); // Normalize
-        pathField.setText(text);
-        pathField.positionCaret(text.length());
-    }
-
-    private void updatedPathFieldTargetToMultiple(int selectedCount) {
-        ignorePathChange = true;
-        String text = currentFolder.buildPath() + "/... [" + selectedCount + "]";
-        text = text.replaceAll("/{2,}", "/"); // Normalize
-        pathField.setText(text);
-        pathField.positionCaret(text.length());
-    }
-
-    private void updateSelection() {
-        FileSystemElement element = FileSystemElement.fromPath(pathField.getText());
-        FolderElement folder = element instanceof FolderElement _folder ? _folder : element.getParent();
-        assert folder != null: "Folder is only null when referencing root's parent, which should never happen";
-        DataElement data = element instanceof DataElement _data ? _data : null;
-
-        if (folder != currentFolder) {
-            openFolder(folder);
-        }
-
-        if (data != null) {
-            contentView.scrollTo(data);
-            contentView.getSelectionModel().select(data);
-        }
-
-        updatedPathFieldTarget(data != null ? data : folder);
-    }
-
-    private void preparePathPopup() {
-        pathCompletionList = new ListView<>();
-        pathCompletionList.setPrefHeight(0);
-        pathCompletionList.setMaxHeight(0);
-        pathCompletionList.setCellFactory(_ -> {
-            ListCell<String> cell = new ListCell<>() {
-                @Override
-                protected void updateItem(String s, boolean b) {
-                    super.updateItem(s, b);
-                    if (s == null || b) {
-                        setText(null);
-                        setGraphic(null);
-                    }
-                    else {
-                        setText(s);
-                    }
-                }
-            };
-            cell.setOnMouseEntered(_ -> cell.getListView().getSelectionModel().select(cell.getItem()));
-            return cell;
-        });
-        CustomMenuItem scrollableItem = new CustomMenuItem(pathCompletionList, false);
-        pathCompletionMenu = new ContextMenu(scrollableItem);
-
-        pathCompletionMenu.addEventFilter(KeyEvent.KEY_PRESSED, e -> {
-            if (!pathCompletionMenu.isFocused()) return;
-
-            if (e.getCode() == KeyCode.ENTER) {
-                String selected = pathCompletionList.getSelectionModel().getSelectedItem();
-                if (selected == null) {
-                    pathCompletionMenu.hide();
-                    updateSelection();
-                    return;
-                }
-
-                String pre = pathField.getText().substring(0, pathField.getText().lastIndexOf("/") + 1);
-                ignorePathChange = true;
-                String newText = pre + selected;
-                if (!newText.startsWith("/")) newText = "/" + newText;
-
-                pathField.setText(newText);
-                pathField.positionCaret(newText.length());
-                showPathPopup();
-                updatePathPopup(newText);
-            }
-            else if ((e.getCode() == KeyCode.DOWN || e.getCode() == KeyCode.UP) && !pathCompletionList.getItems().isEmpty()) {
-                int size = pathCompletionList.getItems().size();
-                int currentIndex = pathCompletionList.getSelectionModel().getSelectedIndex();
-                int direction = e.getCode() == KeyCode.DOWN ? 1 : -1;
-                int i = (currentIndex + direction + size) % size;
-                pathCompletionList.getSelectionModel().select(i);
-                pathCompletionList.scrollTo(i);
-            }
-            else if (e.getCode() == KeyCode.ESCAPE) {
-                pathCompletionMenu.hide();
-            }
-        });
-
-        pathCompletionList.getStyleClass().remove("list-view");
-        pathCompletionList.getStyleClass().add("popup-list");
-        pathCompletionMenu.getItems().getFirst().getStyleClass().remove("menu-item");
-        pathCompletionMenu.getItems().getFirst().getStyleClass().add("popup-menu-root");
-    }
-
-    private void updatePathPopup(String path) {
-        pathCompletionList.getItems().clear();
-        FileSystemElement pos = FileSystemElement.fromPath(path);
-        FolderElement currentPos = pos instanceof FolderElement folder ? folder : pos.getParent();
-        if (pos instanceof SymlinkElement ln && ln.resolveTargetElement() instanceof FolderElement lnFolder) {
-            currentPos = lnFolder;
-        }
-        if (currentPos == null) {
-            pathCompletionMenu.hide();
-            return;
-        }
-
-        String filter = path.substring(path.lastIndexOf("/") + 1);
-        Set<FileSystemElement> options = currentPos.getContent().values().stream()
-                .filter(object -> (showHiddenContentProperty.get() || !object.getName().startsWith(".")))
-                .filter(element -> element.getName().contains(filter))
-                .collect(Collectors.toSet());
-
-        if (options.isEmpty()) {
-            pathCompletionMenu.hide();
-            return;
-        }
-
-
-        Font font = Font.font("", 12);
-        double maxTextWidth = 0;
-        for (FileSystemElement option : options) {
-            String name = option.getName();
-            if (option instanceof FolderElement ||
-                    (option instanceof SymlinkElement ln && ln.resolveTargetElement() instanceof FolderElement)) {
-                name = name + "/";
-            }
-            pathCompletionList.getItems().add(name);
-            Text text = new Text(name);
-            text.setFont(font);
-            double width = text.getLayoutBounds().getWidth();
-            maxTextWidth = Math.max(maxTextWidth, width);
-        }
-
-        double rowHeight = 24.0;
-        int visibleRows = Math.min(pathCompletionList.getItems().size(), 10);
-        pathCompletionList.setPrefHeight(visibleRows * rowHeight);
-        pathCompletionList.setMaxHeight(visibleRows * rowHeight);
-        double extraPadding = 60.0;
-        pathCompletionList.setPrefWidth(maxTextWidth + extraPadding);
-        pathCompletionList.setMaxWidth(maxTextWidth + extraPadding);
-
-        if (pathCompletionList.getItems().isEmpty()) {
-            pathCompletionMenu.hide();
-        }
-        else {
-            showPathPopup();
-        }
-        pathCompletionList.scrollTo(0);
-        pathCompletionList.getSelectionModel().select(null);
-    }
-
-    private void showPathPopup() {
-        Point2D fieldPos = pathField.localToScreen(0, 0);
-        if (fieldPos == null) return;
-        pathCompletionMenu.show(pathField, fieldPos.getX(), fieldPos.getY() + pathField.getHeight());
+        pathCompletion.updatedPathFieldTarget(folder);
     }
 }
