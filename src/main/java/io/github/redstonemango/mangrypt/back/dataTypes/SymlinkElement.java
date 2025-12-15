@@ -10,6 +10,8 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.util.Set;
 
 public class SymlinkElement extends FileSystemElement {
 
@@ -55,10 +57,36 @@ public class SymlinkElement extends FileSystemElement {
     }
 
     @Override
-    public boolean exportTo(File file, boolean isRoot) {
+    public boolean exportTo(File file, boolean isRoot, Set<FileSystemElement> visited) {
         FileSystemElement target = resolveTargetElement();
         if (target != null) {
-            target.exportTo(file, isRoot);
+            if (target instanceof FolderElement && visited.contains(target)) {
+                if (file.exists()) {
+                    try {
+                        MangoIO.deleteDirectoryRecursively(file);
+                    } catch (IOException _) {
+                        return false;
+                    }
+                }
+
+                try {
+                    if (!file.createNewFile()) {
+                        return false;
+                    }
+                } catch (IOException _) {
+                    return false;
+                }
+
+                try {
+                    Files.writeString(file.toPath(), "This is a link to '" + targetPath + "'.\n" +
+                            "This file was automatically generated to prevent directory recursion during the export process.");
+                } catch (IOException _) {
+                    return false;
+                }
+                return true;
+            }
+
+            return target.exportTo(file, isRoot, visited);
         }
         return true;
     }

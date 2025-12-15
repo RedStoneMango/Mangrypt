@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class FolderElement extends FileSystemElement {
@@ -29,7 +30,8 @@ public class FolderElement extends FileSystemElement {
     }
 
     @Override
-    public boolean exportTo(File file, boolean isRoot) {
+    public boolean exportTo(File file, boolean isRoot, Set<FileSystemElement> visited) {
+        visited.add(this);
         File tmpDir = isRoot ? MangoIO.getNextAvailableFile(new File(file.getParent(), file.getName() + "_tmp")) : file;
 
         if (tmpDir.exists()) {
@@ -55,7 +57,7 @@ public class FolderElement extends FileSystemElement {
                 String name = element.getName();
                 if (element instanceof DataElement dataElement) name = name + dataElement.fileExtension();
                 File sub = new File(tmpDir, name);
-                if (!element.exportTo(sub, false)) {
+                if (!element.exportTo(sub, false, visited)) {
                     success.set(false);
                 }
             });

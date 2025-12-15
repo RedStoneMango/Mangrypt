@@ -400,7 +400,7 @@ public class FileSystemController {
                 file -> {
 
                     Runnable exportAction = () -> {
-                        boolean success = element.exportTo(file, true);
+                        boolean success = element.exportTo(file);
                         ButtonType browseButton = new ButtonType("Browse File");
 
                         if (success) {

@@ -12,7 +12,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.Set;
 
 public abstract class FileSystemElement {
 
@@ -20,7 +22,10 @@ public abstract class FileSystemElement {
     @Tag(3) @Nullable String description;
     transient @Nullable FolderElement parent;
 
-    public abstract boolean exportTo(File file, boolean isRoot);
+    abstract boolean exportTo(File file, boolean isRoot, Set<FileSystemElement> visited);
+    public boolean exportTo(File file) {
+        return exportTo(file, true, new HashSet<>());
+    }
 
     public @Nullable String getDescription() {
         Utilities.ensureAuthorizedAccess(FileSystemController.class);

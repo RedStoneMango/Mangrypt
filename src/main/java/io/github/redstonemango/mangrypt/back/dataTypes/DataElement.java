@@ -10,6 +10,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Arrays;
+import java.util.Set;
 
 public abstract class DataElement extends FileSystemElement {
 
@@ -37,7 +38,8 @@ public abstract class DataElement extends FileSystemElement {
     }
 
     @Override
-    public boolean exportTo(File file, boolean isRoot) {
+    public boolean exportTo(File file, boolean isRoot, Set<FileSystemElement> visited) {
+        visited.add(this);
         if (file.exists()) {
             try {
                 MangoIO.deleteDirectoryRecursively(file);
