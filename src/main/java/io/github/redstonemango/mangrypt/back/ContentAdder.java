@@ -31,7 +31,7 @@ public class ContentAdder {
         }, existingNames);
     }
 
-    public static void addSymlink(FolderElement parentFolder, Consumer<FileSystemElement> callback, Set<String> existingNames, FolderElement currentFolder) {
+    public static void addSymlink(FolderElement parentFolder, Consumer<FileSystemElement> callback, Set<String> existingNames) {
         nameInputDialog(name -> {
             FXMLLoader loader = new FXMLLoader(ContentAdder.class.getResource("/io/github/redstonemango/mangrypt/fxml/symlink-target-dialog.fxml"));
             try {
@@ -40,7 +40,7 @@ public class ContentAdder {
                 throw new RuntimeException(e);
             }
             SymlinkTargetController controller = loader.getController();
-            controller.init("", currentFolder, path -> {
+            controller.init("", parentFolder, path -> {
                     SymlinkElement element = new SymlinkElement();
                     element.ensureFields(name, parentFolder);
                     element.targetPath(path);

@@ -536,7 +536,16 @@ public class FileSystemController {
         mediaItem.setGraphic(mediaIcon);
         mediaItem.setOnAction(_ -> ContentAdder.addMediaElement(currentFolder, this::updateContentView, existingNames));
 
-        ContextMenu menu = new ContextMenu(folderItem, new SeparatorMenuItem(), textItem, imageItem, mediaItem);
+        MenuItem symlinkItem = new MenuItem("Symlink");
+        symlinkItem.setOnAction(_ -> ContentAdder.addSymlink(currentFolder, this::updateContentView, existingNames));
+
+        ContextMenu menu = new ContextMenu(
+                folderItem,
+                new SeparatorMenuItem(),
+                textItem, imageItem, mediaItem,
+                new SeparatorMenuItem(),
+                symlinkItem
+        );
         Point2D imagePos = addImage.localToScreen(0, 0);
         menu.show(addImage.getParent(), imagePos.getX() + addImage.getFitWidth(), imagePos.getY());
     }
