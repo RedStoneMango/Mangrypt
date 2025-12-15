@@ -74,9 +74,9 @@ public class ContentAdder {
                         }
 
                         ImageDataElement element = new ImageDataElement();
+                        element.ensureFields(name, parentFolder);
                         element.bytes(bytes);
                         element.fileExtension(ext);
-                        element.ensureFields(name, parentFolder);
                         if (remoteUrl != null && ConfigIO.getConfig().descriptionOnDownload()) {
                             element.setDescription(remoteUrl);
                         }
@@ -106,9 +106,9 @@ public class ContentAdder {
                         Mangrypt.getBase().setSecondLayerRoot(null);
 
                         MediaDataElement element = new MediaDataElement();
+                        element.ensureFields(name, parentFolder);
                         element.bytes(bytes);
                         element.fileExtension(ext);
-                        element.ensureFields(name, parentFolder);
                         if (remoteUrl != null && ConfigIO.getConfig().descriptionOnDownload()) {
                             element.setDescription(remoteUrl);
                         }
