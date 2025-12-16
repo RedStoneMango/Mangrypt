@@ -503,6 +503,7 @@ public class FileSystemController {
             }
             symlink.targetPath(path);
             updateContentView(null);
+            ConfigIO.markShouldSave();
         }, () ->
             Mangrypt.getBase().setSecondLayerRoot(null)
         );
