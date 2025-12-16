@@ -7,6 +7,7 @@
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
@@ -14,7 +15,7 @@
    <right>
       <AnchorPane prefHeight="60.0" prefWidth="118.0" BorderPane.alignment="CENTER">
          <children>
-            <Button fx:id="selectButton" contentDisplay="GRAPHIC_ONLY" focusTraversable="false" layoutX="61.0" layoutY="6.0" mnemonicParsing="false" onAction="#onSelect" prefHeight="40.0" prefWidth="40.0">
+            <Button fx:id="selectButton" contentDisplay="GRAPHIC_ONLY" focusTraversable="false" layoutX="61.0" layoutY="9.0" mnemonicParsing="false" onAction="#onSelect" prefHeight="40.0" prefWidth="40.0">
                <graphic>
                   <ImageView fitHeight="35.0" fitWidth="39.0" pickOnBounds="true" preserveRatio="true">
                      <image>
@@ -23,7 +24,7 @@
                   </ImageView>
                </graphic>
             </Button>
-            <Button fx:id="deleteButton" contentDisplay="GRAPHIC_ONLY" focusTraversable="false" layoutX="3.0" layoutY="6.0" mnemonicParsing="false" onAction="#onDelete" prefHeight="40.0" prefWidth="40.0">
+            <Button fx:id="deleteButton" contentDisplay="GRAPHIC_ONLY" focusTraversable="false" layoutX="3.0" layoutY="8.0" mnemonicParsing="false" onAction="#onDelete" prefHeight="40.0" prefWidth="40.0">
                <graphic>
                   <ImageView fitHeight="35.0" fitWidth="39.0" pickOnBounds="true" preserveRatio="true">
                      <image>
@@ -58,10 +59,14 @@
       </VBox>
    </center>
    <left>
-      <ImageView fx:id="iconView" fitHeight="32.0" fitWidth="32.0" pickOnBounds="true" preserveRatio="true" translateY="-10.0" BorderPane.alignment="CENTER">
+      <StackPane fx:id="icon" BorderPane.alignment="CENTER">
          <BorderPane.margin>
-            <Insets />
+            <Insets left="5.0" />
          </BorderPane.margin>
-      </ImageView>
+         <children>
+            <ImageView fx:id="iconView" fitHeight="32.0" fitWidth="32.0" pickOnBounds="true" preserveRatio="true" />
+            <ImageView fx:id="iconOverlayView" fitHeight="32.0" fitWidth="32.0" pickOnBounds="true" preserveRatio="true" />
+         </children>
+      </StackPane>
    </left>
 </BorderPane>
