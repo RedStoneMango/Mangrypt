@@ -41,6 +41,10 @@ public class ContentAdder {
             }
             SymlinkTargetController controller = loader.getController();
             controller.init("", parentFolder, path -> {
+                    if (FileSystemElement.fromPath(path) instanceof SymlinkElement) {
+                        Mangrypt.getBase().showWarningAlert("Cannot create a symlink linking to a symlink");
+                        return;
+                    }
                     SymlinkElement element = new SymlinkElement();
                     element.ensureFields(name, parentFolder);
                     element.targetPath(path);

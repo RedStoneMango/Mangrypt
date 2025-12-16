@@ -30,7 +30,7 @@ public class SymlinkElement extends FileSystemElement {
     }
 
     public FileSystemElement resolveTargetElement() {
-        Utilities.ensureAuthorizedAccess(FileSystemController.class, PathCompletion.class);
+        Utilities.ensureAuthorizedAccess(FileSystemController.class, PathCompletion.class, FileSystemElement.class);
         FileSystemElement target = FileSystemElement.fromPath(targetPath);
         if (!target.buildPath().equals(targetPath)) return null; // Might be the case if target was deleted and detection logic falls back to parent folder
         return FileSystemElement.fromPath(targetPath);
