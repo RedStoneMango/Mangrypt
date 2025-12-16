@@ -498,7 +498,7 @@ public class FileSystemController {
         SymlinkTargetController controller = loader.getController();
         controller.init(symlink.getTargetPath(), currentFolder, path -> {
             if (FileSystemElement.fromPath(path) instanceof SymlinkElement) {
-                Mangrypt.getBase().showWarningAlert("Cannot create a symlink linking to a symlink");
+                Mangrypt.getBase().showWarningAlert("Cannot link a symlink to a symlink");
                 return;
             }
             symlink.targetPath(path);
