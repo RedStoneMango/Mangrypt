@@ -7,7 +7,6 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 
@@ -21,9 +20,9 @@ public abstract class ListEntryBase extends BorderPane {
     protected final VBox vBox;
     protected final Label nameLabel;
     protected final Label descriptionLabel;
-    protected final StackPane icon;
+    protected final AnchorPane anchorPane0;
     protected final ImageView iconView;
-    protected final ImageView iconOverlayView;
+    protected final ImageView symlinkIcon;
 
     public ListEntryBase() {
 
@@ -35,9 +34,9 @@ public abstract class ListEntryBase extends BorderPane {
         vBox = new VBox();
         nameLabel = new Label();
         descriptionLabel = new Label();
-        icon = new StackPane();
+        anchorPane0 = new AnchorPane();
         iconView = new ImageView();
-        iconOverlayView = new ImageView();
+        symlinkIcon = new ImageView();
 
         setMaxHeight(USE_PREF_SIZE);
         setMaxWidth(USE_PREF_SIZE);
@@ -88,6 +87,7 @@ public abstract class ListEntryBase extends BorderPane {
 
         nameLabel.getStyleClass().add("uncolored-label");
         nameLabel.setText("NAME");
+        nameLabel.setTranslateY(7.0);
         nameLabel.setFont(new Font(17.0));
         VBox.setMargin(nameLabel, new Insets(0.0));
 
@@ -97,26 +97,30 @@ public abstract class ListEntryBase extends BorderPane {
         vBox.setPadding(new Insets(10.0, 0.0, 0.0, 10.0));
         setCenter(vBox);
 
-        BorderPane.setAlignment(icon, javafx.geometry.Pos.CENTER);
-        BorderPane.setMargin(icon, new Insets(0.0, 0.0, 0.0, 5.0));
+        BorderPane.setAlignment(anchorPane0, javafx.geometry.Pos.CENTER);
 
         iconView.setFitHeight(32.0);
         iconView.setFitWidth(32.0);
+        iconView.setLayoutY(13.0);
         iconView.setPickOnBounds(true);
         iconView.setPreserveRatio(true);
 
-        iconOverlayView.setFitHeight(32.0);
-        iconOverlayView.setFitWidth(32.0);
-        iconOverlayView.setPickOnBounds(true);
-        iconOverlayView.setPreserveRatio(true);
-        setLeft(icon);
+        symlinkIcon.setY(2.0);
+        symlinkIcon.setFitHeight(14.0);
+        symlinkIcon.setFitWidth(14.0);
+        symlinkIcon.setTranslateX(-3.0);
+        symlinkIcon.setPickOnBounds(true);
+        symlinkIcon.setPreserveRatio(true);
+        symlinkIcon.setImage(new Image(getClass().getResource("/io/github/redstonemango/mangrypt/image/data-type-icon/symlinked_overlay.png").toExternalForm()));
+        BorderPane.setMargin(anchorPane0, new Insets(0.0, 0.0, 0.0, 5.0));
+        setLeft(anchorPane0);
 
         anchorPane.getChildren().add(selectButton);
         anchorPane.getChildren().add(deleteButton);
         vBox.getChildren().add(nameLabel);
         vBox.getChildren().add(descriptionLabel);
-        icon.getChildren().add(iconView);
-        icon.getChildren().add(iconOverlayView);
+        anchorPane0.getChildren().add(iconView);
+        anchorPane0.getChildren().add(symlinkIcon);
 
     }
 

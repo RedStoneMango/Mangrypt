@@ -8,6 +8,7 @@ import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontPosture;
 import javafx.scene.text.FontWeight;
@@ -43,11 +44,12 @@ public class ListEntry extends ListEntryBase {
         }
 
         if (icon == null) {
-            setLeft(null);
+            iconView.setVisible(false);
         }
         else {
             iconView.setImage(icon);
         }
+        symlinkIcon.setVisible(symlink);
 
         MenuItem openItem = new MenuItem("Open");
         openItem.setOnAction(_ -> onSelect.run());
