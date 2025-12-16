@@ -239,8 +239,8 @@ public class FileSystemController {
             Mangrypt.getBase().showErrorAlert("The specified FileSystemElement is neither a FolderElement, nor a DataElement nor a SymlinkElement");
 
             throw new RuntimeException("element has to be an instance of " + FolderElement.class.getName() + ", " +
-                    DataElement.class.getName() + " or + " + SymlinkElement.class.getName() +
-                    ". Found" + element.getClass().getName() + "instead");
+                    DataElement.class.getName() + " or " + SymlinkElement.class.getName() +
+                    ". Found " + element.getClass().getName() + " instead");
         }
     }
 
