@@ -20,7 +20,7 @@ public class SymlinkElement extends FileSystemElement {
     @Tag(11) private String targetPath;
 
     public String getTargetPath() {
-        Utilities.ensureAuthorizedAccess(FileSystemController.class);
+        Utilities.ensureAuthorizedAccess(FileSystemController.class, FileSystemElement.class);
         return targetPath;
     }
 

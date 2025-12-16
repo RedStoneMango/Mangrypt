@@ -108,6 +108,7 @@ public abstract class FileSystemElement {
             if (part.isBlank()) continue;
 
             FileSystemElement subElement = current.getContent().get(part);
+            if (subElement != null && subElement.buildPath().equals(path)) return subElement;
             switch (subElement) {
                 case null -> {
                     return current; // Fall back to the closest folder
