@@ -106,6 +106,7 @@ public class PathCompletion {
                 }
             };
             cell.setOnMouseEntered(_ -> cell.getListView().getSelectionModel().select(cell.getItem()));
+            cell.setOnMouseClicked(_ -> doCompletion(cell.getItem()));
             return cell;
         });
         CustomMenuItem scrollableItem = new CustomMenuItem(pathCompletionList, false);
@@ -122,15 +123,7 @@ public class PathCompletion {
                     return;
                 }
 
-                String pre = pathField.getText().substring(0, pathField.getText().lastIndexOf("/") + 1);
-                ignorePathChange = true;
-                String newText = pre + selected;
-                if (!newText.startsWith("/")) newText = "/" + newText;
-
-                pathField.setText(newText);
-                pathField.positionCaret(newText.length());
-                showPathPopup();
-                updatePathPopup(newText);
+                doCompletion(selected);
             }
             else if ((e.getCode() == KeyCode.DOWN || e.getCode() == KeyCode.UP) && !pathCompletionList.getItems().isEmpty()) {
                 int size = pathCompletionList.getItems().size();
@@ -149,6 +142,18 @@ public class PathCompletion {
         pathCompletionList.getStyleClass().add("popup-list");
         pathCompletionMenu.getItems().getFirst().getStyleClass().remove("menu-item");
         pathCompletionMenu.getItems().getFirst().getStyleClass().add("popup-menu-root");
+    }
+
+    private void doCompletion(String selected) {
+        String pre = pathField.getText().substring(0, pathField.getText().lastIndexOf("/") + 1);
+        ignorePathChange = true;
+        String newText = pre + selected;
+        if (!newText.startsWith("/")) newText = "/" + newText;
+
+        pathField.setText(newText);
+        pathField.positionCaret(newText.length());
+        showPathPopup();
+        updatePathPopup(newText);
     }
 
     private void updatePathPopup(String path) {
