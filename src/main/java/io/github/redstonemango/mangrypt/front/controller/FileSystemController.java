@@ -292,10 +292,12 @@ public class FileSystemController {
                 true,
                 name -> {
                     if (name.isBlank()) return false;
+                    if (name.contains("/")) return false;
                     return !name.equals(".");
                 },
                 name -> {
                     if (name.startsWith(".")) return "Elements starting with . are hidden";
+                    if (name.contains("/")) return "Invalid character '/'";
                     return null;
                 },
                 baseName -> {
@@ -336,11 +338,13 @@ public class FileSystemController {
                 name -> {
                     if (existingNames.contains(name) && !name.equals(oldName)) return false;
                     if (name.isBlank()) return false;
+                    if (name.contains("/")) return false;
                     return !name.equals(".");
                 },
                 name -> {
                     if (existingNames.contains(name) && !name.equals(oldName)) return "Such an element already exists";
                     else if (name.startsWith(".")) return "Elements starting with . are hidden";
+                    else if (name.contains("/")) return "Invalid character '/'";
                     return null;
                 },
                 name -> {

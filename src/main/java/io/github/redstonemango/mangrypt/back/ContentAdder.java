@@ -164,10 +164,12 @@ public class ContentAdder {
                 true,
                 name -> {
                     if (name.isBlank() || name.equals(".")) return false;
+                    if (name.contains("/")) return false;
                     return !existingNames.contains(name);
                 },
                 name -> {
                     if (existingNames.contains(name)) return "Such an element already exists";
+                    if (name.contains("/")) return "Invalid character '/'";
                     if (name.startsWith(".")) return "Elements starting with . are hidden";
                     return null;
                 },
