@@ -1,6 +1,7 @@
 package io.github.redstonemango.mangrypt.back.dataTypes;
 
 import com.esotericsoftware.kryo.serializers.TaggedFieldSerializer.Tag;
+import io.github.redstonemango.mangoutils.tuple.Tuple2;
 import io.github.redstonemango.mangrypt.back.ConfigIO;
 import io.github.redstonemango.mangrypt.back.Configuration;
 import io.github.redstonemango.mangrypt.back.ContentAdder;
@@ -12,11 +13,13 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.math.BigInteger;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
 
-public abstract class FileSystemElement {
+public abstract class FileSystemElement implements Comparable<FileSystemElement> {
 
     @Tag(2) String name;
     @Tag(3) @Nullable String description;
@@ -132,4 +135,56 @@ public abstract class FileSystemElement {
     public FileSystemElement deepCopy() {
         return deepCopy(parent);
     }
+
+    @Override
+    public int compareTo(@NotNull FileSystemElement other) {
+        String thisName = name;
+        String otherName = other.name;
+
+        var thisNum = extractNumber(thisName);
+        var otherNum = extractNumber(otherName);
+
+        if (thisNum != null && otherNum != null
+                && thisNum.getFirst() == otherNum.getFirst()) {
+            return new BigInteger(thisNum.getSecond()).compareTo(new BigInteger(otherNum.getSecond()));
+        }
+        return thisName.compareTo(otherName);
+    }
+
+    /**
+     * @return A tuple containing the extracted number as a string in the 2nd field
+     * and an indicator where the number was found ({@code true} if the number is
+     * the whole string or in the beginning, {@code false} if it is in the end)
+     * or returns {@code null} if no number was found
+     */
+    public static @Nullable Tuple2<Boolean, String> extractNumber(String str) {
+        int len = str.length();
+
+        // Check start
+        char first = str.charAt(0);
+        if (first >= '0' && first <= '9') {
+            int i = 0;
+            while (i < len) {
+                char c = str.charAt(i);
+                if (c < '0' || c > '9') break;
+                i++;
+            }
+            return new Tuple2<>(Boolean.TRUE, str.substring(0, i));
+        }
+
+        // Check end
+        char last = str.charAt(len - 1);
+        if (last >= '0' && last <= '9') {
+            int i = len - 1;
+            while (i >= 0) {
+                char c = str.charAt(i);
+                if (c < '0' || c > '9') break;
+                i--;
+            }
+            return new Tuple2<>(Boolean.FALSE, str.substring(i + 1));
+        }
+
+        return null;
+    }
+
 }

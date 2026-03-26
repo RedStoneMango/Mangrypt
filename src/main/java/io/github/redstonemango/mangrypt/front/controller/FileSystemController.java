@@ -2,6 +2,7 @@ package io.github.redstonemango.mangrypt.front.controller;
 
 import io.github.redstonemango.mangoutils.NameConverter;
 import io.github.redstonemango.mangoutils.OperatingSystem;
+import io.github.redstonemango.mangoutils.tuple.Tuple2;
 import io.github.redstonemango.mangrypt.Mangrypt;
 import io.github.redstonemango.mangrypt.back.ContentAdder;
 import io.github.redstonemango.mangrypt.back.PseudoClipboard;
@@ -26,11 +27,15 @@ import javafx.scene.input.*;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.regex.Pattern;
 
 public class FileSystemController {
+
+    public static final Pattern NUMBER_PATTERN = Pattern.compile("^.*(-?\\d+([.,]\\d+)?)$|^(-?\\d+([.,]\\d+)?).*$");
 
     private final PseudoClipboard clipboard = new PseudoClipboard();
 
@@ -83,7 +88,8 @@ public class FileSystemController {
                             selectedElements,
                             contentView);
                 },
-                new Insets(0, 0, 1, 0));
+                new Insets(0, 0, 1, 0)
+        );
 
         updateContentView(null);
         pathCompletion = new PathCompletion(pathField, currentFolder, showHiddenContentProperty, element -> {
@@ -621,7 +627,7 @@ public class FileSystemController {
         contentView.getItems().addAll(
                 currentFolder.getContent().values().stream()
                         .filter(object -> (showHiddenContentProperty.get() || !object.getName().startsWith(".")))
-                        .sorted(Comparator.comparing(FileSystemElement::getName))
+                        .sorted()
                         .toList());
 
         if (selectElement != null) {
