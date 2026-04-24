@@ -33,11 +33,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.regex.Pattern;
 
 public class FileSystemController {
-
-    public static final Pattern NUMBER_PATTERN = Pattern.compile("^.*(-?\\d+([.,]\\d+)?)$|^(-?\\d+([.,]\\d+)?).*$");
 
     private final PseudoClipboard clipboard = new PseudoClipboard();
 
