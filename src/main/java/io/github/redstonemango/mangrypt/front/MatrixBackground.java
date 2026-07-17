@@ -10,7 +10,8 @@ import io.github.redstonemango.mangrypt.front.controller.AuthenticationControlle
 
 public class MatrixBackground {
 
-    public static final Image BACKGROUND_SPRITE = new Image(AuthenticationController.class.getResourceAsStream("/io/github/redstonemango/mangrypt/image/matrix-rain-sprite.png"));
+    public static final Image BACKGROUND_SPRITE = new Image(AuthenticationController.class
+            .getResourceAsStream("/io/github/redstonemango/mangrypt/image/matrix-rain-sprite.png"));
     public static final int BACKGROUND_SPRITE_SIZE = 400;
     public static final Duration BACKGROUND_SCROLL_DURATION = Duration.seconds(20);
 
@@ -18,6 +19,7 @@ public class MatrixBackground {
     private final Pane backgroundContainer;
     private int oldXCount;
     private int oldYCount;
+    private TranslateTransition scroll;
 
     public MatrixBackground(Pane backgroundContainer) {
         this.backgroundContainer = backgroundContainer;
@@ -48,11 +50,11 @@ public class MatrixBackground {
         oldYCount = yCount;
     }
 
-     public boolean playScroll() {
+     public synchronized boolean playScroll() {
         if (shouldPlayBackgroundScroll) return false; // If already playing, don't start again
         shouldPlayBackgroundScroll = true;
 
-        TranslateTransition scroll = new TranslateTransition(BACKGROUND_SCROLL_DURATION, backgroundContainer);
+        scroll = new TranslateTransition(BACKGROUND_SCROLL_DURATION, backgroundContainer);
         scroll.setByY(BACKGROUND_SPRITE_SIZE);
         scroll.setInterpolator(Interpolator.LINEAR);
         scroll.setOnFinished(_ -> {
@@ -63,8 +65,12 @@ public class MatrixBackground {
         return true;
     }
 
-    public void stopScroll() {
+    public synchronized boolean stopScroll() {
+        if (scroll == null) return false;
+
+        scroll.stop();
         shouldPlayBackgroundScroll = false;
+        return true;
     }
 
     public boolean playsScroll() {

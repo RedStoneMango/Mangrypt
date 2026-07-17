@@ -53,6 +53,7 @@ public class Mangrypt extends Application {
 
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/io/github/redstonemango/mangrypt/fxml/vault-selection.fxml"));
         base.setSceneRoot(loader.load());
+        base.setMatrixScroll(true);
     }
 
     @Override

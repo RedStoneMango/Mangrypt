@@ -121,6 +121,7 @@ public class SecuritySetupController {
                     FXMLLoader loader = new FXMLLoader(getClass().getResource("/io/github/redstonemango/mangrypt/fxml/file-system.fxml"));
                     try {
                         Mangrypt.getBase().setSceneRoot(loader.load());
+                        Mangrypt.getBase().setMatrixScroll(false);
                         ConfigIO.markVaultOpen();
                         ConfigIO.markShouldSave(); // Save is required. Otherwise, vault file will be empty after exit
                     }

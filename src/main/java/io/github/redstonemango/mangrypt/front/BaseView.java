@@ -1,18 +1,21 @@
 package io.github.redstonemango.mangrypt.front;
 
 import io.github.redstonemango.mangrypt.Mangrypt;
-import io.github.redstonemango.mangrypt.back.dataTypes.DataElement;
-import io.github.redstonemango.mangrypt.back.dataTypes.FileSystemElement;
-import io.github.redstonemango.mangrypt.front.controller.*;
 import io.github.redstonemango.mangrypt.back.ConfigIO;
 import io.github.redstonemango.mangrypt.back.Utilities;
+import io.github.redstonemango.mangrypt.back.dataTypes.DataElement;
+import io.github.redstonemango.mangrypt.front.controller.*;
 import javafx.animation.FadeTransition;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
-import javafx.scene.control.*;
-import javafx.scene.layout.*;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
+import javafx.scene.layout.FlowPane;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
 import javafx.scene.shape.Rectangle;
 import javafx.util.Duration;
 import org.jetbrains.annotations.Nullable;
@@ -67,7 +70,6 @@ public class BaseView extends StackPane {
 
         Platform.runLater(() -> {
             matrixBackground.update();
-            matrixBackground.playScroll();
             defaultPaneBackground.update();
             updateDimensions();
             getScene().getWindow().focusedProperty().addListener((_, _, isFocused) -> {
@@ -271,10 +273,20 @@ public class BaseView extends StackPane {
         return !sceneRoot.isVisible(); // SceneRoot will always be visible, except if it is obscured
     }
 
+    public boolean setMatrixScroll(boolean matrixScroll) {
+        if (matrixScroll) {
+            return matrixBackground.playScroll();
+        }
+        else {
+            return matrixBackground.stopScroll();
+        }
+    }
+
     private void obscureData() {
         Utilities.ensureAuthorizedAccess(BaseView.class);
 
         if (passwordOverlayLayer.isVisible()) return;
+        setMatrixScroll(true);
 
         isObscuringDialog = dialogLayer.isVisible();
         isObscuring2ndLayer = secondLayerRoot.isVisible();
@@ -292,6 +304,7 @@ public class BaseView extends StackPane {
     public void stopObscuring() {
         Utilities.ensureAuthorizedAccess(OverlayController.class);
 
+        setMatrixScroll(false);
         if (isObscuringDialog) dialogLayer.setVisible(true); // If the layer was not visible before obscuring, don't show it
         if (isObscuring2ndLayer) secondLayerRoot.setVisible(true);
         if (isObscuringDataLayer) dataViewLayer.setVisible(true);
@@ -370,6 +383,7 @@ public class BaseView extends StackPane {
         try {
             FXMLLoader loader = new FXMLLoader(Utilities.class.getResource("/io/github/redstonemango/mangrypt/fxml/vault-selection.fxml"));
             Mangrypt.getBase().setSceneRoot(loader.load());
+            Mangrypt.getBase().setMatrixScroll(true);
             passwordOverlayLayer.setVisible(false); // After loader.load() to ensure it does not run if loading fails
         }
         catch (IOException e) {

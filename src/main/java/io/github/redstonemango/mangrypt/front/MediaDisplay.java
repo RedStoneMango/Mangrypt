@@ -112,6 +112,8 @@ public class MediaDisplay extends VBox {
         AnchorPane pane = new AnchorPane(videoView[0]);
         VBox.setVgrow(pane, Priority.ALWAYS);
         player.videoSurface().set(new ImageViewVideoSurface(videoView[0]));
+        // TODO: Resizing is buggy since trying to make the '#pane' smaller doesn't actually have an effect
+        //  The issue is not related to vlcj-fx being used
 
         player.events().addMediaEventListener(new MediaEventAdapter() {
             @Override

@@ -110,6 +110,7 @@ public class AuthenticationController {
                 FXMLLoader loader = new FXMLLoader(getClass().getResource("/io/github/redstonemango/mangrypt/fxml/file-system.fxml"));
                 try {
                     Mangrypt.getBase().setSceneRoot(loader.load());
+                    Mangrypt.getBase().setMatrixScroll(false);
                     ConfigIO.markVaultOpen();
                 } catch (IOException e) {
                     throw new RuntimeException(e); // We can throw here without an error screen; If this is ever caught, the app was compiled incorrectly, and we're cooked wither way
