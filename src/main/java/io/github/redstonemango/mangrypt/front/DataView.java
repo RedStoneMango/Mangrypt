@@ -2,8 +2,14 @@ package io.github.redstonemango.mangrypt.front;
 
 import io.github.redstonemango.mangoutils.OperatingSystem;
 import io.github.redstonemango.mangrypt.Mangrypt;
-import io.github.redstonemango.mangrypt.back.*;
-import io.github.redstonemango.mangrypt.back.dataTypes.*;
+import io.github.redstonemango.mangrypt.back.ConfigIO;
+import io.github.redstonemango.mangrypt.back.Configuration;
+import io.github.redstonemango.mangrypt.back.SecureInMemoryMediaServer;
+import io.github.redstonemango.mangrypt.back.Utilities;
+import io.github.redstonemango.mangrypt.back.dataTypes.DataElement;
+import io.github.redstonemango.mangrypt.back.dataTypes.ImageDataElement;
+import io.github.redstonemango.mangrypt.back.dataTypes.MediaDataElement;
+import io.github.redstonemango.mangrypt.back.dataTypes.TextDataElement;
 import javafx.application.Platform;
 import javafx.concurrent.ScheduledService;
 import javafx.concurrent.Task;
@@ -22,9 +28,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.*;
-import javafx.scene.media.Media;
 import javafx.scene.media.MediaException;
-import javafx.scene.media.MediaPlayer;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Polygon;
@@ -57,8 +61,8 @@ public class DataView extends BorderPane {
     private @Nullable TextArea textArea;
     private @Nullable Image image;
     private @Nullable ImageView imageView;
-    private @Nullable MediaPlayer mediaPlayer;
-    private @Nullable SecureInMemoryMediaServer mediaServer;
+    private @Nullable MediaDisplay mediaDisplay;
+    private @Nullable SecureInMemoryMediaServer mediaServer; // TODO: Evaluate if we should remove this
 
     private boolean isShowingData = false;
     private long lastMouseMoved = -1;
@@ -198,7 +202,7 @@ public class DataView extends BorderPane {
 
     private void tryUseHiddenCursorNode(Node node, Consumer<@Nullable Node> action) {
         if (node instanceof ImageView) action.accept(node);
-        else if (node instanceof MediaDisplay mediaDisplay) mediaDisplay.tryUseMediaView(action::accept);
+        else if (node instanceof MediaDisplay md) md.tryUseMediaView(action::accept);
         else action.accept(null);
     }
 
@@ -246,11 +250,6 @@ public class DataView extends BorderPane {
             imageView = null;
         }
 
-        if (mediaPlayer != null) {
-            mediaPlayer.dispose();
-            mediaPlayer = null;
-        }
-
         if (Platform.isFxApplicationThread()) {
             centerContainer.getChildren().clear();
             
@@ -267,6 +266,11 @@ public class DataView extends BorderPane {
         if (mediaServer != null) {
             mediaServer.stop();
             mediaServer = null;
+        }
+
+        if (mediaDisplay != null) {
+            mediaDisplay.dispose();
+            mediaDisplay = null;
         }
     }
 
@@ -300,24 +304,8 @@ public class DataView extends BorderPane {
             case MediaDataElement mediaData -> {
                 mediaServer = new SecureInMemoryMediaServer(mediaData.bytes(), mediaData.mimeType(), 0, "media-stream");
                 mediaServer.start();
-                Media media;
-                try {
-                    media = new Media(mediaServer.getTokenizedUrl());
-                }
-                catch (MediaException e) {
-                    mediaServer.stop();
-                    tryShowCodecMessage(e);
-                    yield createErrorDisplay();
-                }
-                try {
-                    mediaPlayer = new MediaPlayer(media);
-                }
-                catch (MediaException e) {
-                    mediaServer.stop();
-                    tryShowCodecMessage(e);
-                    yield createErrorDisplay();
-                }
-                yield new MediaDisplay(mediaPlayer);
+                mediaDisplay = new MediaDisplay(mediaServer.getTokenizedUrl());
+                yield mediaDisplay;
             }
             default -> createErrorDisplay();
         };

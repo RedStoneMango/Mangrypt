@@ -8,13 +8,18 @@ import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
-import javafx.scene.media.MediaPlayer;
-import javafx.scene.media.MediaView;
-import javafx.scene.media.VideoTrack;
 import javafx.scene.paint.Color;
-import javafx.util.Duration;
 import org.jetbrains.annotations.Nullable;
+import uk.co.caprica.vlcj.factory.MediaPlayerFactory;
+import uk.co.caprica.vlcj.javafx.videosurface.ImageViewVideoSurface;
+import uk.co.caprica.vlcj.media.Media;
+import uk.co.caprica.vlcj.media.MediaEventAdapter;
+import uk.co.caprica.vlcj.media.MediaParsedStatus;
+import uk.co.caprica.vlcj.player.base.MediaPlayer;
+import uk.co.caprica.vlcj.player.base.MediaPlayerEventAdapter;
+import uk.co.caprica.vlcj.player.embedded.EmbeddedMediaPlayer;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -26,16 +31,23 @@ import java.util.function.Consumer;
  */
 public class MediaDisplay extends VBox {
 
+    private final EmbeddedMediaPlayer player;
+    private final MediaPlayerFactory factory;
     private String maxTime = "--:--";
-    private @Nullable Consumer<@Nullable MediaView> mediaViewAction;
+    private @Nullable Consumer<@Nullable ImageView> mediaViewAction;
 
-    public MediaDisplay(MediaPlayer player) {
+    public MediaDisplay(String url) {
+        factory = new MediaPlayerFactory();
+        player = factory.mediaPlayers().newEmbeddedMediaPlayer();
+
         Label timeLabel = new Label("--:-- / --:--");
         VBox.setMargin(timeLabel, new Insets(5, 0, 0, 0));
         timeLabel.getStyleClass().add("uncolored-label");
         Slider durationSlider = new Slider(0, 0, 0);
         durationSlider.valueProperty().addListener((_, _, value) -> {
-            if (durationSlider.isValueChanging()) player.seek(Duration.seconds(value.doubleValue()));
+            if (durationSlider.isValueChanging()) {
+                player.controls().setTime(value.longValue());
+            }
         });
         durationSlider.setDisable(true);
         VBox.setMargin(durationSlider, new Insets(0, 5, 0, 5));
@@ -44,11 +56,11 @@ public class MediaDisplay extends VBox {
         pauseButton.setPrefHeight(33);
         pauseButton.setFocusTraversable(false);
         pauseButton.setOnAction(_ -> {
-            if (player.getStatus() != MediaPlayer.Status.PLAYING) {
-                player.play();
+            if (!player.status().isPlaying()) {
+                player.controls().play();
             }
             else {
-                player.pause();
+                player.controls().pause();
             }
         });
         Button forwardButton = new Button("=>");
@@ -56,41 +68,38 @@ public class MediaDisplay extends VBox {
         forwardButton.setPrefHeight(33);
         forwardButton.setFocusTraversable(false);
         forwardButton.setDisable(true);
-        forwardButton.setOnAction(_ -> {
-            double secs = player.getCurrentTime().toSeconds();
-            double max = player.getMedia().getDuration().toSeconds();
-            player.seek(Duration.seconds(Math.min(secs + 10, max)));
-        });
+        forwardButton.setOnAction(_ ->
+            player.controls().skipTime(10 * 1000L)
+        );
         Button backardButton = new Button("<=");
         backardButton.setPrefWidth(33);
         backardButton.setPrefHeight(33);
         backardButton.setFocusTraversable(false);
         backardButton.setDisable(true);
-        backardButton.setOnAction(_ -> {
-            double secs = player.getCurrentTime().toSeconds();
-            player.seek(Duration.seconds(Math.max(secs - 10, 0)));
-        });
+        backardButton.setOnAction(_ ->
+            player.controls().skipTime(-(10 * 1000L))
+        );
         Button stopButton = new Button("O");
         stopButton.setPrefWidth(33);
         stopButton.setPrefHeight(33);
         stopButton.setFocusTraversable(false);
         stopButton.setDisable(true);
-        stopButton.setOnAction(_ -> {
-            player.stop();
-        });
+        stopButton.setOnAction(_ ->
+            player.controls().stop()
+        );
         Region spacingRegion = new Region();
         HBox.setHgrow(spacingRegion, Priority.ALWAYS);
         Region spacingRegion_ = new Region();
         HBox.setHgrow(spacingRegion_, Priority.ALWAYS);
         Region _spacingRegion = new Region();
         HBox.setHgrow(_spacingRegion, Priority.ALWAYS);
-        Slider volumeSlider = new Slider(0, 1, 0.5);
-        volumeSlider.valueProperty().addListener((_, _, volume) -> {
-            player.setVolume(volume.doubleValue());
-        });
+        Slider volumeSlider = new Slider(0, 125, 100);
+        volumeSlider.valueProperty().addListener((_, _, volume) ->
+            player.audio().setVolume(volume.intValue())
+        );
         Label l1 = new Label("0 %");
         l1.getStyleClass().add("uncolored-label");
-        Label l2 = new Label("100 %");
+        Label l2 = new Label("125 %");
         l2.getStyleClass().add("uncolored-label");
 
         HBox buttonBox = new HBox(spacingRegion_, backardButton, pauseButton, stopButton, forwardButton, spacingRegion, l1, volumeSlider,  l2, _spacingRegion);
@@ -98,56 +107,86 @@ public class MediaDisplay extends VBox {
         buttonBox.setSpacing(10);
         VBox.setMargin(buttonBox, new Insets(0, 0, 5, 0));
 
-        player.setOnReady(() -> {
-            MediaView mv;
-            if (player.getMedia().getTracks().stream().anyMatch(track -> track instanceof VideoTrack)) {
-                mv = new MediaView(player);
-                mv.setPreserveRatio(true);
-                mv.setManaged(false);
-                AnchorPane pane = new AnchorPane(mv);
-                VBox.setVgrow(pane, Priority.ALWAYS);
-                getChildren().addFirst(pane);
-                sizeUpdate(true, pane.getWidth(), mv, pane);
-                sizeUpdate(false, pane.getHeight(), mv, pane);
+        final ImageView[] videoView = {new ImageView()};
+        videoView[0].setPreserveRatio(true);
+        AnchorPane pane = new AnchorPane(videoView[0]);
+        VBox.setVgrow(pane, Priority.ALWAYS);
+        player.videoSurface().set(new ImageViewVideoSurface(videoView[0]));
 
-                pane.widthProperty().addListener((_, _, val) -> sizeUpdate(true, val.doubleValue(), mv, pane));
-                pane.heightProperty().addListener((_, _, val) -> sizeUpdate(false, val.doubleValue(), mv, pane));
-            } else {
-                mv = null;
+        player.events().addMediaEventListener(new MediaEventAdapter() {
+            @Override
+            public void mediaParsedChanged(Media media, MediaParsedStatus newStatus) {
+                Platform.runLater(() -> {
+                    if (newStatus == MediaParsedStatus.DONE) {
+                        player.audio().setVolume(100);
+                        if (!player.media().info().videoTracks().isEmpty()) {
+                            getChildren().addFirst(pane);
+                            sizeUpdate(true, pane.getWidth(), videoView[0], pane);
+                            sizeUpdate(false, pane.getHeight(), videoView[0], pane);
+
+                            pane.widthProperty().addListener((_, _, val) ->
+                                    sizeUpdate(true, val.doubleValue(), videoView[0], pane));
+                            pane.heightProperty().addListener((_, _, val) ->
+                                    sizeUpdate(false, val.doubleValue(), videoView[0], pane));
+
+                        } else {
+                            videoView[0] = null;
+                        }
+                        if (mediaViewAction != null) {
+                            mediaViewAction.accept(videoView[0]);
+                        }
+                    }
+                });
             }
-            if (mediaViewAction != null) {
-                mediaViewAction.accept(mv);
+
+            @Override
+            public void mediaDurationChanged(Media media, long newDuration) {
+                Platform.runLater(() -> {
+                    maxTime = formatDuration(newDuration);
+                    timeLabel.setText("00:00 / " + maxTime);
+                    durationSlider.setMax(newDuration);
+                });
+            }
+        });
+
+        player.events().addMediaPlayerEventListener(new MediaPlayerEventAdapter() {
+            @Override
+            public void stopped(MediaPlayer mediaPlayer) {
+                Platform.runLater(() -> {
+                    stopButton.setDisable(true);
+                    forwardButton.setDisable(true);
+                    backardButton.setDisable(true);
+                    timeLabel.setText("00:00 / " + maxTime);
+                    pauseButton.setText(">");
+                    durationSlider.setDisable(true);
+                });
             }
 
-            maxTime = formatDuration(player.getMedia().getDuration());
-            timeLabel.setText("00:00 / " + maxTime);
-            durationSlider.setMax(player.getMedia().getDuration().toSeconds());
-        });
+            @Override
+            public void playing(MediaPlayer mediaPlayer) {
+                Platform.runLater(() -> {
+                    stopButton.setDisable(false);
+                    forwardButton.setDisable(false);
+                    backardButton.setDisable(false);
+                    pauseButton.setText("||");
+                    durationSlider.setDisable(false);
+                });
+            }
 
-        player.setOnStopped(() -> {
-            stopButton.setDisable(true);
-            forwardButton.setDisable(true);
-            backardButton.setDisable(true);
-            timeLabel.setText("00:00 / " + maxTime);
-            pauseButton.setText(">");
-            durationSlider.setDisable(true);
+            @Override
+            public void paused(MediaPlayer mediaPlayer) {
+                Platform.runLater(() -> pauseButton.setText(">"));
+            }
+
+            @Override
+            public void timeChanged(MediaPlayer mediaPlayer, long newTime) {
+                Platform.runLater(() -> {
+                    if (!durationSlider.isValueChanging()) durationSlider.setValue(newTime);
+                    timeLabel.setText(formatDuration(newTime) + " / " + maxTime);
+                });
+            }
         });
-        player.setOnPlaying(() -> {
-            stopButton.setDisable(false);
-            forwardButton.setDisable(false);
-            backardButton.setDisable(false);
-            pauseButton.setText("||");
-            durationSlider.setDisable(false);
-        });
-        player.setOnPaused(() -> pauseButton.setText(">"));
-        player.setOnEndOfMedia(() -> {
-            player.stop();
-            player.seek(Duration.ZERO); // Needs to be done manually
-        });
-        player.currentTimeProperty().addListener((_, _, currentTime) -> {
-            if (!durationSlider.isValueChanging()) durationSlider.setValue(currentTime.toSeconds());
-            timeLabel.setText(formatDuration(currentTime) + " / " + maxTime);
-        });
+        player.media().startPaused(url);
 
         VBox controlsBox = new VBox(timeLabel, durationSlider, buttonBox);
         controlsBox.setBackground(
@@ -169,37 +208,33 @@ public class MediaDisplay extends VBox {
         });
         return Collections.unmodifiableList(es);
     }
-    void tryUseMediaView(Consumer<@Nullable MediaView> mediaViewAction) {
+    void tryUseMediaView(Consumer<@Nullable ImageView> mediaViewAction) {
         this.mediaViewAction = mediaViewAction;
     }
-    public static String formatDuration(Duration duration) {
-        StringBuilder builder = new StringBuilder();
+    public static String formatDuration(long millis) {
+        long totalSeconds = millis / 1000;
 
-        int hours = Math.max((int) duration.toHours(), 0);
-        int minutes = (int) duration.toMinutes() - (hours * 60);
-        int seconds = (int) duration.toSeconds() - (hours * 3600) - (minutes * 60);
+        long hours = totalSeconds / 3600;
+        long minutes = (totalSeconds % 3600) / 60;
+        long seconds = totalSeconds % 60;
 
-        if (hours > 0) builder.append(hours).append(":");
-
-        if (minutes >= 10) builder.append(minutes).append(":");
-        else builder.append("0").append(minutes).append(":");
-
-        if (seconds >= 10) builder.append(seconds);
-        else builder.append("0").append(seconds);
-
-        return builder.toString();
+        if (hours > 0) {
+            return String.format("%d:%02d:%02d", hours, minutes, seconds);
+        } else {
+            return String.format("%02d:%02d", minutes, seconds);
+        }
     }
 
-    private void sizeUpdate(boolean isWidth, double sideLength, MediaView mediaView, AnchorPane pane) {
+    private void sizeUpdate(boolean isWidth, double sideLength, ImageView videoView, AnchorPane pane) {
         if (isWidth) {
-            mediaView.setFitWidth(sideLength);
+            videoView.setFitWidth(sideLength);
         }
         else {
-            mediaView.setFitHeight(sideLength);
+            videoView.setFitHeight(sideLength);
         }
 
         Platform.runLater(() -> {
-            Bounds newBounds = mediaView.getLayoutBounds();
+            Bounds newBounds = videoView.getLayoutBounds();
 
             double containerWidth = pane.getWidth();
             double containerHeight = pane.getHeight();
@@ -207,10 +242,13 @@ public class MediaDisplay extends VBox {
             double offsetX = (containerWidth - newBounds.getWidth()) / 2;
             double offsetY = (containerHeight - newBounds.getHeight()) / 2;
 
-            mediaView.setLayoutX(offsetX);
-            mediaView.setLayoutY(offsetY);
-
-            mediaView.setVisible(true);
+            videoView.setLayoutX(offsetX);
+            videoView.setLayoutY(offsetY);
         });
+    }
+
+    public void dispose() {
+        player.release();
+        factory.release();
     }
 }
