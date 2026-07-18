@@ -165,12 +165,13 @@ Mangrypt offers a robust and secure encryption experience with several technical
 
 To run Mangrypt, ensure your environment meets the following minimum requirements:
 
-| Requirement       | Specification                                |
-|-------------------|----------------------------------------------|
-| Operating System  | Windows, macOS, or Linux                     |
-| Memory            | 4 GB minimum (8 GB recommended)              |
-| Disk Space        | At least 100 MB (more for vault storage)     |
-| Screen Resolution | 1280x720 or higher for optimal UI experience |
+| Requirement       | Specification                                        |
+|-------------------|------------------------------------------------------|
+| Operating System  | Windows, macOS, or Linux                             |
+| Memory            | 4 GB minimum (8 GB recommended)                      |
+| Disk Space        | At least 100 MB (more for vault storage)             |
+| Screen Resolution | 1280x720 or higher for optimal UI experience         |
+| Installed Codecs  | VLC Player v3.0 or higher for Audio & Video playback |
 
 ---
 
