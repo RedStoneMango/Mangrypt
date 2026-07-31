@@ -1,7 +1,6 @@
 package io.github.redstonemango.mangrypt.front;
 
 import javafx.application.Platform;
-import javafx.geometry.Bounds;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -109,11 +108,13 @@ public class MediaDisplay extends VBox {
 
         final ImageView[] videoView = {new ImageView()};
         videoView[0].setPreserveRatio(true);
-        AnchorPane pane = new AnchorPane(videoView[0]);
+        StackPane pane = new StackPane(videoView[0]);
+        pane.setAlignment(Pos.CENTER);
+        pane.setMinSize(0, 0);
+        videoView[0].fitHeightProperty().bind(pane.heightProperty());
+        videoView[0].fitWidthProperty().bind(pane.widthProperty());
         VBox.setVgrow(pane, Priority.ALWAYS);
         player.videoSurface().set(new ImageViewVideoSurface(videoView[0]));
-        // TODO: Resizing is buggy since trying to make the '#pane' smaller doesn't actually have an effect
-        //  The issue is not related to vlcj-fx being used
 
         player.events().addMediaEventListener(new MediaEventAdapter() {
             @Override
@@ -123,13 +124,11 @@ public class MediaDisplay extends VBox {
                         player.audio().setVolume(100);
                         if (!player.media().info().videoTracks().isEmpty()) {
                             getChildren().addFirst(pane);
-                            sizeUpdate(true, pane.getWidth(), videoView[0], pane);
-                            sizeUpdate(false, pane.getHeight(), videoView[0], pane);
 
-                            pane.widthProperty().addListener((_, _, val) ->
-                                    sizeUpdate(true, val.doubleValue(), videoView[0], pane));
-                            pane.heightProperty().addListener((_, _, val) ->
-                                    sizeUpdate(false, val.doubleValue(), videoView[0], pane));
+//                            pane.widthProperty().addListener((_, _, val) ->
+//                                    sizeUpdate(true, val.doubleValue(), videoView[0], pane));
+//                            pane.heightProperty().addListener((_, _, val) ->
+//                                    sizeUpdate(false, val.doubleValue(), videoView[0], pane));
 
                         } else {
                             videoView[0] = null;
@@ -225,28 +224,6 @@ public class MediaDisplay extends VBox {
         } else {
             return String.format("%02d:%02d", minutes, seconds);
         }
-    }
-
-    private void sizeUpdate(boolean isWidth, double sideLength, ImageView videoView, AnchorPane pane) {
-        if (isWidth) {
-            videoView.setFitWidth(sideLength);
-        }
-        else {
-            videoView.setFitHeight(sideLength);
-        }
-
-        Platform.runLater(() -> {
-            Bounds newBounds = videoView.getLayoutBounds();
-
-            double containerWidth = pane.getWidth();
-            double containerHeight = pane.getHeight();
-
-            double offsetX = (containerWidth - newBounds.getWidth()) / 2;
-            double offsetY = (containerHeight - newBounds.getHeight()) / 2;
-
-            videoView.setLayoutX(offsetX);
-            videoView.setLayoutY(offsetY);
-        });
     }
 
     public void dispose() {
